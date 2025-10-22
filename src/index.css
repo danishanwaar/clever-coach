@@ -1,0 +1,291 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* CleverCoach Design System - Educational Excellence */
+
+@layer base {
+  :root {
+    /* Core Brand Colors - Educational Blue/Teal Theme */
+    --background: 0 0% 100%;
+    --foreground: 215 25% 27%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 27%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 27%;
+
+    /* CleverCoach Brand Colors */
+    --primary: 193 95% 32%; /* Educational Teal */
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 193 95% 68%;
+    --primary-dark: 193 95% 18%;
+
+    --secondary: 213 31% 91%;
+    --secondary-foreground: 215 25% 27%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 193 95% 95%;
+    --accent-foreground: 193 95% 32%;
+
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 193 95% 32%;
+
+    /* Educational Gradients - Reduced */
+    --gradient-primary: linear-gradient(135deg, hsl(193 95% 32%), hsl(193 95% 35%));
+    --gradient-hero: linear-gradient(135deg, hsl(193 95% 32%), hsl(193 95% 35%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(193 95% 99%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 40%));
+
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(193 95% 32% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(193 95% 32% / 0.1), 0 2px 4px -1px hsl(193 95% 32% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(193 95% 32% / 0.1), 0 4px 6px -2px hsl(193 95% 32% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(193 95% 32% / 0.1), 0 10px 10px -5px hsl(193 95% 32% / 0.04);
+    --shadow-glow: 0 0 30px hsl(193 95% 32% / 0.3);
+
+    /* Transitions */
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 215 28% 17%;
+    --foreground: 213 31% 91%;
+
+    --card: 215 28% 17%;
+    --card-foreground: 213 31% 91%;
+
+    --popover: 215 28% 17%;
+    --popover-foreground: 213 31% 91%;
+
+    --primary: 193 95% 48%;
+    --primary-foreground: 215 28% 17%;
+    --primary-light: 193 95% 68%;
+    --primary-dark: 193 95% 32%;
+
+    --secondary: 215 25% 27%;
+    --secondary-foreground: 213 31% 91%;
+
+    --muted: 215 25% 27%;
+    --muted-foreground: 215.4 16.3% 65%;
+
+    --accent: 215 25% 27%;
+    --accent-foreground: 193 95% 48%;
+
+    --success: 142 76% 48%;
+    --success-foreground: 215 28% 17%;
+
+    --warning: 38 92% 60%;
+    --warning-foreground: 215 28% 17%;
+
+    --destructive: 0 84.2% 70%;
+    --destructive-foreground: 215 28% 17%;
+
+    --border: 215 25% 27%;
+    --input: 215 25% 27%;
+    --ring: 193 95% 48%;
+
+    /* Dark mode gradients - Reduced */
+    --gradient-primary: linear-gradient(135deg, hsl(193 95% 48%), hsl(193 95% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(193 95% 48%), hsl(193 95% 50%));
+    --gradient-card: linear-gradient(180deg, hsl(215 28% 17%), hsl(215 28% 19%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 48%), hsl(142 76% 50%));
+
+    /* Dark shadows */
+    --shadow-glow: 0 0 30px hsl(193 95% 48% / 0.4);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter antialiased;
+  }
+}
+
+@layer components {
+  /* Button Variants - Reduced Gradients */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground shadow-md hover:shadow-lg hover:shadow-primary/20 transition-all duration-300;
+  }
+  
+  .btn-hero {
+    @apply bg-primary text-primary-foreground shadow-xl hover:shadow-glow transition-all duration-300 transform hover:scale-105;
+  }
+  
+  .btn-success {
+    @apply bg-success text-success-foreground shadow-md hover:shadow-lg transition-all duration-300;
+  }
+
+  /* Card Variants - Reduced Gradients */
+  .card-elevated {
+    @apply bg-card border border-border shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .card-gradient {
+    @apply bg-card border border-border shadow-lg;
+  }
+  
+  .card-interactive {
+    @apply bg-card border border-border shadow-md hover:shadow-lg hover:border-primary/20 transition-all duration-300 cursor-pointer;
+  }
+
+  /* Status Badges */
+  .badge-new {
+    @apply bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+  }
+  
+  .badge-active {
+    @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+  }
+  
+  .badge-pending {
+    @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+  }
+  
+  .badge-rejected {
+    @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+  }
+
+  /* Hero Section - Reduced Gradient */
+  .hero-gradient {
+    @apply bg-primary;
+  }
+  
+  .hero-pattern {
+    background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+
+  /* Educational Elements - Reduced Gradient */
+  .education-card {
+    @apply bg-white border border-primary/10 shadow-lg hover:shadow-xl transition-all duration-300;
+  }
+  
+  .subject-badge {
+    @apply bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all duration-200;
+  }
+  
+  /* Animations */
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.3s ease-out;
+  }
+  
+  .animate-slide-in-right {
+    animation: slideInRight 0.5s ease-out;
+  }
+}
+
+@layer utilities {
+  /* Text gradients - Reduced */
+  .text-gradient {
+    @apply text-primary;
+  }
+  
+  .text-hero-gradient {
+    @apply text-primary;
+  }
+  
+  /* Interactive elements */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-1;
+  }
+  
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-glow;
+  }
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
