@@ -62,6 +62,12 @@ export interface TeacherActivity {
   };
 }
 
+export interface ActivityType {
+  fld_id: number;
+  fld_activity_name: string;
+  fld_status: string;
+}
+
 export const useTeachers = (status?: string) => {
   const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
@@ -140,6 +146,20 @@ export const useTeachers = (status?: string) => {
 
       if (error) throw error;
       return data as TeacherSubject[];
+    },
+  });
+
+  // Fetch activity types
+  const activityTypesQuery = useQuery({
+    queryKey: ['activity-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tbl_activities_types')
+        .select('fld_id, fld_activity_name, fld_status')
+        .eq('fld_status', 'Active');
+
+      if (error) throw error;
+      return data as ActivityType[];
     },
   });
 
@@ -263,6 +283,7 @@ export const useTeachers = (status?: string) => {
     teachers: teachersQuery.data || [],
     teacherSubjects: teacherSubjectsQuery.data || [],
     teacherActivities: teacherActivitiesQuery.data || [],
+    activityTypes: activityTypesQuery.data || [],
     isLoading: teachersQuery.isLoading,
     isLoadingSubjects: teacherSubjectsQuery.isLoading,
     isLoadingActivities: teacherActivitiesQuery.isLoading,
@@ -272,5 +293,6 @@ export const useTeachers = (status?: string) => {
     isUpdatingStatus: updateStatusMutation.isPending,
     isUpdatingRate: updateRateMutation.isPending,
     isRecordingActivity: recordActivityMutation.isPending,
+    refetch: () => teachersQuery.refetch(),
   };
 };

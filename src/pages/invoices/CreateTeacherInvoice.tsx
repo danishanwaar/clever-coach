@@ -137,10 +137,9 @@ const CreateTeacherInvoice = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="icon" onClick={() => navigate('/payables')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-bold">Create Teacher Invoice</h1>
+        <div className="space-y-1">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Create Teacher Invoice</h1>
+        </div>
       </div>
 
       <Card>

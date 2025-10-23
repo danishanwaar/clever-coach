@@ -46,6 +46,11 @@ export interface InvoiceStats {
   totalCount: number;
 }
 
+export interface GenerateInvoiceParams {
+  type: 'receivables' | 'payables';
+  period: 'current' | 'previous';
+}
+
 // Hook for managing student invoices (receivables)
 export function useStudentInvoices() {
   const queryClient = useQueryClient();
@@ -139,14 +144,41 @@ export function useStudentInvoices() {
     },
   });
 
+  // Generate invoices mutation
+  const generateInvoicesMutation = useMutation({
+    mutationFn: async ({ type, period }: GenerateInvoiceParams) => {
+      const { data, error } = await supabase.functions.invoke('generate-invoices', {
+        body: { type, period }
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      const periodText = variables.period === 'current' ? 'current month' : 'previous month';
+      const typeText = variables.type === 'receivables' ? 'student' : 'teacher';
+      toast.success(`Generated ${typeText} invoices for ${periodText} successfully!`);
+      
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['student-invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['student-invoice-stats'] });
+    },
+    onError: (error) => {
+      console.error('Invoice generation error:', error);
+      toast.error('Failed to generate invoices. Please try again.');
+    },
+  });
+
   return {
     invoices,
     stats,
     isLoading,
     updateStatus: updateStatusMutation.mutate,
     sendEmail: sendEmailMutation.mutate,
+    generateInvoices: generateInvoicesMutation.mutate,
     isUpdating: updateStatusMutation.isPending,
     isSendingEmail: sendEmailMutation.isPending,
+    isGenerating: generateInvoicesMutation.isPending,
   };
 }
 
@@ -219,12 +251,39 @@ export function useTeacherInvoices() {
     },
   });
 
+  // Generate invoices mutation
+  const generateInvoicesMutation = useMutation({
+    mutationFn: async ({ type, period }: GenerateInvoiceParams) => {
+      const { data, error } = await supabase.functions.invoke('generate-invoices', {
+        body: { type, period }
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data, variables) => {
+      const periodText = variables.period === 'current' ? 'current month' : 'previous month';
+      const typeText = variables.type === 'receivables' ? 'student' : 'teacher';
+      toast.success(`Generated ${typeText} invoices for ${periodText} successfully!`);
+      
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['teacher-invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-invoice-stats'] });
+    },
+    onError: (error) => {
+      console.error('Invoice generation error:', error);
+      toast.error('Failed to generate invoices. Please try again.');
+    },
+  });
+
   return {
     invoices,
     stats,
     isLoading,
     updateStatus: updateStatusMutation.mutate,
+    generateInvoices: generateInvoicesMutation.mutate,
     isUpdating: updateStatusMutation.isPending,
+    isGenerating: generateInvoicesMutation.isPending,
   };
 }
 

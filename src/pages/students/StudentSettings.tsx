@@ -189,21 +189,6 @@ export default function StudentSettings() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link to={`/students/${studentId}/profile`}>
-          <Button variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold">Student Settings</h1>
-          <p className="text-gray-600">
-            Manage settings for {student.fld_first_name} {student.fld_last_name}
-          </p>
-        </div>
-      </div>
-
       {/* Contact Person Section */}
       <Card>
         <CardHeader>

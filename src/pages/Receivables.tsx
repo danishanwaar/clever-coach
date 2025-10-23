@@ -41,7 +41,9 @@ import {
   Euro,
   TrendingUp,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Calendar,
+  FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -55,8 +57,10 @@ const Receivables = () => {
     isLoading,
     updateStatus,
     sendEmail,
+    generateInvoices,
     isUpdating,
     isSendingEmail,
+    isGenerating,
   } = useStudentInvoices();
 
   // Filter invoices based on search and status
@@ -93,6 +97,10 @@ const Receivables = () => {
     }
   };
 
+  const handleGenerateInvoices = (period: 'current' | 'previous') => {
+    generateInvoices({ type: 'receivables', period });
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       'Pending': { variant: 'secondary' as const, className: 'bg-yellow-100 text-yellow-800' },
@@ -122,14 +130,25 @@ const Receivables = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Receivables</h1>
+        <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Receivables</h1>
+        </div>
         <div className="flex gap-2">
-          <Link to="/invoices/create-student">
-            <Button>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Student Invoice
-            </Button>
-          </Link>
+          <Button
+            variant="destructive"
+            onClick={() => handleGenerateInvoices('previous')}
+            disabled={isGenerating}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Generate Previous Month Invoices
+          </Button>
+          <Button
+            onClick={() => handleGenerateInvoices('current')}
+            disabled={isGenerating}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Generate Current Month Invoices
+          </Button>
         </div>
       </div>
 
@@ -188,7 +207,7 @@ const Receivables = () => {
       {/* Filters and Search */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Student Invoices</CardTitle>
+          <CardTitle className="text-primary">Student Invoices</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-4">

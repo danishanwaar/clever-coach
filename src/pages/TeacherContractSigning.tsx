@@ -129,11 +129,11 @@ const TeacherContractSigning = () => {
           <div className="max-w-3xl">
             <h1 className="text-4xl font-bold mb-3">
               Freelance Contract
-            </h1>
+          </h1>
             <div className="w-20 h-1 bg-white/30 rounded-full mb-4"></div>
             <p className="text-white/90 text-base leading-relaxed">
               between CleverCoach-Nachhilfe, represented by Tav und Uzun GbR Höschenhofweg 31 47249 Duisburg and the contractor
-            </p>
+          </p>
           </div>
         </div>
 
@@ -246,7 +246,7 @@ const TeacherContractSigning = () => {
                 <p className="font-medium text-gray-800">
                   The contractors are entrusted with providing tutoring in the following subjects:{' '}
                   <span className="inline-flex items-center gap-1 px-2 py-1 bg-primary text-white text-xs font-semibold rounded-full">
-                    {teacherData.subjects.join(', ')}
+                  {teacherData.subjects.join(', ')}
                   </span>
                 </p>
               </div>
@@ -368,8 +368,8 @@ const TeacherContractSigning = () => {
                   Signature of teacher/guardian:
                 </Label>
                 <div className="flex flex-col items-center space-y-4">
-                  <SignaturePad
-                    onSignatureChange={handleSignatureChange}
+                <SignaturePad
+                  onSignatureChange={handleSignatureChange}
                     width={500}
                     height={250}
                     className="border-2 border-gray-300 rounded-lg bg-white shadow-sm"

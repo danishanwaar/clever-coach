@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,14 +17,264 @@ import {
   Plus,
   Search,
   UserPlus,
-  User
+  User,
+  MapPin,
+  GraduationCap,
+  Users,
+  DollarSign,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  UserCheck
 } from 'lucide-react';
 import { useStudents, useStudentSubjects, useStudentMediationStages, useStudentMutations, useMediationTypes, StudentStatus } from '@/hooks/useStudents';
+import { useAuth } from '@/hooks/useAuth';
 import { formatPhoneNumber } from '@/lib/utils';
-import { StudentActivityModal } from '@/components/StudentActivityModal';
+import ActivityModal from '@/components/ActivityModal';
 import { StudentFormModal } from '@/components/StudentFormModal';
 import { LeadFormModal } from '@/components/LeadFormModal';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import { Link } from 'react-router-dom';
+
+const statusOptions = ['All', 'Leads', 'Mediation Open', 'Partially Mediated', 'Mediated', 'Specialist Consulting', 'Contracted Customers', 'Suspended', 'Deleted', 'Unplaceable', 'Waiting List', 'Appointment Call', 'Follow-up', 'Appl', 'Eng'];
+
+const statusColors = {
+  'Leads': 'bg-blue-100 text-blue-800 border-blue-200',
+  'Mediation Open': 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  'Partially Mediated': 'bg-orange-100 text-orange-800 border-orange-200',
+  'Mediated': 'bg-green-100 text-green-800 border-green-200',
+  'Specialist Consulting': 'bg-purple-100 text-purple-800 border-purple-200',
+  'Contracted Customers': 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  'Suspended': 'bg-red-100 text-red-800 border-red-200',
+  'Deleted': 'bg-red-100 text-red-800 border-red-200',
+  'Unplaceable': 'bg-gray-100 text-gray-800 border-gray-200',
+  'Waiting List': 'bg-cyan-100 text-cyan-800 border-cyan-200',
+  'Appointment Call': 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  'Follow-up': 'bg-pink-100 text-pink-800 border-pink-200',
+  'Appl': 'bg-teal-100 text-teal-800 border-teal-200',
+  'Eng': 'bg-violet-100 text-violet-800 border-violet-200',
+};
+
+const statusIcons = {
+  'All': Users,
+  'Leads': UserPlus,
+  'Mediation Open': Users,
+  'Partially Mediated': Users,
+  'Mediated': Users,
+  'Specialist Consulting': Users,
+  'Contracted Customers': Users,
+  'Suspended': Users,
+  'Deleted': Users,
+  'Unplaceable': Users,
+  'Waiting List': Users,
+  'Appointment Call': Users,
+  'Follow-up': Users,
+  'Appl': Users,
+  'Eng': Users,
+};
+
+// Student Card Component
+interface StudentCardProps {
+  student: any;
+  onStatusChange: (studentId: number, newStatus: string) => void;
+  onActivityClick: () => void;
+  isUpdatingStatus?: boolean;
+}
+
+const StudentCard: React.FC<StudentCardProps> = ({ 
+  student, 
+  onStatusChange, 
+  onActivityClick, 
+  isUpdatingStatus = false 
+}) => {
+  const { data: subjects = [] } = useStudentSubjects(student.fld_id);
+  const { user, isAdmin } = useAuth();
+  
+  const initials = `${student.fld_first_name?.[0] || ''}${student.fld_last_name?.[0] || ''}`.toUpperCase();
+  const studentName = `${student.fld_first_name || ''} ${student.fld_last_name || ''}`.trim();
+  
+  // Status workflow logic
+  const getStatusButtonInfo = (currentStatus: string) => {
+    const statusFlow = {
+      'Leads': { next: 'Appointment Call', label: 'Schedule Call', icon: Phone, variant: 'default' as const },
+      'Appointment Call': { next: 'Mediation Open', label: 'Start Mediation', icon: Users, variant: 'default' as const },
+      'Mediation Open': { next: 'Partially Mediated', label: 'Continue Mediation', icon: ArrowRight, variant: 'default' as const },
+      'Partially Mediated': { next: 'Mediated', label: 'Complete Mediation', icon: CheckCircle, variant: 'default' as const },
+      'Mediated': { next: 'Contracted Customers', label: 'Create Contract', icon: UserCheck, variant: 'default' as const },
+      'Specialist Consulting': { next: 'Mediation Open', label: 'Start Mediation', icon: Users, variant: 'default' as const },
+      'Waiting List': { next: 'Mediation Open', label: 'Start Mediation', icon: Users, variant: 'default' as const },
+      'Follow-up': { next: 'Appointment Call', label: 'Schedule Call', icon: Phone, variant: 'default' as const },
+      'Appl': { next: 'Mediation Open', label: 'Start Mediation', icon: Users, variant: 'default' as const },
+    };
+    
+    return statusFlow[currentStatus as keyof typeof statusFlow] || null;
+  };
+
+  // Check if status is final state
+  const isFinalState = ['Contracted Customers', 'Suspended', 'Deleted'].includes(student.fld_status);
+  
+  const buttonInfo = getStatusButtonInfo(student.fld_status);
+
+  // Subject display logic - show only 2, then show "more" indicator
+  const displaySubjects = subjects.slice(0, 2);
+  const remainingCount = subjects.length - 2;
+  
+  return (
+    <div 
+      className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 group cursor-pointer"
+      onClick={() => window.location.href = `/students/${student.fld_id}`}
+    >
+      <div className="p-3 sm:p-4">
+        <div className="flex items-start justify-between gap-4">
+          {/* Left Section - Student Info */}
+          <div className="flex items-start space-x-3 flex-1 min-w-0">
+            {/* Avatar */}
+            <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center text-primary font-bold text-sm shadow-sm flex-shrink-0 group-hover:shadow-md transition-shadow">
+              {initials}
+            </div>
+            
+            {/* Basic Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center space-x-2 mb-2">
+                <h3 className="font-semibold text-base text-gray-900 truncate">
+                  {studentName}
+                </h3>
+                <Badge className={`${statusColors[student.fld_status as keyof typeof statusColors]} text-xs font-medium flex-shrink-0`}>
+                  {student.fld_status}
+                </Badge>
+              </div>
+              
+              <p className="text-sm text-gray-600 truncate mb-2">{student.fld_email || ''}</p>
+              
+              {/* Contact Info - Compact */}
+              <div className="flex items-center space-x-4 mb-3">
+                <div className="flex items-center text-xs text-gray-600">
+                  <MapPin className="h-3 w-3 mr-1 text-gray-400" />
+                  {student.fld_city || ''}
+                </div>
+                <div className="flex items-center text-xs text-gray-600">
+                  <Phone className="h-3 w-3 mr-1 text-gray-400" />
+                  {student.fld_mobile || ''}
+                </div>
+              </div>
+
+              {/* Subjects & Levels - Compact with "more" indicator */}
+              <div className="flex flex-wrap gap-1">
+                {displaySubjects.length > 0 ? (
+                  <>
+                    {displaySubjects.map((subject) => (
+                      <div key={subject.fld_id} className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full px-2 py-1 text-xs font-medium border border-gray-200">
+                        <span className="font-semibold">{subject.tbl_subjects?.fld_subject}</span>
+                        <span className="text-gray-500">({student.fld_level || 'N/A'})</span>
+                      </div>
+                    ))}
+                    {remainingCount > 0 && (
+                      <div className="inline-flex items-center gap-1 bg-gray-200 text-gray-600 rounded-full px-2 py-1 text-xs font-medium border border-gray-300">
+                        <span>+{remainingCount} more</span>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-xs text-gray-500 italic">No subjects assigned</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Section - Contact Actions */}
+          <div className="flex items-center space-x-1 flex-shrink-0">
+            <Button variant="ghost" size="sm" asChild title="Email" className="h-7 w-7 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" onClick={(e) => e.stopPropagation()}>
+              <a href={`mailto:${student.fld_email}`}>
+                <Mail className="h-3 w-3" />
+              </a>
+            </Button>
+            <Button variant="ghost" size="sm" asChild title="WhatsApp" className="h-7 w-7 p-0 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors" onClick={(e) => e.stopPropagation()}>
+              <a href={`https://wa.me/${formatPhoneNumber(student.fld_mobile || '')}`} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-3 w-3" />
+              </a>
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              title="Activity Tracking"
+              onClick={(e) => {
+                e.stopPropagation();
+                onActivityClick();
+              }}
+              className="h-7 w-7 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
+            >
+              <FileText className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Bottom Section - Status Controls */}
+        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+          {/* Status Action Button */}
+          {!isFinalState && buttonInfo && (
+            <Button
+              variant={buttonInfo.variant}
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                onStatusChange(student.fld_id, buttonInfo.next);
+              }}
+              disabled={isUpdatingStatus}
+              className="h-7 px-3 text-xs"
+            >
+              {isUpdatingStatus ? (
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+              ) : (
+                <buttonInfo.icon className="h-3 w-3 mr-1" />
+              )}
+              <span className="hidden sm:inline">
+                {isUpdatingStatus ? 'Processing...' : buttonInfo.label}
+              </span>
+              <span className="sm:hidden">
+                {isUpdatingStatus ? '...' : buttonInfo.label.split(' ')[0]}
+              </span>
+            </Button>
+          )}
+
+          {/* Admin Status Dropdown */}
+          {isAdmin() && (
+            <Select 
+              value={student.fld_status} 
+              onValueChange={(value) => {
+                if (confirm(`Are you sure you want to change status to ${value}?`)) {
+                  onStatusChange(student.fld_id, value);
+                }
+              }}
+            >
+              <SelectTrigger className="w-40 h-7 text-xs" onClick={(e) => e.stopPropagation()}>
+                <SelectValue placeholder="Change Status" />
+              </SelectTrigger>
+              <SelectContent>
+                {statusOptions.filter(status => status !== 'All').map((status) => {
+                  const Icon = statusIcons[status as keyof typeof statusIcons] || Users;
+                  return (
+                    <SelectItem 
+                      key={status} 
+                      value={status}
+                      disabled={status === student.fld_status}
+                      className="text-xs"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-3 w-3" />
+                        {status}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Students: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<StudentStatus | 'All' | 'Eng'>('All');
@@ -36,16 +286,53 @@ const Students: React.FC = () => {
 
   const { data: students = [], isLoading } = useStudents(selectedStatus);
   const { data: mediationTypes = [] } = useMediationTypes();
-  const { updateStatus, updateNotes, updateIMStatus, moveToMediationOpen, deleteMediation } = useStudentMutations();
+  const { updateStatus, updateNotes, updateIMStatus, moveToMediationOpen, deleteMediation, isUpdating } = useStudentMutations();
 
-  // Filter students based on search term
-  const filteredStudents = students.filter(student => 
-    `${student.fld_first_name} ${student.fld_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    `${student.fld_s_first_name} ${student.fld_s_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.fld_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.fld_city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.fld_zip.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Get subjects for a student
+  const getStudentSubjects = (studentId: number) => {
+    // This would need to be implemented based on your data structure
+    return [];
+  };
+
+  // Calculate status statistics
+  const statusStats = useMemo(() => {
+    const stats: Record<string, number> = {};
+    statusOptions.forEach(status => {
+      if (status === 'All') {
+        stats[status] = students?.length || 0;
+      } else {
+        stats[status] = students?.filter(student => student.fld_status === status).length || 0;
+      }
+    });
+    return stats;
+  }, [students]);
+
+  // Filter students based on search term and status
+  const filteredStudents = useMemo(() => {
+    if (!students || !Array.isArray(students)) {
+      return [];
+    }
+
+    let filtered = students;
+
+    // Apply status filter
+    if (selectedStatus !== 'All') {
+      filtered = filtered.filter(student => student.fld_status === selectedStatus);
+    }
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(student =>
+        `${student.fld_first_name} ${student.fld_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${student.fld_s_first_name} ${student.fld_s_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.fld_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.fld_city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.fld_zip.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return filtered;
+  }, [students, selectedStatus, searchTerm]);
 
   const getStatusBadgeColor = (status: StudentStatus) => {
     switch (status) {
@@ -97,462 +384,162 @@ const Students: React.FC = () => {
     setIsActivityModalOpen(true);
   };
 
-  const statusOptions: { value: StudentStatus | 'All' | 'Eng'; label: string }[] = [
-    { value: 'All', label: 'All' },
-    { value: 'Leads', label: 'Leads' },
-    { value: 'Mediation Open', label: 'Mediation Open' },
-    { value: 'Partially Mediated', label: 'Partially Mediated' },
-    { value: 'Mediated', label: 'Mediated' },
-    { value: 'Specialist Consulting', label: 'Specialist Consulting' },
-    { value: 'Contracted Customers', label: 'Contracted Customers' },
-    { value: 'Suspended', label: 'Suspended' },
-    { value: 'Deleted', label: 'Deleted' },
-    { value: 'Unplaceable', label: 'Unplaceable' },
-    { value: 'Waiting List', label: 'Waiting List' },
-    { value: 'Appointment Call', label: 'Appointment Call' },
-    { value: 'Follow-up', label: 'Follow-up' },
-    { value: 'Appl', label: 'Appl' },
-    { value: 'Eng', label: 'Eng' },
-  ];
+
+  if (isLoading) {
+    return <Loader message="Loading students..." />;
+  }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
           {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-          <h1 className="text-2xl sm:text-3xl font-bold">Students Directory</h1>
-          <p className="text-gray-600">Manage and track student lifecycle</p>
-            </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setIsFormModalOpen(true)}>
-            <UserPlus className="h-4 w-4 mr-2" />
-            Add Student
-          </Button>
-          <Button variant="outline" onClick={() => setIsLeadFormModalOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Lead
-                </Button>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-primary">Students</h1>
+            <p className="text-sm sm:text-base text-gray-600">Manage all students in the platform</p>
           </div>
+          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-200 self-start sm:self-auto">
+            <Users className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-gray-700">{students.length} Total</span>
+          </div>
+            </div>
 
-      {/* Status Filter */}
-      <Card>
-        <CardContent className="p-4">
+        {/* Status Statistics */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
           <div className="flex flex-wrap gap-2">
-            {statusOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={selectedStatus === option.value ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedStatus(option.value)}
-              >
-                {option.label}
-              </Button>
-            ))}
+            {statusOptions.map((status) => {
+              const count = statusStats[status];
+              const Icon = statusIcons[status as keyof typeof statusIcons] || Users;
+              const isSelected = selectedStatus === status;
+              
+              return (
+                <Button
+                  key={status}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedStatus(status as StudentStatus | 'All' | 'Eng')}
+                  className={`flex items-center gap-2 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
+                    isSelected 
+                      ? 'bg-primary text-white shadow-md hover:bg-primary/90' 
+                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">{count} {status}</span>
+                  <span className="sm:hidden">{count}</span>
+                </Button>
+              );
+            })}
+          </div>
         </div>
-        </CardContent>
-      </Card>
 
-      {/* Search and Filters */}
-          <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-4">
+        {/* Search and Filter Bar */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <Input
-                placeholder="Search by name, email, location, or subject..."
+                      placeholder="Search students..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Students Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto max-w-full">
-            <table className="w-full min-w-[1200px]">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="text-left p-3 font-medium min-w-[120px]">Actions</th>
-                  <th className="text-left p-3 font-medium min-w-[150px]">Name</th>
-                  <th className="text-left p-3 font-medium min-w-[80px]">Online</th>
-                  <th className="text-left p-3 font-medium min-w-[100px]">Location</th>
-                  <th className="text-left p-3 font-medium min-w-[120px]">Subject</th>
-                  {selectedStatus !== 'Leads' && selectedStatus !== 'Mediation Open' && (
-                    <>
-                      <th className="text-left p-3 font-medium min-w-[120px]">Teachers</th>
-                      <th className="text-left p-3 font-medium min-w-[120px]">IM Status - Date</th>
-                    </>
-                  )}
-                  {selectedStatus === 'Specialist Consulting' && (
-                    <th className="text-left p-3 font-medium min-w-[120px]">Admin Status</th>
-                  )}
-                  <th className="text-left p-3 font-medium min-w-[100px]">Status</th>
-                  <th className="text-left p-3 font-medium min-w-[200px]">About</th>
-                  <th className="text-left p-3 font-medium min-w-[100px]">Admin</th>
-                  <th className="text-left p-3 font-medium min-w-[100px]">Applied Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={10} className="text-center p-8">
-                      <Loader message="Loading students..." size="sm" className="min-h-[100px]" />
-                    </td>
-                  </tr>
-                ) : filteredStudents.length === 0 ? (
-                  <tr>
-                    <td colSpan={10} className="text-center p-8 text-gray-500">
-                      No students found
-                    </td>
-                  </tr>
-                ) : (
-                  filteredStudents.map((student) => (
-                    <StudentRow
-                      key={student.fld_id}
-                      student={student}
-                      selectedStatus={selectedStatus}
-                      mediationTypes={mediationTypes}
-                      onStatusChange={handleStatusChange}
-                      onNotesChange={handleNotesChange}
-                      onIMStatusChange={handleIMStatusChange}
-                      onMoveToMediationOpen={handleMoveToMediationOpen}
-                      onDeleteMediation={handleDeleteMediation}
-                      onRecordActivity={handleRecordActivity}
+                className="pl-10 border-gray-300 focus:border-primary focus:ring-primary/20"
                     />
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Student Activity Modal */}
-      {selectedStudent && (
-        <StudentActivityModal
-          studentId={selectedStudent}
-          isOpen={isActivityModalOpen}
-          onClose={() => {
-            setIsActivityModalOpen(false);
-            setSelectedStudent(null);
-          }}
-        />
-      )}
-
-      {/* Student Form Modal */}
-      <StudentFormModal
-        isOpen={isFormModalOpen}
-        onClose={() => setIsFormModalOpen(false)}
-      />
-
-      {/* Lead Form Modal */}
-      <LeadFormModal
-        isOpen={isLeadFormModalOpen}
-        onClose={() => setIsLeadFormModalOpen(false)}
-      />
-    </div>
-  );
-};
-
-// Student Row Component
-interface StudentRowProps {
-  student: any;
-  selectedStatus: StudentStatus | 'All' | 'Eng';
-  mediationTypes: any[];
-  onStatusChange: (studentId: number, status: string) => void;
-  onNotesChange: (studentId: number, notes: string) => void;
-  onIMStatusChange: (studentId: number, imStatus: string) => void;
-  onMoveToMediationOpen: (studentId: number) => void;
-  onDeleteMediation: (studentId: number, subjectId: number) => void;
-  onRecordActivity: (studentId: number) => void;
-}
-
-const StudentRow: React.FC<StudentRowProps> = ({
-  student,
-  selectedStatus,
-  mediationTypes,
-  onStatusChange,
-  onNotesChange,
-  onIMStatusChange,
-  onMoveToMediationOpen,
-  onDeleteMediation,
-  onRecordActivity,
-}) => {
-  const formattedPhone = formatPhoneNumber(student.fld_mobile);
-  const { data: subjects = [] } = useStudentSubjects(student.fld_id);
-  const { data: mediationStages = [] } = useStudentMediationStages(student.fld_id);
-
-  return (
-    <tr className="border-b hover:bg-gray-50">
-      {/* Actions */}
-      <td className="p-3">
-        <div className="flex flex-wrap items-center gap-1">
-          {student.fld_status === 'Leads' && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onMoveToMediationOpen(student.fld_id)}
-              title="Move to Mediation Open"
-              className="h-8 w-8 p-0"
-            >
-              <ArrowRight className="h-3 w-3" />
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => onRecordActivity(student.fld_id)}
-            title="Record Activity"
-            className="h-8 w-8 p-0"
-          >
-            <Edit className="h-3 w-3" />
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            asChild
-            className="h-8 w-8 p-0"
-          >
-            <a href={`mailto:${student.fld_email}`} title="Send Email">
-              <Mail className="h-3 w-3" />
-            </a>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            asChild
-            className="h-8 w-8 p-0"
-          >
-            <a href={`https://web.whatsapp.com/send?phone=${formattedPhone}`} target="_blank" title="WhatsApp">
-              <MessageCircle className="h-3 w-3" />
-            </a>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            asChild
-            className="h-8 w-8 p-0"
-          >
-            <a href={`tel:${formattedPhone}`} title="Call">
-              <Phone className="h-3 w-3" />
-            </a>
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            asChild
-            className="h-8 w-8 p-0"
-          >
-            <Link to={`/students/${student.fld_id}/profile`} title="View Profile">
-              <User className="h-3 w-3" />
-            </Link>
-          </Button>
-          {(student.fld_status === 'Mediation Open' || student.fld_status === 'Partially Mediated') && (
-            <Button
-              size="sm"
-              variant="outline"
-              title="Dynamic Matcher"
-              className="h-8 w-8 p-0"
-            >
-              <ArrowRight className="h-3 w-3" />
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="outline"
-            title="Create Contract"
-            className="h-8 w-8 p-0"
-          >
-            <FileText className="h-3 w-3" />
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            title="Delete"
-            className="h-8 w-8 p-0 text-red-600"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </td>
-
-      {/* Name */}
-      <td className="p-3">
-        <div>
-          <div className="font-medium text-sm">
-            {student.fld_s_first_name} {student.fld_s_last_name} ({student.fld_sal})
-          </div>
-          <div className="text-xs text-gray-600">
-            {student.fld_gender} {student.fld_first_name} {student.fld_last_name}
-          </div>
-        </div>
-      </td>
-
-      {/* Online */}
-      <td className="p-3 text-sm">{student.fld_l_mode}</td>
-
-      {/* Location */}
-      <td className="p-3">
-        <div className="text-sm">
-          {student.fld_zip}<br />
-          {student.fld_city}
-        </div>
-      </td>
-
-      {/* Subject */}
-      <td className="p-3">
-        <div className="space-y-1">
-          {subjects.map((subject) => (
-            <div key={subject.fld_id} className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-yellow-500 rounded-full flex-shrink-0"></div>
-              <span className="text-xs">
-                {subject.tbl_subjects?.fld_subject} ({student.fld_level?.replace('Level ', '') || 'N/A'})
-              </span>
-            </div>
-          ))}
-        </div>
-      </td>
-
-      {/* Teachers (if not Leads or Mediation Open) */}
-      {selectedStatus !== 'Leads' && selectedStatus !== 'Mediation Open' && (
-        <td className="p-3">
-          <div className="space-y-1">
-            {mediationStages.map((stage) => (
-              stage.tbl_teachers && (
-                <div key={stage.fld_id} className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full flex-shrink-0"></div>
-                  <div className="text-xs">
-                    <a href="#" className="text-blue-600 hover:underline">
-                      {stage.tbl_teachers.fld_first_name} {stage.tbl_teachers.fld_last_name}
-                    </a>
-                    <Button size="sm" variant="ghost" className="ml-1 p-0 h-auto">
-                      <Phone className="h-3 w-3" />
-                    </Button>
-                    {selectedStatus === 'Mediated' && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="ml-1 p-0 h-auto text-red-600"
-                        onClick={() => onDeleteMediation(student.fld_id, stage.fld_ssid)}
-                        title="Delete Mediation"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    )}
                   </div>
-                </div>
-              )
-            ))}
-            {mediationStages.length === 0 && (
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                <span className="text-xs text-red-600">Not Mediated!</span>
-              </div>
-            )}
+            <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as StudentStatus | 'All' | 'Eng')}>
+              <SelectTrigger className="w-full sm:w-48 border-gray-300 focus:border-primary focus:ring-primary/20">
+                <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                {statusOptions.map((status) => (
+                  <SelectItem key={status} value={status}>
+                    {status} ({statusStats[status]})
+                  </SelectItem>
+                ))}
+                  </SelectContent>
+                </Select>
+            <div className="flex gap-2">
+              <Button onClick={() => setIsFormModalOpen(true)} className="bg-primary hover:bg-primary/90">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+              <Button variant="outline" onClick={() => setIsLeadFormModalOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Lead
+              </Button>
+            </div>
           </div>
-        </td>
-      )}
+              </div>
 
-      {/* IM Status - Date (if not Leads or Mediation Open) */}
-      {selectedStatus !== 'Leads' && selectedStatus !== 'Mediation Open' && (
-        <td className="p-3">
-          <div className="space-y-1">
-            {mediationStages.map((stage) => (
-              <div key={stage.fld_id} className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-gray-500 rounded-full flex-shrink-0"></div>
-                <div className="text-xs">
-                  {stage.tbl_mediation_types?.fld_stage_name}<br />
-                  {new Date(stage.fld_edate).toLocaleDateString()} {stage.fld_etime}
-                </div>
-              </div>
-            ))}
-            {mediationStages.length === 0 && (
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0"></div>
-                <span className="text-xs text-red-600">Pending</span>
-              </div>
-            )}
+        {/* Student Cards */}
+        <div className="space-y-4">
+          {filteredStudents.map((student) => {
+            if (!student) return null;
+            
+            return (
+              <StudentCard
+                key={student.fld_id}
+                student={student}
+                onStatusChange={handleStatusChange}
+                onActivityClick={() => {
+                  setSelectedStudent(student.fld_id);
+                  setIsActivityModalOpen(true);
+                }}
+                isUpdatingStatus={isUpdating}
+              />
+            );
+          })}
           </div>
-        </td>
-      )}
 
-      {/* Admin Status (if Specialist Consulting) */}
-      {selectedStatus === 'Specialist Consulting' && (
-        <td className="p-3">
-          <Select
-            value={student.fld_im_status?.toString() || ''}
-            onValueChange={(value) => onIMStatusChange(student.fld_id, value)}
-          >
-            <SelectTrigger className="w-full text-xs">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="none">Select status</SelectItem>
-              {mediationTypes.map((type) => (
-                <SelectItem key={type.fld_id} value={type.fld_id.toString()}>
-                  {type.fld_stage_name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </td>
-      )}
+        {/* Empty State */}
+        {filteredStudents.length === 0 && (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No students found</h3>
+            <p className="text-gray-500 mb-6">Try adjusting your search or filter criteria</p>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={() => setIsFormModalOpen(true)} className="bg-primary hover:bg-primary/90">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add Student
+              </Button>
+              <Button variant="outline" onClick={() => setIsLeadFormModalOpen(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                Add Lead
+                </Button>
+            </div>
+          </div>
+        )}
 
-      {/* Status */}
-      <td className="p-3">
-        <Select
-          value={student.fld_status}
-          onValueChange={(value) => onStatusChange(student.fld_id, value)}
-        >
-          <SelectTrigger className="w-full text-xs">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Leads">Leads</SelectItem>
-            <SelectItem value="Mediation Open">Mediation Open</SelectItem>
-            <SelectItem value="Partially Mediated">Partially Mediated</SelectItem>
-            <SelectItem value="Mediated">Mediated</SelectItem>
-            <SelectItem value="Specialist Consulting">Specialist Consulting</SelectItem>
-            <SelectItem value="Contracted Customers">Contracted Customers</SelectItem>
-            <SelectItem value="Suspended">PS RG</SelectItem>
-            <SelectItem value="Deleted">Deleted</SelectItem>
-            <SelectItem value="Unplaceable">Unplaceable</SelectItem>
-            <SelectItem value="Waiting List">Waiting List</SelectItem>
-            <SelectItem value="Appointment Call">Appointment Call</SelectItem>
-            <SelectItem value="Follow-up">Follow-up</SelectItem>
-            <SelectItem value="Appl">Appl. Med.</SelectItem>
-          </SelectContent>
-        </Select>
-      </td>
+        {/* Student Activity Modal */}
+        {selectedStudent && (
+          <ActivityModal
+            student={students.find(s => s.fld_id === selectedStudent) || null}
+            isOpen={isActivityModalOpen}
+            onClose={() => {
+              setIsActivityModalOpen(false);
+              setSelectedStudent(null);
+            }}
+          />
+        )}
 
-      {/* About */}
-      <td className="p-3">
-        <Textarea
-          value={student.fld_notes || ''}
-          onChange={(e) => onNotesChange(student.fld_id, e.target.value)}
-          rows={3}
-          className="min-w-[150px] text-xs"
-          placeholder="Add notes..."
-        />
-      </td>
+        {/* Student Form Modal */}
+        <ErrorBoundary>
+          <StudentFormModal
+            isOpen={isFormModalOpen}
+            onClose={() => setIsFormModalOpen(false)}
+          />
+        </ErrorBoundary>
 
-      {/* Admin */}
-      <td className="p-3">
-        <div className="text-xs">{student.tbl_users?.fld_name}</div>
-      </td>
-
-      {/* Applied Date */}
-      <td className="p-3">
-        <div className="text-xs">
-          {new Date(student.fld_edate).toLocaleDateString()}
-        </div>
-      </td>
-    </tr>
+        {/* Lead Form Modal */}
+        <ErrorBoundary>
+          <LeadFormModal
+            isOpen={isLeadFormModalOpen}
+            onClose={() => setIsLeadFormModalOpen(false)}
+          />
+        </ErrorBoundary>
+      </div>
+    </div>
   );
 };
 

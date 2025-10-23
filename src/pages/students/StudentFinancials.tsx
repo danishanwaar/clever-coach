@@ -88,16 +88,6 @@ export default function StudentFinancials() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Student Financials</h1>
-          <p className="text-gray-600">
-            Financial overview for {student.fld_first_name} {student.fld_last_name}
-          </p>
-        </div>
-      </div>
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Total Invoices */}

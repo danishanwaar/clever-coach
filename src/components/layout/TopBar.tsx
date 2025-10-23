@@ -43,7 +43,7 @@ export function TopBar({ onMenuToggle, isSidebarCollapsed }: TopBarProps) {
 
   const getUserInitials = () => {
     if (!user) return 'U';
-    return `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() || 'U';
+    return `${user.fld_name?.[0] || ''}`.toUpperCase() || 'U';
   };
 
   const getRoleDisplay = () => {
@@ -171,10 +171,10 @@ export function TopBar({ onMenuToggle, isSidebarCollapsed }: TopBarProps) {
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="flex flex-col space-y-1 p-2">
                 <p className="text-sm font-medium leading-none">
-                  {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'User' : 'User'}
+                  {user ? `${user.fld_name || ''}`.trim() || 'User' : 'User'}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
-                  {user?.email}
+                  {user?.fld_email}
                 </p>
                 <p className="text-xs leading-none text-muted-foreground">
                   {getRoleDisplay()}

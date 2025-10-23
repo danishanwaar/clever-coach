@@ -15,14 +15,6 @@ import Teachers from "./pages/Teachers";
 import Applicants from "./pages/Applicants";
 import Students from "./pages/Students";
 import StudentProfile from "./pages/students/StudentProfile";
-import StudentMatchMaking from "./pages/students/StudentMatchMaking";
-import StudentContracts from "./pages/students/StudentContracts";
-import StudentFinancials from "./pages/students/StudentFinancials";
-import StudentProgressNotes from "./pages/students/StudentProgressNotes";
-import StudentTimeLogs from "./pages/students/StudentTimeLogs";
-import StudentActivity from "./pages/students/StudentActivity";
-import StudentSettings from "./pages/students/StudentSettings";
-import StudentContractDownload from "./pages/students/StudentContractDownload";
 import Invoices from "./pages/Invoices";
 import Receivables from "./pages/Receivables";
 import Payables from "./pages/Payables";
@@ -207,90 +199,14 @@ const App = () => (
                 <StudentProfile />
               </Layout>
             </ProtectedRoute>
-          }>
-            <Route index element={<StudentProfile />} />
-            <Route path="profile" element={<StudentProfile />} />
-          </Route>
-          <Route 
-            path="/students/:id/match-making" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentMatchMaking />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/students/:id/contracts" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentContracts />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/students/:id/financials" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentFinancials />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/students/:id/progress-notes" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentProgressNotes />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/students/:id/time-logs" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentTimeLogs />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/students/:id/activity" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentActivity />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/students/:id/settings" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentSettings />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/students/:id/contract-download" 
-            element={
-              <ProtectedRoute>
-                <Layout>
-                  <StudentContractDownload />
-                </Layout>
-              </ProtectedRoute>
-            } 
-          />
+          } />
+          <Route path="/students/:id/:tab" element={
+            <ProtectedRoute>
+              <Layout>
+                <StudentProfile />
+              </Layout>
+            </ProtectedRoute>
+          } />
           
           {/* Teacher Portal Routes */}
           <Route 
@@ -358,9 +274,9 @@ const App = () => (
             } 
           />
           
-          {/* Invoice Routes */}
+          {/* Financials Routes */}
           <Route 
-            path="/invoices" 
+            path="/financials" 
             element={
               <ProtectedRoute requiredRole="admin">
                 <Layout>
@@ -370,7 +286,7 @@ const App = () => (
             } 
           />
           <Route 
-            path="/receivables" 
+            path="/financials/receivables" 
             element={
               <ProtectedRoute requiredRole="admin">
                 <Layout>
@@ -380,7 +296,7 @@ const App = () => (
             } 
           />
           <Route 
-            path="/payables" 
+            path="/financials/payables" 
             element={
               <ProtectedRoute requiredRole="admin">
                 <Layout>
@@ -392,7 +308,7 @@ const App = () => (
           
           {/* Invoice Creation Routes */}
           <Route 
-            path="/invoices/create-teacher" 
+            path="/financials/create-teacher-invoice" 
             element={
               <ProtectedRoute requiredRole="admin">
                 <Layout>
@@ -402,7 +318,7 @@ const App = () => (
             } 
           />
           <Route 
-            path="/invoices/create-student" 
+            path="/financials/create-student-invoice" 
             element={
               <ProtectedRoute requiredRole="admin">
                 <Layout>

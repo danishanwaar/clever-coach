@@ -25,7 +25,10 @@ import {
   LogOut,
   Search,
   Clock,
-  Activity
+  Activity,
+  AlertCircle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { 
   DropdownMenu,
@@ -49,6 +52,7 @@ export const Sidebar = memo(function Sidebar({ isCollapsed, onToggle }: SidebarP
   const isStudent = useAuthStore(state => state.isStudent);
   const signOut = useAuthStore(state => state.signOut);
   const location = useLocation();
+  const [isFinancialsExpanded, setIsFinancialsExpanded] = useState(false);
 
   const navigationItems = useMemo(() => {
     // Debug: Log current pathname
@@ -70,9 +74,18 @@ export const Sidebar = memo(function Sidebar({ isCollapsed, onToggle }: SidebarP
         { name: 'Applicants', href: '/applicants', icon: UserPlus, current: location.pathname === '/applicants' },
         { name: 'Students', href: '/students', icon: Users, current: location.pathname === '/students' },
         { name: 'Dynamic Matcher', href: '/dynamic-matcher', icon: Search, current: location.pathname === '/dynamic-matcher' },
-        { name: 'Contracts', href: '/contracts', icon: FileText, current: location.pathname === '/contracts' },
-        { name: 'Lessons', href: '/lessons', icon: Calendar, current: location.pathname === '/lessons' },
-        { name: 'Invoices', href: '/invoices', icon: DollarSign, current: location.pathname === '/invoices' },
+        { 
+          name: 'Financials', 
+          href: null, 
+          icon: DollarSign, 
+          current: location.pathname.startsWith('/financials'),
+          subItems: [
+            { name: 'Create Student Invoice', href: '/financials/create-student-invoice', current: location.pathname === '/financials/create-student-invoice' },
+            { name: 'Create Teacher Invoice', href: '/financials/create-teacher-invoice', current: location.pathname === '/financials/create-teacher-invoice' },
+            { name: 'Receivables', href: '/financials/receivables', current: location.pathname === '/financials/receivables' },
+            { name: 'Payables', href: '/financials/payables', current: location.pathname === '/financials/payables' },
+          ]
+        },
         { name: 'Profile', href: '/profile', icon: User, current: location.pathname === '/profile' },
         { name: 'Settings', href: '/settings', icon: Settings, current: location.pathname === '/settings' },
       ];
@@ -157,30 +170,87 @@ export const Sidebar = memo(function Sidebar({ isCollapsed, onToggle }: SidebarP
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navigationItems.map((item) => {
           const Icon = item.icon;
+          const hasSubItems = item.subItems && item.subItems.length > 0;
+          const isFinancials = item.name === 'Financials';
+          
           return (
-            <Link
-              key={item.name}
-              to={item.href}
-              onClick={(e) => {
-                console.log('Sidebar link clicked:', item.name, item.href);
-                console.log('Current pathname:', location.pathname);
-                console.log('Event:', e);
-              }}
-              className={cn(
-                "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group",
-                item.current
-                  ? "bg-primary-foreground/20 text-primary-foreground shadow-lg"
-                  : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+            <div key={item.name} className="space-y-1">
+              {/* Main Navigation Item */}
+              {isFinancials ? (
+                <div
+                  onClick={() => !isCollapsed && setIsFinancialsExpanded(!isFinancialsExpanded)}
+                  className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group cursor-pointer",
+                    item.current
+                      ? "bg-primary-foreground/20 text-primary-foreground shadow-lg"
+                      : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                  )}
+                >
+                  <Icon className={cn("w-5 h-5 flex-shrink-0", isCollapsed && "mx-auto")} />
+                  {!isCollapsed && (
+                    <>
+                      <span className="flex-1">{item.name}</span>
+                      <div className="flex items-center space-x-2">
+                        {isFinancialsExpanded ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </div>
+                    </>
+                  )}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      {item.name}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  to={item.href}
+                  onClick={(e) => {
+                    console.log('Sidebar link clicked:', item.name, item.href);
+                    console.log('Current pathname:', location.pathname);
+                    console.log('Event:', e);
+                  }}
+                  className={cn(
+                    "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group",
+                    item.current
+                      ? "bg-primary-foreground/20 text-primary-foreground shadow-lg"
+                      : "text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                  )}
+                >
+                  <Icon className={cn("w-5 h-5 flex-shrink-0", isCollapsed && "mx-auto")} />
+                  {!isCollapsed && <span>{item.name}</span>}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      {item.name}
+                    </div>
+                  )}
+                </Link>
               )}
-            >
-              <Icon className={cn("w-5 h-5 flex-shrink-0", isCollapsed && "mx-auto")} />
-              {!isCollapsed && <span>{item.name}</span>}
-              {isCollapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-primary text-primary-foreground text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
-                  {item.name}
+              
+              {/* Sub Navigation Items */}
+              {hasSubItems && !isCollapsed && isFinancialsExpanded && (
+                <div className="ml-6 space-y-1">
+                  {item.subItems.map((subItem) => (
+                    <Link
+                      key={subItem.name}
+                      to={subItem.href}
+                      className={cn(
+                        "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 group",
+                        subItem.current
+                          ? "bg-primary-foreground/20 text-primary-foreground shadow-lg"
+                          : "text-primary-foreground/60 hover:bg-primary-foreground/10 hover:text-primary-foreground/80"
+                      )}
+                    >
+                      <div className="w-2 h-2 rounded-full bg-primary-foreground/40 flex-shrink-0" />
+                      <span>{subItem.name}</span>
+                    </Link>
+                  ))}
                 </div>
               )}
-            </Link>
+            </div>
           );
         })}
       </nav>

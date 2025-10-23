@@ -29,7 +29,9 @@ import {
   Euro,
   TrendingUp,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Calendar,
+  FileText
 } from 'lucide-react';
 
 const Payables = () => {
@@ -41,7 +43,9 @@ const Payables = () => {
     stats,
     isLoading,
     updateStatus,
+    generateInvoices,
     isUpdating,
+    isGenerating,
   } = useTeacherInvoices();
 
   // Filter invoices based on search and status
@@ -64,6 +68,10 @@ const Payables = () => {
     } catch (error) {
       console.error('Failed to update status:', error);
     }
+  };
+
+  const handleGenerateInvoices = (period: 'current' | 'previous') => {
+    generateInvoices({ type: 'payables', period });
   };
 
   const getStatusBadge = (status: string) => {
@@ -95,14 +103,25 @@ const Payables = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Payables</h1>
+        <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Payables</h1>
+        </div>
         <div className="flex gap-2">
-          <Link to="/invoices/create-teacher">
-            <Button>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Teacher Invoice
-            </Button>
-          </Link>
+          <Button
+            variant="destructive"
+            onClick={() => handleGenerateInvoices('previous')}
+            disabled={isGenerating}
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Generate Previous Month Invoices
+          </Button>
+          <Button
+            onClick={() => handleGenerateInvoices('current')}
+            disabled={isGenerating}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Generate Current Month Invoices
+          </Button>
         </div>
       </div>
 
@@ -161,7 +180,7 @@ const Payables = () => {
       {/* Filters and Search */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Teacher Invoices</CardTitle>
+          <CardTitle className="text-primary">Teacher Invoices</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-4">

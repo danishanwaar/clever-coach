@@ -6,9 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   ArrowLeft, 
   Plus, 
@@ -21,15 +18,6 @@ import {
   Trash2
 } from 'lucide-react';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -41,6 +29,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { format } from 'date-fns';
+import ActivityModal from '@/components/ActivityModal';
 
 export default function StudentActivity() {
   const { id } = useParams<{ id: string }>();
@@ -60,11 +49,6 @@ export default function StudentActivity() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
-  const [newActivity, setNewActivity] = useState({
-    fld_activity_type_id: '',
-    fld_description: '',
-    fld_notes: '',
-  });
 
   // Filter activities based on search term
   const filteredActivities = activities.filter(activity => 
@@ -75,21 +59,6 @@ export default function StudentActivity() {
     activity.fld_notes?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddActivity = () => {
-    if (!newActivity.fld_activity_type_id || !newActivity.fld_description.trim()) {
-      return;
-    }
-
-    createActivity({
-      fld_sid: studentId,
-      fld_activity_type_id: parseInt(newActivity.fld_activity_type_id),
-      fld_description: newActivity.fld_description,
-      fld_notes: newActivity.fld_notes || undefined,
-    });
-
-    setNewActivity({ fld_activity_type_id: '', fld_description: '', fld_notes: '' });
-    setIsAddActivityOpen(false);
-  };
 
   const handleDeleteActivity = (activityId: number) => {
     deleteActivity(activityId);
@@ -125,87 +94,11 @@ export default function StudentActivity() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link to={`/students/${studentId}/profile`}>
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Activity</h1>
-            <p className="text-gray-600">
-              Activity logs for {student.fld_first_name} {student.fld_last_name}
-            </p>
-          </div>
-        </div>
-        <Dialog open={isAddActivityOpen} onOpenChange={setIsAddActivityOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Record Activity
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Record Activity</DialogTitle>
-              <DialogDescription>
-                Record a new activity for {student.fld_first_name} {student.fld_last_name}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="activity-type">Activity Type</Label>
-                <Select
-                  value={newActivity.fld_activity_type_id}
-                  onValueChange={(value) => setNewActivity(prev => ({ ...prev, fld_activity_type_id: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an activity type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activityTypes.map((activityType) => (
-                      <SelectItem key={activityType.fld_id} value={activityType.fld_id.toString()}>
-                        {activityType.fld_activity_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="description">Activity Detail</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Enter activity details"
-                  rows={3}
-                  value={newActivity.fld_description}
-                  onChange={(e) => setNewActivity(prev => ({ ...prev, fld_description: e.target.value }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Enter additional notes"
-                  rows={2}
-                  value={newActivity.fld_notes}
-                  onChange={(e) => setNewActivity(prev => ({ ...prev, fld_notes: e.target.value }))}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddActivityOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleAddActivity} 
-                disabled={isCreating || !newActivity.fld_activity_type_id || !newActivity.fld_description.trim()}
-              >
-                {isCreating ? 'Recording...' : 'Save'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <div className="flex items-center justify-end">
+        <Button onClick={() => setIsAddActivityOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Record Activity
+        </Button>
       </div>
 
       {/* Activities List */}
@@ -337,6 +230,13 @@ export default function StudentActivity() {
           )}
         </CardContent>
       </Card>
+
+      {/* Activity Modal */}
+      <ActivityModal
+        student={student || null}
+        isOpen={isAddActivityOpen}
+        onClose={() => setIsAddActivityOpen(false)}
+      />
     </div>
   );
 }

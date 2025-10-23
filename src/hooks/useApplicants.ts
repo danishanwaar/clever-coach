@@ -336,5 +336,6 @@ export const useApplicants = () => {
     recordActivity: recordActivityMutation.mutate,
     isUpdatingStatus: updateStatusMutation.isPending,
     isRecordingActivity: recordActivityMutation.isPending,
+    refetch: () => applicantsQuery.refetch(),
   };
 };

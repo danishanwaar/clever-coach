@@ -54,10 +54,10 @@ export interface Student {
 // Student Subject Interface
 export interface StudentSubject {
   fld_id: number;
-  fld_sid: number;
-  fld_suid: number;
-  fld_cid: number;
-  fld_c_eid: number;
+    fld_sid: number;
+    fld_suid: number;
+    fld_cid: number | null;
+    fld_c_eid: number | null;
   fld_detail: string | null;
   fld_edate: string;
   fld_uname: number;
@@ -117,7 +117,7 @@ export const useStudents = (status: StudentStatus | "All" | "Eng") => {
     queryFn: async () => {
       let query = supabase.from("tbl_students").select(`
           *,
-          tbl_users:fld_uid (
+          tbl_users!fk_students_user (
             fld_id,
             fld_name
           )
@@ -150,7 +150,7 @@ export const useStudent = (studentId: number) => {
         .select(
           `
             *,
-            tbl_users (
+            tbl_users!fk_students_user (
               fld_id,
               fld_name
             )
@@ -189,6 +189,8 @@ export const useStudentSubjectsWithMediation = (studentId: number) => {
   return useQuery({
     queryKey: ["student-subjects-mediation", studentId],
     queryFn: async () => {
+      if (!studentId) return [];
+      
       const { data, error } = await supabase
         .from("tbl_students_subjects")
         .select(`
@@ -201,10 +203,18 @@ export const useStudentSubjectsWithMediation = (studentId: number) => {
         `)
         .eq("fld_sid", studentId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching student subjects:', error);
+        throw error;
+      }
       return data || [];
     },
     enabled: !!studentId,
+    retry: (failureCount, error) => {
+      // Don't retry on 409 conflicts
+      if (error?.message?.includes('409')) return false;
+      return failureCount < 3;
+    },
   });
 };
 
@@ -270,6 +280,8 @@ export const useStudentSubjects = (studentId: number) => {
   const studentSubjectsQuery = useQuery({
     queryKey: ["student-subjects", studentId],
     queryFn: async () => {
+      if (!studentId) return [];
+      
       const { data, error } = await supabase
         .from("tbl_students_subjects")
         .select(
@@ -284,10 +296,18 @@ export const useStudentSubjects = (studentId: number) => {
         )
         .eq("fld_sid", studentId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching student subjects:', error);
+        throw error;
+      }
       return data as StudentSubject[];
     },
     enabled: !!studentId,
+    retry: (failureCount, error) => {
+      // Don't retry on 409 conflicts
+      if (error?.message?.includes('409')) return false;
+      return failureCount < 3;
+    },
   });
 
   return studentSubjectsQuery;
@@ -609,11 +629,12 @@ export const useStudentMutations = () => {
       // Insert student subjects if any are selected
       if (formData.fld_sid && formData.fld_sid.length > 0) {
         const subjectInserts = formData.fld_sid.map((subjectId: string) => ({
-          fld_sid: student.fld_id,
-          fld_suid: parseInt(subjectId),
-          fld_cid: 0, // Default contract ID
-          fld_edate: new Date().toISOString(),
-          fld_uname: user?.fld_id || 1,
+            fld_sid: student.fld_id,
+            fld_suid: parseInt(subjectId),
+            fld_cid: null, // No contract assigned yet
+            fld_c_eid: null, // No engagement assigned yet
+            fld_edate: new Date().toISOString(),
+            fld_uname: user?.fld_id || 1,
         }));
 
         const { error: subjectsError } = await supabase.from("tbl_students_subjects").insert(subjectInserts);
@@ -682,11 +703,12 @@ export const useStudentMutations = () => {
       // Insert subjects if selected
       if (formData.fld_sid && formData.fld_sid.length > 0) {
         const subjectInserts = formData.fld_sid.map((subjectId: string) => ({
-          fld_sid: lead.fld_id,
-          fld_suid: parseInt(subjectId),
-          fld_cid: 0, // Default contract ID
-          fld_edate: new Date().toISOString(),
-          fld_uname: user?.fld_id || 1,
+            fld_sid: lead.fld_id,
+            fld_suid: parseInt(subjectId),
+            fld_cid: null, // No contract assigned yet
+            fld_c_eid: null, // No engagement assigned yet
+            fld_edate: new Date().toISOString(),
+            fld_uname: user?.fld_id || 1,
         }));
 
         const { error: subjectsError } = await supabase.from("tbl_students_subjects").insert(subjectInserts);

@@ -22,7 +22,8 @@ import {
   BarChart3,
   Settings,
   TrendingUp,
-  Activity
+  Activity,
+  Plus
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -49,265 +50,264 @@ export default function Dashboard() {
     return (
       <div className="container mx-auto px-4 py-6 space-y-6">
           {/* Header */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 rounded-2xl p-8 border border-primary/20">
-          <div className="relative z-10 flex items-center justify-between">
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
             <div>
-              <h1 className="text-4xl font-bold text-primary mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600 text-lg">Welcome back, Admin! Here's what's happening in your platform.</p>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gradient">
+                Admin Dashboard
+              </h1>
+              <p className="text-muted-foreground text-sm sm:text-base">
+                Welcome back, {user?.fld_name}! Here's what's happening in your platform.
+              </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <Button 
-                variant="outline" 
-                className="border-primary/30 bg-white/80 backdrop-blur-sm text-primary hover:bg-primary hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-3"
+                size="sm" 
+                className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-2.5 rounded-lg font-medium"
                 onClick={() => window.location.href = '/students'}
               >
-                <Users className="h-5 w-5 mr-2" />
-                Students
+                <Users className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Manage Students</span>
+                <span className="sm:hidden">Students</span>
               </Button>
               <Button 
                 variant="outline" 
-                className="border-primary/30 bg-white/80 backdrop-blur-sm text-primary hover:bg-primary hover:text-white shadow-lg hover:shadow-xl transition-all duration-300 px-6 py-3"
+                size="sm"
+                className="border-gray-300 hover:border-primary hover:bg-primary/5 text-gray-700 hover:text-primary transition-all duration-300 px-6 py-2.5 rounded-lg font-medium"
                 onClick={() => window.location.href = '/settings'}
               >
-                <Settings className="h-5 w-5 mr-2" />
-                Settings
+                <Settings className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Settings</span>
               </Button>
             </div>
           </div>
-          {/* Decorative background elements */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -translate-y-16 translate-x-16"></div>
-          <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full translate-y-12 -translate-x-12"></div>
         </div>
 
-        {/* Key Metrics Section - Essential Stats Only */}
+        {/* Key Metrics Section - Modern White Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Active Teachers */}
-          <Card className="bg-gradient-to-br from-white via-primary/3 to-primary/8 border border-primary/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-105 hover:-translate-y-1 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative z-10">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-primary/80 mb-1">Active Teachers</p>
-                  <p className="text-4xl font-bold text-primary mb-1">{adminStats.data?.totalTeachers || 0}</p>
-                  <p className="text-sm text-primary/60 flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Active Teachers</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-1">{adminStats.data?.totalTeachers || 0}</p>
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                     Hired and available
                   </p>
                 </div>
-                <div className="h-16 w-16 bg-gradient-to-br from-primary/20 to-primary/30 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <GraduationCap className="h-8 w-8 text-primary" />
+                <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <GraduationCap className="h-6 w-6 text-green-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Active Students */}
-          <Card className="bg-gradient-to-br from-white via-primary/3 to-primary/8 border border-primary/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-105 hover:-translate-y-1 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative z-10">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-primary/80 mb-1">Active Students</p>
-                  <p className="text-4xl font-bold text-primary mb-1">{adminStats.data?.totalStudents || 0}</p>
-                  <p className="text-sm text-primary/60 flex items-center">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Active Students</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-1">{adminStats.data?.totalStudents || 0}</p>
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                     Currently enrolled
                   </p>
                 </div>
-                <div className="h-16 w-16 bg-gradient-to-br from-primary/20 to-primary/30 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <Users className="h-8 w-8 text-primary" />
+                <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <Users className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Monthly Revenue */}
-          <Card className="bg-gradient-to-br from-white via-primary/3 to-primary/8 border border-primary/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-105 hover:-translate-y-1 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative z-10">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-primary/80 mb-1">Monthly Revenue</p>
-                  <p className="text-4xl font-bold text-primary mb-1">€{financialOverview.data?.monthlyRevenue?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-primary/60 flex items-center">
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2 animate-pulse"></div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Monthly Revenue</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-1">€{financialOverview.data?.monthlyRevenue?.toLocaleString() || 0}</p>
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
                     Current month
                   </p>
                 </div>
-                <div className="h-16 w-16 bg-gradient-to-br from-primary/20 to-primary/30 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <DollarSign className="h-8 w-8 text-primary" />
+                <div className="h-12 w-12 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                  <DollarSign className="h-6 w-6 text-emerald-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Pending Applications */}
-          <Card className="bg-gradient-to-br from-white via-primary/3 to-primary/8 border border-primary/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-105 hover:-translate-y-1 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <CardContent className="p-6 relative z-10">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
-              <div>
-                  <p className="text-sm font-semibold text-primary/80 mb-1">Pending Applications</p>
-                  <p className="text-4xl font-bold text-primary mb-1">{adminStats.data?.totalApplicants || 0}</p>
-                  <p className="text-sm text-primary/60 flex items-center">
-                    <div className="w-2 h-2 bg-amber-500 rounded-full mr-2 animate-pulse"></div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Pending Applications</p>
+                  <p className="text-3xl font-bold text-gray-900 mb-1">{adminStats.data?.totalApplicants || 0}</p>
+                  <p className="text-sm text-gray-500 flex items-center">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
                     Requiring review
                   </p>
                 </div>
-                <div className="h-16 w-16 bg-gradient-to-br from-primary/20 to-primary/30 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                  <BarChart3 className="h-8 w-8 text-primary" />
+                <div className="h-12 w-12 bg-amber-100 rounded-xl flex items-center justify-center group-hover:bg-amber-200 transition-colors">
+                  <BarChart3 className="h-6 w-6 text-amber-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Additional Metrics Section */}
+        {/* Additional Metrics Section - Modern White Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Total Lessons */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary">Total Lessons</p>
-                  <p className="text-3xl font-bold text-primary">{adminStats.data?.totalLessons || 0}</p>
-                  <p className="text-sm text-primary/70">All time lessons</p>
+                  <p className="text-sm font-medium text-gray-600">Total Lessons</p>
+                  <p className="text-3xl font-bold text-gray-900">{adminStats.data?.totalLessons || 0}</p>
+                  <p className="text-sm text-gray-500">All time lessons</p>
                 </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <BookOpen className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                  <BookOpen className="h-6 w-6 text-purple-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Active Contracts */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary">Active Contracts</p>
-                  <p className="text-3xl font-bold text-primary">{adminStats.data?.totalContracts || 0}</p>
-                  <p className="text-sm text-primary/70">Currently active</p>
+                  <p className="text-sm font-medium text-gray-600">Active Contracts</p>
+                  <p className="text-3xl font-bold text-gray-900">{adminStats.data?.totalContracts || 0}</p>
+                  <p className="text-sm text-gray-500">Currently active</p>
                 </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                  <FileText className="h-6 w-6 text-indigo-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Students Open to Mediation */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary">Open to Mediation</p>
-                  <p className="text-3xl font-bold text-primary">{adminStats.data?.studentsOpenToMediation || 0}</p>
-                  <p className="text-sm text-primary/70">Awaiting matching</p>
+                  <p className="text-sm font-medium text-gray-600">Open to Mediation</p>
+                  <p className="text-3xl font-bold text-gray-900">{adminStats.data?.studentsOpenToMediation || 0}</p>
+                  <p className="text-sm text-gray-500">Awaiting matching</p>
                 </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <Target className="h-6 w-6 text-primary" />
-            </div>
-          </div>
-            </CardContent>
-          </Card>
-
-          {/* Mediated Students */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-primary">Mediated Students</p>
-                  <p className="text-3xl font-bold text-primary">{adminStats.data?.mediatedStudents || 0}</p>
-                  <p className="text-sm text-primary/70">Successfully matched</p>
-                </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <CheckCircle className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 bg-orange-100 rounded-xl flex items-center justify-center group-hover:bg-orange-200 transition-colors">
+                  <Target className="h-6 w-6 text-orange-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
-            </div>
 
-        {/* Student Status Breakdown */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Partially Mediated */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
+          {/* Mediated Students */}
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary">Partially Mediated</p>
-                  <p className="text-3xl font-bold text-primary">{adminStats.data?.partiallyMediatedStudents || 0}</p>
-                  <p className="text-sm text-primary/70">Some subjects matched</p>
+                  <p className="text-sm font-medium text-gray-600">Mediated Students</p>
+                  <p className="text-3xl font-bold text-gray-900">{adminStats.data?.mediatedStudents || 0}</p>
+                  <p className="text-sm text-gray-500">Successfully matched</p>
                 </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <Clock className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Student Status Breakdown - Modern White Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Partially Mediated */}
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Partially Mediated</p>
+                  <p className="text-3xl font-bold text-gray-900">{adminStats.data?.partiallyMediatedStudents || 0}</p>
+                  <p className="text-sm text-gray-500">Some subjects matched</p>
+                </div>
+                <div className="h-12 w-12 bg-yellow-100 rounded-xl flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                  <Clock className="h-6 w-6 text-yellow-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Leads */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary">New Leads</p>
-                  <p className="text-3xl font-bold text-primary">{adminStats.data?.leadStudents || 0}</p>
-                  <p className="text-sm text-primary/70">Initial inquiries</p>
+                  <p className="text-sm font-medium text-gray-600">New Leads</p>
+                  <p className="text-3xl font-bold text-gray-900">{adminStats.data?.leadStudents || 0}</p>
+                  <p className="text-sm text-gray-500">Initial inquiries</p>
                 </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <Calendar className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 bg-cyan-100 rounded-xl flex items-center justify-center group-hover:bg-cyan-200 transition-colors">
+                  <Calendar className="h-6 w-6 text-cyan-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Contracted Customers */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary">Contracted Customers</p>
-                  <p className="text-3xl font-bold text-primary">{adminStats.data?.contractedStudents || 0}</p>
-                  <p className="text-sm text-primary/70">Active contracts</p>
+                  <p className="text-sm font-medium text-gray-600">Contracted Customers</p>
+                  <p className="text-3xl font-bold text-gray-900">{adminStats.data?.contractedStudents || 0}</p>
+                  <p className="text-sm text-gray-500">Active contracts</p>
                 </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <UserCheck className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 bg-teal-100 rounded-xl flex items-center justify-center group-hover:bg-teal-200 transition-colors">
+                  <UserCheck className="h-6 w-6 text-teal-600" />
+                </div>
               </div>
-            </div>
             </CardContent>
           </Card>
 
           {/* Conversion Rate */}
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 hover:shadow-lg transition-all duration-200 hover:scale-105">
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300 hover:scale-105 group">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-primary">Conversion Rate</p>
-                  <p className="text-3xl font-bold text-primary">
+                  <p className="text-sm font-medium text-gray-600">Conversion Rate</p>
+                  <p className="text-3xl font-bold text-gray-900">
                     {adminStats.data?.conversionRate ? `${adminStats.data.conversionRate}%` : '0%'}
                   </p>
-                  <p className="text-sm text-primary/70">Lead to contract</p>
+                  <p className="text-sm text-gray-500">Lead to contract</p>
                 </div>
-                <div className="h-12 w-12 bg-primary/20 rounded-full flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+                <div className="h-12 w-12 bg-rose-100 rounded-xl flex items-center justify-center group-hover:bg-rose-200 transition-colors">
+                  <TrendingUp className="h-6 w-6 text-rose-600" />
                 </div>
               </div>
             </CardContent>
           </Card>
-            </div>
+        </div>
 
 
 
-        {/* Recent Activity and Recent Lesson Logged - Side by Side */}
+        {/* Recent Activity and Recent Lesson Logged - Modern White Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Activity */}
-          <Card className="bg-white border border-primary/20 hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b border-primary/100">
-              <CardTitle className="text-lg font-semibold text-primary flex items-center">
-                <div className="h-8 w-8 bg-primary/20 rounded-lg flex items-center justify-center mr-3">
-                  <Activity className="h-5 w-5 text-primary" />
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300">
+            <CardHeader className="border-b border-gray-200">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
+                <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                  <Activity className="h-5 w-5 text-blue-600" />
                 </div>
                 Recent Activity
               </CardTitle>
@@ -315,10 +315,10 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               {recentActivities.data?.map((activity, index) => (
-                <div key={activity.fld_id} className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-200 border border-transparent hover:border-primary/10">
+                <div key={activity.fld_id} className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200">
                   <div className="flex-shrink-0">
-                    <Avatar className="h-12 w-12 ring-2 ring-primary/20 shadow-md">
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/30 text-primary font-semibold">
+                    <Avatar className="h-12 w-12 ring-2 ring-gray-200 shadow-sm">
+                      <AvatarFallback className="bg-gray-100 text-gray-700 font-semibold">
                         {activity.tbl_teachers?.fld_first_name?.[0]}{activity.tbl_teachers?.fld_last_name?.[0]}
                       </AvatarFallback>
                     </Avatar>
@@ -331,7 +331,7 @@ export default function Dashboard() {
                       Teacher ({activity.tbl_teachers?.fld_first_name} {activity.tbl_teachers?.fld_last_name}) 
                       with Student ({activity.tbl_students?.fld_first_name} {activity.tbl_students?.fld_last_name})
                       {activity.fld_note && (
-                        <span className="block mt-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded-lg inline-block">Note: {activity.fld_note}</span>
+                        <span className="block mt-2 text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-lg inline-block">Note: {activity.fld_note}</span>
                       )}
                     </p>
                     <p className="text-xs text-gray-500 flex items-center">
@@ -343,8 +343,8 @@ export default function Dashboard() {
               ))}
               {(!recentActivities.data || recentActivities.data.length === 0) && (
                 <div className="text-center py-12">
-                  <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Activity className="h-8 w-8 text-primary/40" />
+                  <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Activity className="h-8 w-8 text-gray-400" />
                   </div>
                   <p className="text-gray-500 text-lg">No recent activities</p>
                 </div>
@@ -353,30 +353,30 @@ export default function Dashboard() {
           </Card>
 
           {/* Recent Lesson Logged */}
-          <Card className="bg-white border border-primary/20 hover:shadow-lg transition-shadow duration-200">
-            <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent border-b border-primary/100">
-              <CardTitle className="text-lg font-semibold text-primary flex items-center">
-                <div className="h-8 w-8 bg-primary/20 rounded-lg flex items-center justify-center mr-3">
-                  <BookOpen className="h-5 w-5 text-primary" />
+          <Card className="bg-white border border-gray-200 hover:shadow-lg hover:shadow-gray-200/50 transition-all duration-300">
+            <CardHeader className="border-b border-gray-200">
+              <CardTitle className="text-lg font-semibold text-gray-900 flex items-center">
+                <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                  <BookOpen className="h-5 w-5 text-purple-600" />
                 </div>
                 Recent Lesson Logged
               </CardTitle>
               <CardDescription className="text-gray-600">Latest lesson entries in the system</CardDescription>
-                </CardHeader>
+            </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
                 {recentLessons.data?.map((lesson) => (
-                  <div key={lesson.fld_id} className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-all duration-200 border border-transparent hover:border-primary/10">
+                  <div key={lesson.fld_id} className="flex items-start space-x-4 p-4 rounded-xl hover:bg-gray-50 transition-all duration-200 border border-transparent hover:border-gray-200">
                     <div className="flex-shrink-0">
-                      <Avatar className="h-12 w-12 ring-2 ring-primary/20 shadow-md">
-                        <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/30 text-primary font-semibold">
+                      <Avatar className="h-12 w-12 ring-2 ring-gray-200 shadow-sm">
+                        <AvatarFallback className="bg-gray-100 text-gray-700 font-semibold">
                           {lesson.tbl_teachers?.fld_first_name?.[0]}{lesson.tbl_teachers?.fld_last_name?.[0]}
                         </AvatarFallback>
                       </Avatar>
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-gray-900 mb-1 flex items-center">
-                        <div className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></div>
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                         Lesson Completed - {lesson.fld_lesson} min
                       </p>
                       <p className="text-sm text-gray-600 mb-1">
@@ -394,8 +394,8 @@ export default function Dashboard() {
                 ))}
                 {(!recentLessons.data || recentLessons.data.length === 0) && (
                   <div className="text-center py-12">
-                    <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <BookOpen className="h-8 w-8 text-primary/40" />
+                    <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <BookOpen className="h-8 w-8 text-gray-400" />
                     </div>
                     <p className="text-gray-500 text-lg">No recent lessons</p>
                   </div>

@@ -5,104 +5,76 @@ import { useAuthStore } from '@/stores/authStore';
 export const useDashboard = () => {
   const user = useAuthStore(state => state.user);
 
-  // Admin Dashboard Statistics
+  // Admin Dashboard Statistics - Optimized with parallel queries
   const adminStats = useQuery({
     queryKey: ['dashboard', 'admin-stats'],
     queryFn: async () => {
-      // Get applicants (teachers not hired/rejected)
-      const { data: applicants } = await supabase
-        .from('tbl_teachers')
-        .select('fld_id')
-        .not('fld_status', 'in', ['Deleted', 'Hired', 'Rejected']);
+      // Execute all queries in parallel for better performance
+      const [
+        applicantsResult,
+        teachersResult,
+        studentsResult,
+        contractsResult,
+        lessonsResult,
+        completedLessonsResult,
+        monthlyInvoicesResult,
+        pendingPaymentsResult,
+        lessonDurationsResult,
+        studentsOpenToMediationResult,
+        mediatedStudentsResult,
+        partiallyMediatedStudentsResult,
+        leadStudentsResult,
+        contractedStudentsResult
+      ] = await Promise.all([
+        supabase.from('tbl_teachers').select('fld_id').not('fld_status', 'in', '(Deleted,Hired,Rejected)'),
+        supabase.from('tbl_teachers').select('fld_id').eq('fld_status', 'Hired'),
+        supabase.from('tbl_students').select('fld_id').neq('fld_status', 'Deleted'),
+        supabase.from('tbl_contracts').select('fld_id').eq('fld_status', 'Active'),
+        supabase.from('tbl_teachers_lessons_history').select('fld_id, fld_lesson, fld_edate'),
+        supabase.from('tbl_teachers_lessons_history').select('fld_id').eq('fld_status', 'Completed'),
+        (() => {
+          const currentMonth = new Date().toISOString().slice(0, 7);
+          const nextMonth = new Date();
+          nextMonth.setMonth(nextMonth.getMonth() + 1);
+          const nextMonthStr = nextMonth.toISOString().slice(0, 7);
+          return supabase.from('tbl_teachers_invoices')
+            .select('fld_invoice_total, fld_edate')
+            .gte('fld_edate', `${currentMonth}-01`)
+            .lt('fld_edate', `${nextMonthStr}-01`);
+        })(),
+        supabase.from('tbl_teachers_invoices').select('fld_id').neq('fld_status', 'Paid'),
+        supabase.from('tbl_teachers_lessons_history').select('fld_lesson').not('fld_lesson', 'is', null),
+        supabase.from('tbl_students').select('fld_id').eq('fld_status', 'Mediation Open'),
+        supabase.from('tbl_students').select('fld_id').eq('fld_status', 'Mediated'),
+        supabase.from('tbl_students').select('fld_id').eq('fld_status', 'Partially Mediated'),
+        supabase.from('tbl_students').select('fld_id').eq('fld_status', 'Leads'),
+        supabase.from('tbl_students').select('fld_id').eq('fld_status', 'Contracted Customers')
+      ]);
 
-      // Get hired teachers
-      const { data: teachers } = await supabase
-        .from('tbl_teachers')
-        .select('fld_id')
-        .eq('fld_status', 'Hired');
+      // Extract data from results
+      const applicants = applicantsResult.data;
+      const teachers = teachersResult.data;
+      const students = studentsResult.data;
+      const contracts = contractsResult.data;
+      const lessons = lessonsResult.data;
+      const completedLessons = completedLessonsResult.data;
+      const monthlyInvoices = monthlyInvoicesResult.data;
+      const pendingPayments = pendingPaymentsResult.data;
+      const lessonDurations = lessonDurationsResult.data;
+      const studentsOpenToMediation = studentsOpenToMediationResult.data;
+      const mediatedStudents = mediatedStudentsResult.data;
+      const partiallyMediatedStudents = partiallyMediatedStudentsResult.data;
+      const leadStudents = leadStudentsResult.data;
+      const contractedStudents = contractedStudentsResult.data;
 
-      // Get active students
-      const { data: students } = await supabase
-        .from('tbl_students')
-        .select('fld_id')
-        .neq('fld_status', 'Deleted');
-
-      // Get active contracts
-      const { data: contracts } = await supabase
-        .from('tbl_contracts')
-        .select('fld_id')
-        .eq('fld_status', 'Active');
-
-      // Get total lessons
-      const { data: lessons } = await supabase
-        .from('tbl_teachers_lessons_history')
-        .select('fld_id, fld_lesson, fld_edate');
-
-      // Get completed lessons
-      const { data: completedLessons } = await supabase
-        .from('tbl_teachers_lessons_history')
-        .select('fld_id')
-        .eq('fld_status', 'Completed');
-
-      // Get monthly revenue from invoices
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
-      const { data: monthlyInvoices } = await supabase
-        .from('tbl_teachers_invoices')
-        .select('fld_invoice_total, fld_edate')
-        .gte('fld_edate', `${currentMonth}-01`)
-        .lt('fld_edate', `${currentMonth}-32`);
-
-      // Get pending payments
-      const { data: pendingPayments } = await supabase
-        .from('tbl_teachers_invoices')
-        .select('fld_id')
-        .neq('fld_status', 'Paid');
-
-      // Calculate lesson completion rate
+      // Calculate metrics
       const totalLessons = lessons?.length || 0;
       const completedLessonsCount = completedLessons?.length || 0;
       const completionRate = totalLessons > 0 ? Math.round((completedLessonsCount / totalLessons) * 100) : 0;
-
-      // Calculate monthly revenue
       const monthlyRevenue = monthlyInvoices?.reduce((sum, invoice) => sum + (invoice.fld_invoice_total || 0), 0) || 0;
-
-      // Calculate average lesson duration
-      const { data: lessonDurations } = await supabase
-        .from('tbl_teachers_lessons_history')
-        .select('fld_lesson')
-        .not('fld_lesson', 'is', null);
-
       const avgLessonDuration = lessonDurations?.length > 0 
         ? Math.round(lessonDurations.reduce((sum, lesson) => sum + (lesson.fld_lesson || 0), 0) / lessonDurations.length)
         : 45;
-
-      // Get students by status for detailed breakdown
-      const { data: studentsOpenToMediation } = await supabase
-        .from('tbl_students')
-        .select('fld_id')
-        .eq('fld_status', 'Mediation Open');
-
-      const { data: mediatedStudents } = await supabase
-        .from('tbl_students')
-        .select('fld_id')
-        .eq('fld_status', 'Mediated');
-
-      const { data: partiallyMediatedStudents } = await supabase
-        .from('tbl_students')
-        .select('fld_id')
-        .eq('fld_status', 'Partially Mediated');
-
-      const { data: leadStudents } = await supabase
-        .from('tbl_students')
-        .select('fld_id')
-        .eq('fld_status', 'Leads');
-
-      const { data: contractedStudents } = await supabase
-        .from('tbl_students')
-        .select('fld_id')
-        .eq('fld_status', 'Contracted Customers');
-
-      // Calculate conversion rate (Leads to Contracted Customers)
       const totalLeads = leadStudents?.length || 0;
       const totalContracted = contractedStudents?.length || 0;
       const conversionRate = totalLeads > 0 ? Math.round((totalContracted / totalLeads) * 100) : 0;
@@ -126,6 +98,8 @@ export const useDashboard = () => {
       };
     },
     enabled: !!user && user.fld_rid === 1, // Only for admins
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Recent Activities (Mediation Stages)
@@ -287,11 +261,14 @@ export const useDashboard = () => {
     queryFn: async () => {
       // Monthly revenue
       const currentMonth = new Date().toISOString().slice(0, 7);
+      const nextMonth = new Date();
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+      const nextMonthStr = nextMonth.toISOString().slice(0, 7);
       const { data: monthlyInvoices } = await supabase
         .from('tbl_teachers_invoices')
         .select('fld_invoice_total')
         .gte('fld_edate', `${currentMonth}-01`)
-        .lt('fld_edate', `${currentMonth}-32`);
+        .lt('fld_edate', `${nextMonthStr}-01`);
 
       const monthlyRevenue = monthlyInvoices?.reduce((sum, invoice) => sum + (invoice.fld_invoice_total || 0), 0) || 0;
 

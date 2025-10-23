@@ -1099,7 +1099,7 @@ export type Database = {
         Row: {
           created_at: string | null
           fld_c_eid: number | null
-          fld_cid: number
+          fld_cid: number | null
           fld_detail: string | null
           fld_edate: string
           fld_id: number
@@ -1111,7 +1111,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           fld_c_eid?: number | null
-          fld_cid: number
+          fld_cid?: number | null
           fld_detail?: string | null
           fld_edate: string
           fld_id?: number
@@ -1123,7 +1123,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           fld_c_eid?: number | null
-          fld_cid?: number
+          fld_cid?: number | null
           fld_detail?: string | null
           fld_edate?: string
           fld_id?: number
@@ -1221,95 +1221,49 @@ export type Database = {
       tbl_system_config: {
         Row: {
           created_at: string | null
+          fld_burks: string | null
           fld_cflag: string | null
-          fld_city: number | null
-          fld_curr: number | null
-          fld_e1: string | null
-          fld_e2: string | null
-          fld_e3: string | null
-          fld_e4: string | null
-          fld_e5: string | null
-          fld_e6: string | null
-          fld_e7: string | null
-          fld_e8: string | null
+          fld_cntry: number
           fld_email: string | null
           fld_femail: string | null
           fld_id: number
-          fld_langu: number | null
           fld_name1: string
-          fld_pobox: string | null
-          fld_pstlc: string | null
-          fld_resta: string | null
-          fld_stceg: string
-          fld_stret: string | null
-          fld_telep: string | null
-          fld_telep2: string | null
-          fld_telep3: string | null
-          fld_telep4: string | null
-          fld_zweig: number | null
+          fld_name2: string | null
           updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          fld_burks?: string | null
           fld_cflag?: string | null
-          fld_city?: number | null
-          fld_curr?: number | null
-          fld_e1?: string | null
-          fld_e2?: string | null
-          fld_e3?: string | null
-          fld_e4?: string | null
-          fld_e5?: string | null
-          fld_e6?: string | null
-          fld_e7?: string | null
-          fld_e8?: string | null
+          fld_cntry: number
           fld_email?: string | null
           fld_femail?: string | null
           fld_id?: number
-          fld_langu?: number | null
           fld_name1: string
-          fld_pobox?: string | null
-          fld_pstlc?: string | null
-          fld_resta?: string | null
-          fld_stceg?: string
-          fld_stret?: string | null
-          fld_telep?: string | null
-          fld_telep2?: string | null
-          fld_telep3?: string | null
-          fld_telep4?: string | null
-          fld_zweig?: number | null
+          fld_name2?: string | null
           updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          fld_burks?: string | null
           fld_cflag?: string | null
-          fld_city?: number | null
-          fld_curr?: number | null
-          fld_e1?: string | null
-          fld_e2?: string | null
-          fld_e3?: string | null
-          fld_e4?: string | null
-          fld_e5?: string | null
-          fld_e6?: string | null
-          fld_e7?: string | null
-          fld_e8?: string | null
+          fld_cntry?: number
           fld_email?: string | null
           fld_femail?: string | null
           fld_id?: number
-          fld_langu?: number | null
           fld_name1?: string
-          fld_pobox?: string | null
-          fld_pstlc?: string | null
-          fld_resta?: string | null
-          fld_stceg?: string
-          fld_stret?: string | null
-          fld_telep?: string | null
-          fld_telep2?: string | null
-          fld_telep3?: string | null
-          fld_telep4?: string | null
-          fld_zweig?: number | null
+          fld_name2?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_system_config_country"
+            columns: ["fld_cntry"]
+            isOneToOne: false
+            referencedRelation: "tbl_countries"
+            referencedColumns: ["fld_id"]
+          }
+        ]
       }
       tbl_teachers: {
         Row: {

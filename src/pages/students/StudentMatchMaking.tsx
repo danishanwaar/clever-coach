@@ -76,41 +76,6 @@ const StudentMatchMaking: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" onClick={() => navigate(`/students/${studentId}/profile`)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Profile
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Match Making</h1>
-            <p className="text-gray-600">Manage subject-teacher matching for {student.fld_first_name} {student.fld_last_name}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Student Header */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex items-start space-x-6">
-            <div className="flex-shrink-0">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="h-8 w-8 text-blue-600" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {student.fld_first_name} {student.fld_last_name}
-              </h2>
-              <div className="text-lg text-gray-600">
-                Student ID: {student.fld_id}
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Subjects Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {studentSubjects.map((subject: any) => (

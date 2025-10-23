@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,19 +9,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useApplicants, Applicant, ApplicantSubject, ApplicantActivity } from '@/hooks/useApplicants';
-import { Mail, Phone, MapPin, Calendar, User, GraduationCap, MessageSquare, Edit, X, Trash2 } from 'lucide-react';
+import { Mail, Phone, MapPin, Calendar, User, GraduationCap, MessageSquare, Edit, X, Trash2, Send, AlertTriangle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface ApplicantDetailDrawerProps {
+interface ApplicantDetailModalProps {
   applicant: Applicant | null;
   isOpen: boolean;
   onClose: () => void;
 }
 
 const statusOptions = [
-  'New', 'Screening', 'Interview', 'Offer', 
-  'Pending For Signature', 'Hired', 'Rejected', 'Waiting List', 'Unclear'
+  { value: 'New', label: 'New', emoji: '🆕' },
+  { value: 'Screening', label: 'Screening', emoji: '👀' },
+  { value: 'Interview', label: 'Interview', emoji: '💼' },
+  { value: 'Offer', label: 'Offer', emoji: '💰' },
+  { value: 'Pending For Signature', label: 'Pending For Signature', emoji: '📝' },
+  { value: 'Hired', label: 'Hired', emoji: '✅' },
+  { value: 'Rejected', label: 'Rejected', emoji: '❌' },
+  { value: 'Waiting List', label: 'Waiting List', emoji: '⏳' },
+  { value: 'Unclear', label: 'Unclear', emoji: '❓' }
 ];
 
 const statusColors = {
@@ -36,13 +44,11 @@ const statusColors = {
   'Unclear': 'bg-gray-100 text-gray-800',
 };
 
-export default function ApplicantDetailDrawer({ applicant, isOpen, onClose }: ApplicantDetailDrawerProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [newStatus, setNewStatus] = useState('');
-  const [rate, setRate] = useState(applicant?.fld_per_l_rate || '');;
-  const [currentStatus, setCurrentStatus] = useState(applicant?.fld_status || '');
-  const [activityTitle, setActivityTitle] = useState('');
-  const [activityContent, setActivityContent] = useState('');
+export default function ApplicantDetailModal({ applicant, isOpen, onClose }: ApplicantDetailModalProps) {
+  const [rate, setRate] = useState('');
+  const [currentStatus, setCurrentStatus] = useState('');
+  const [rateError, setRateError] = useState(false);
+  const [isSendingContract, setIsSendingContract] = useState(false);
 
   const { 
     applicantSubjects, 
@@ -54,17 +60,17 @@ export default function ApplicantDetailDrawer({ applicant, isOpen, onClose }: Ap
     isRecordingActivity 
   } = useApplicants();
 
-  // Update current status when applicant changes
+  // Update current status and rate when applicant changes
   useEffect(() => {
     if (applicant) {
       setCurrentStatus(applicant.fld_status);
+      setRate(applicant.fld_per_l_rate && Number(applicant.fld_per_l_rate) > 0 ? applicant.fld_per_l_rate : '');
     }
   }, [applicant]);
 
-  // Prevent auto-focus when drawer opens
+  // Prevent auto-focus when modal opens
   useEffect(() => {
     if (isOpen) {
-      // Remove focus from any active element
       if (document.activeElement && document.activeElement instanceof HTMLElement) {
         document.activeElement.blur();
       }
@@ -85,158 +91,182 @@ export default function ApplicantDetailDrawer({ applicant, isOpen, onClose }: Ap
     return cleaned;
   };
 
-  const handleStatusUpdate = async () => {
-    if (!newStatus) {
-      toast.error('Please select a status');
-      return;
-    }
-
-    const updateData: any = { applicantId: applicant.fld_id, status: newStatus };
-    if (rate) {
-      updateData.rate = parseFloat(rate);
-    }
-
-    try {
-      await updateStatus(updateData);
-      setIsEditing(false);
-      setNewStatus('');
-      setRate('');
-    } catch (error) {
-      console.error('Status update error:', error);
-    }
-  };
-
-  const handleRecordActivity = async () => {
-    if (!activityTitle || !activityContent) {
-      toast.error('Please fill in both title and content');
-      return;
-    }
-
-    try {
-      await recordActivity({
-        applicantId: applicant.fld_id,
-        title: activityTitle,
-        content: activityContent
-      });
-      setActivityTitle('');
-      setActivityContent('');
-    } catch (error) {
-      console.error('Activity recording error:', error);
-    }
-  };
-
+  // Handle rate change with validation
   const handleRateChange = async (newRate: string) => {
-    if (!newRate || parseFloat(newRate) === 0) {
-      return;
-    }
+    setRate(newRate);
+    
+    // Validate rate
+    const rateValue = parseFloat(newRate);
+    const isValid = newRate === '' || (rateValue > 0 && !isNaN(rateValue));
+    setRateError(!isValid);
 
-    const updateData = {
-      applicantId: applicant.fld_id,
-      status: applicant.fld_status,
-      rate: parseFloat(newRate)
-    };
-
-    try {
-      await updateStatus(updateData);
-      toast.success('Rate updated successfully');
-    } catch (error) {
-      console.error('Rate update error:', error);
-      toast.error('Failed to update rate');
+    // Auto-save if valid
+    if (isValid && newRate && rateValue > 0) {
+      try {
+        await updateStatus({
+          applicantId: applicant.fld_id,
+          status: applicant.fld_status,
+          rate: rateValue
+        });
+        toast.success('Rate updated successfully');
+      } catch (error) {
+        console.error('Rate update error:', error);
+        toast.error('Failed to update rate');
+      }
     }
   };
 
+  // Handle status change
   const handleStatusChange = async (newStatus: string) => {
-    // Check if status is "Offer" and rate is 0 or empty
-    const currentRate = rate || applicant.fld_per_l_rate;
-    if (newStatus === 'Offer' && (!currentRate || parseFloat(currentRate.toString()) === 0)) {
-      toast.error('Please set a lesson rate before changing status to Offer');
-      return;
-    }
-
-    const updateData: any = { 
-      applicantId: applicant.fld_id, 
-      status: newStatus 
-    };
-
-    // If rate is provided, include it in the update
-    if (rate && parseFloat(rate) > 0) {
-      updateData.rate = parseFloat(rate);
+    // Check if status is "Offer" and rate is empty or 0
+    if (newStatus === 'Offer') {
+      const rateValue = parseFloat(rate);
+      if (!rate || rateValue <= 0) {
+        toast.error('Please set a lesson rate before changing status to Offer');
+        setRateError(true);
+        return;
+      }
     }
 
     // Update local state immediately for UI responsiveness
     setCurrentStatus(newStatus);
 
-    // Use the hook's updateStatus function which handles all the legacy logic
-    updateStatus(updateData);
-
-    // Clear the rate field after successful update
-    setRate('');
+    try {
+      await updateStatus({
+        applicantId: applicant.fld_id,
+        status: newStatus,
+        rate: newStatus === 'Offer' ? parseFloat(rate) : undefined
+      });
+      toast.success('Status updated successfully');
+    } catch (error) {
+      console.error('Status update error:', error);
+      toast.error('Failed to update status');
+    }
   };
 
+  // Handle send contract
+  const handleSendContract = async () => {
+    if (currentStatus !== 'Offer') {
+      toast.error('Status must be Offer to send contract');
+      return;
+    }
+
+    const rateValue = parseFloat(rate);
+    if (!rate || rateValue <= 0) {
+      toast.error('Please set a lesson rate before sending contract');
+      setRateError(true);
+      return;
+    }
+
+    setIsSendingContract(true);
+    try {
+      await updateStatus({
+        applicantId: applicant.fld_id,
+        status: 'Offer',
+        rate: rateValue
+      });
+      toast.success('Contract sent successfully');
+    } catch (error) {
+      console.error('Send contract error:', error);
+      toast.error('Failed to send contract');
+    } finally {
+      setIsSendingContract(false);
+    }
+  };
+
+  // Handle reject application
+  const handleRejectApplication = async () => {
+    try {
+      await updateStatus({
+        applicantId: applicant.fld_id,
+        status: 'Rejected'
+      });
+      toast.success('Application rejected');
+      onClose();
+    } catch (error) {
+      console.error('Reject application error:', error);
+      toast.error('Failed to reject application');
+    }
+  };
+
+  // Check if can send contract
+  const canSendContract = currentStatus === 'Offer' && rate && parseFloat(rate) > 0;
+  
+  // Check if can reject
+  const canReject = ['New', 'Screening', 'Interview'].includes(currentStatus);
+
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent 
-        className="!w-[100vw] sm:!w-[500px] md:!w-[600px] lg:!w-[700px] !max-w-none flex flex-col"
-        style={{ 
-          width: '100vw !important', 
-          maxWidth: 'none !important',
-          minWidth: '280px',
-          height: '100vh',
-          maxHeight: '100vh'
-        }}
-      >
-        <SheetHeader className="pb-4 bg-white border-b border-gray-200 -mx-6 px-6 pt-4 flex-shrink-0">
-          <SheetTitle className="sr-only">Applicant Details</SheetTitle>
-          <SheetDescription className="sr-only">View and manage applicant information, status, and details</SheetDescription>
-          {/* Top Controls */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[95vh] p-0 flex flex-col bg-white border-0 shadow-2xl rounded-xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Applicant Details</DialogTitle>
+          <DialogDescription>View and manage applicant information, status, and details</DialogDescription>
+        </DialogHeader>
+
+        {/* Header Section */}
+        <div className="bg-white border-b border-gray-200 p-4 sm:p-6 flex-shrink-0 rounded-t-xl">
+          {/* Status Controls */}
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-semibold text-gray-700">Per Lesson Rate</Label>
+                <Label className="text-sm font-semibold text-gray-700 flex items-center">
+                  Per Lesson Rate
+                  {currentStatus === 'Offer' && (!rate || parseFloat(rate) <= 0) && (
+                    <AlertTriangle className="h-4 w-4 ml-2 text-orange-500" />
+                  )}
+                </Label>
                 <Input 
                   type="number" 
                   placeholder="€/hour" 
-                  className="w-44 text-sm border-gray-300 rounded-lg"
-                  value={rate || (applicant.fld_per_l_rate && Number(applicant.fld_per_l_rate) > 0 ? applicant.fld_per_l_rate : '')}
-                  onChange={(e) => setRate(e.target.value)}
-                  onBlur={() => handleRateChange(rate)}
+                  className={`w-44 text-sm rounded-lg ${
+                    rateError || (currentStatus === 'Offer' && (!rate || parseFloat(rate) <= 0))
+                      ? 'border-orange-500 focus:border-orange-500 focus:ring-orange-500'
+                      : 'border-gray-300'
+                  }`}
+                  value={rate}
+                  onChange={(e) => handleRateChange(e.target.value)}
                   autoFocus={false}
                 />
-                    </div>
+                {rateError && (
+                  <p className="text-xs text-orange-600">Please enter a valid rate</p>
+                )}
+              </div>
               <div className="flex flex-col space-y-2">
                 <Label className="text-sm font-semibold text-gray-700">Status</Label>
                 <Select value={currentStatus} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-44 text-sm border-gray-300 rounded-lg">
+                  <SelectTrigger className="w-48 text-sm border-gray-300 rounded-lg">
                     <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {statusOptions.map((status) => (
-                            <SelectItem key={status} value={status}>
-                              {status}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {statusOptions.map((status) => (
+                      <SelectItem key={status.value} value={status.value}>
+                        <span className="flex items-center">
+                          <span className="mr-2">{status.emoji}</span>
+                          {status.label}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            
           </div>
 
           {/* Applicant Header */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex items-center space-x-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center text-primary font-bold text-xl shadow-sm">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center text-primary font-bold text-xl shadow-sm">
                 {applicant.fld_first_name?.[0]}{applicant.fld_last_name?.[0]}
-                    </div>
-                    <div>
+              </div>
+              <div>
                 <h1 className="text-2xl font-bold text-gray-900">
                   {applicant.fld_first_name} {applicant.fld_last_name}
                 </h1>
                 <Badge className={`mt-2 ${statusColors[currentStatus as keyof typeof statusColors]} px-3 py-1 text-sm font-semibold rounded-lg`}>
                   {currentStatus}
                 </Badge>
-                    </div>
-                  </div>
+              </div>
+            </div>
             
             <div className="space-y-2">
               {/* Role and Email in same row */}
@@ -257,22 +287,23 @@ export default function ApplicantDetailDrawer({ applicant, isOpen, onClose }: Ap
               </div>
             </div>
           </div>
-        </SheetHeader>
+        </div>
 
-        <ScrollArea className="flex-1 px-4 min-h-0 [&>[data-radix-scroll-area-scrollbar]]:hidden [&>[data-radix-scroll-area-scrollbar]]:!hidden">
+        {/* Content Section */}
+        <ScrollArea className="flex-1 px-4 sm:px-6 py-4 min-h-0">
           <Tabs defaultValue="documents" className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg mb-4">
-              <TabsTrigger value="documents" className="data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
+              <TabsTrigger value="documents" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
                 <span className="hidden sm:inline">Unterlagen</span>
                 <span className="sm:hidden">Docs</span>
               </TabsTrigger>
-              <TabsTrigger value="subjects" className="data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
+              <TabsTrigger value="subjects" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
                 <span className="hidden sm:inline">Unterrichtsfächer</span>
-                <span className="sm:hidden">Subjects</span>
+                <span className="sm:hidden">Fächer</span>
               </TabsTrigger>
-              <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
                 <span className="hidden sm:inline">Überblick</span>
-                <span className="sm:hidden">Overview</span>
+                <span className="sm:hidden">Überblick</span>
               </TabsTrigger>
             </TabsList>
 
@@ -288,7 +319,7 @@ export default function ApplicantDetailDrawer({ applicant, isOpen, onClose }: Ap
                     <Label className="text-xs font-medium text-gray-600 mb-2 block">LATITUDE</Label>
                     <p className="text-sm text-gray-600 font-mono bg-gray-50 rounded-lg px-3 py-2">{applicant.fld_latitude || 'N/A'}</p>
                   </div>
-                <div>
+                  <div>
                     <Label className="text-xs font-medium text-gray-600 mb-2 block">LONGITUDE</Label>
                     <p className="text-sm text-gray-600 font-mono bg-gray-50 rounded-lg px-3 py-2">{applicant.fld_longitude || 'N/A'}</p>
                   </div>
@@ -335,10 +366,10 @@ export default function ApplicantDetailDrawer({ applicant, isOpen, onClose }: Ap
             </TabsContent>
 
             <TabsContent value="subjects" className="space-y-4">
-                <div className="space-y-4">
+              <div className="space-y-4">
                 {subjects.map((subject) => (
                   <div key={subject.fld_id} className="bg-white rounded-xl p-5 border border-gray-200 border-l-4 border-l-primary shadow-sm">
-                        <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
                       <div>
                         <h4 className="font-semibold text-gray-900 text-lg mb-4">{subject.tbl_subjects?.fld_subject}</h4>
                         <div className="flex flex-col space-y-3">
@@ -400,24 +431,67 @@ export default function ApplicantDetailDrawer({ applicant, isOpen, onClose }: Ap
                     </div>
                   </div>
                 </div>
-          </div>
+              </div>
             </TabsContent>
           </Tabs>
         </ScrollArea>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200 bg-gray-50 -mx-6 px-6 pb-4 flex-shrink-0">
-          <Button variant="outline" size="sm" className="text-sm font-medium rounded-lg hover:bg-gray-50">
-            Reject
-          </Button>
-          <Button variant="destructive" size="sm" className="text-sm font-medium rounded-lg">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-4 sm:p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0 gap-3 rounded-b-xl">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {canReject && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" size="sm" className="text-xs sm:text-sm font-medium rounded-lg">
+                    <X className="h-4 w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Reject Application</span>
+                    <span className="sm:hidden">Reject</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reject Application</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to reject this application? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleRejectApplication} className="bg-red-600 hover:bg-red-700">
+                      Reject Application
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <Button variant="outline" onClick={onClose} className="text-xs sm:text-sm font-medium rounded-lg">
+              Close
+            </Button>
+            {canSendContract && (
+              <Button 
+                onClick={handleSendContract}
+                disabled={isSendingContract || isUpdatingStatus}
+                className="text-xs sm:text-sm font-medium rounded-lg bg-primary hover:bg-primary/90"
+              >
+                {isSendingContract ? (
+                  <Loader2 className="h-4 w-4 mr-1 sm:mr-2 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4 mr-1 sm:mr-2" />
+                )}
+                <span className="hidden sm:inline">
+                  {isSendingContract ? 'Sending...' : 'Send Contract'}
+                </span>
+                <span className="sm:hidden">
+                  {isSendingContract ? 'Sending...' : 'Send'}
+                </span>
+              </Button>
+            )}
+          </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
-
-

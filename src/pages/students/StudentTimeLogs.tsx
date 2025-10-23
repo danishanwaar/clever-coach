@@ -118,20 +118,7 @@ export default function StudentTimeLogs() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link to={`/students/${studentId}/profile`}>
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">Time Logs</h1>
-            <p className="text-gray-600">
-              Time logs for {student.fld_first_name} {student.fld_last_name}
-            </p>
-          </div>
-        </div>
+      <div className="flex items-center justify-end">
         <Dialog open={isAddTimeLogOpen} onOpenChange={setIsAddTimeLogOpen}>
           <DialogTrigger asChild>
             <Button>

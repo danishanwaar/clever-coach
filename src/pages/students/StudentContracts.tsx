@@ -205,17 +205,11 @@ export default function StudentContracts() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Student Contracts</h1>
-          <p className="text-gray-600">
-            Managing contracts for {student.fld_first_name} {student.fld_last_name}
-          </p>
-        </div>
+      <div className="flex items-center justify-end">
         {student.fld_status !== 'Contracted Customers' && (
           <Button 
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="inline-flex items-end px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             {showCreateForm ? 'Cancel' : 'Create Contract'}

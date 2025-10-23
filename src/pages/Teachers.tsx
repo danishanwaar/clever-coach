@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useTeachers, Teacher } from '@/hooks/useTeachers';
-import TeacherDetailDrawer from '../components/TeacherDetailDrawer';
+import TeacherDetailModal from '../components/TeacherDetailModal';
+import ActivityModal from '../components/ActivityModal';
 import { Loader } from "@/components/ui/loader";
-import { Search, Mail, Phone, MessageSquare, Edit, ArrowRight, MapPin, GraduationCap, Users, DollarSign, ChevronRight, Activity } from 'lucide-react';
+import { Search, Mail, Phone, MessageSquare, Edit, ArrowRight, MapPin, GraduationCap, Users, DollarSign, Activity } from 'lucide-react';
 
 const statusOptions = ['All', 'Hired', 'Inactive', 'Deleted'];
 
@@ -36,7 +37,8 @@ export default function Teachers() {
   const [selectedStatus, setSelectedStatus] = useState('Hired');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isActivityModalOpen, setIsActivityModalOpen] = useState(false);
 
   const { 
     teachers, 
@@ -45,7 +47,8 @@ export default function Teachers() {
     updateStatus,
     updateRate,
     isUpdatingStatus,
-    isUpdatingRate
+    isUpdatingRate,
+    refetch
   } = useTeachers(selectedStatus);
 
   // Calculate status statistics
@@ -118,6 +121,8 @@ export default function Teachers() {
   const handleStatusUpdate = async (teacherId: number, newStatus: string) => {
     try {
       await updateStatus({ teacherId, status: newStatus });
+      // Refetch data to update the UI
+      refetch();
     } catch (error) {
       console.error('Status update error:', error);
     }
@@ -127,6 +132,8 @@ export default function Teachers() {
   const handleRateUpdate = async (teacherId: number, newRate: number) => {
     try {
       await updateRate({ teacherId, rate: newRate });
+      // Refetch data to update the UI
+      refetch();
     } catch (error) {
       console.error('Rate update error:', error);
     }
@@ -217,7 +224,14 @@ export default function Teachers() {
             const initials = `${teacher.fld_first_name?.[0] || ''}${teacher.fld_last_name?.[0] || ''}`.toUpperCase();
             
             return (
-              <div key={teacher.fld_id} className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 group">
+              <div 
+                key={teacher.fld_id} 
+                className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 group cursor-pointer"
+                onClick={() => {
+                  setSelectedTeacher(teacher);
+                  setIsModalOpen(true);
+                }}
+              >
                 <div className="p-4 sm:p-6">
                   <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
                     {/* Left Section - Teacher Info */}
@@ -300,21 +314,14 @@ export default function Teachers() {
                         variant="ghost" 
                         size="sm" 
                         title="Activity Tracking"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTeacher(teacher);
+                          setIsActivityModalOpen(true);
+                        }}
                         className="h-10 w-10 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
                       >
                         <Activity className="h-5 w-5" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        title="View Details"
-                        onClick={() => {
-                          setSelectedTeacher(teacher);
-                          setIsDrawerOpen(true);
-                        }}
-                        className="h-10 w-10 p-0 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors"
-                      >
-                        <ChevronRight className="h-5 w-5" />
                       </Button>
                     </div>
                   </div>
@@ -332,12 +339,22 @@ export default function Teachers() {
         )}
       </div>
 
-      {/* Teacher Detail Drawer */}
-      <TeacherDetailDrawer
+      {/* Teacher Detail Modal */}
+      <TeacherDetailModal
         teacher={selectedTeacher}
-        isOpen={isDrawerOpen}
+        isOpen={isModalOpen}
         onClose={() => {
-          setIsDrawerOpen(false);
+          setIsModalOpen(false);
+          setSelectedTeacher(null);
+        }}
+      />
+
+      {/* Activity Modal */}
+      <ActivityModal
+        teacher={selectedTeacher}
+        isOpen={isActivityModalOpen}
+        onClose={() => {
+          setIsActivityModalOpen(false);
           setSelectedTeacher(null);
         }}
       />
