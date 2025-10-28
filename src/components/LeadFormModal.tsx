@@ -103,7 +103,7 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({ isOpen, onClose })
       
       await createLead(formDataWithUser);
       toast.success('Lead created successfully!');
-      onClose();
+      
       // Reset form
       setFormData({
         fld_sal: '',
@@ -124,6 +124,9 @@ export const LeadFormModal: React.FC<LeadFormModalProps> = ({ isOpen, onClose })
         fld_f_lead: '',
         fld_notes: '',
       });
+      
+      // Close modal after successful creation
+      onClose();
     } catch (error) {
       toast.error('Failed to create lead. Please try again.');
     }

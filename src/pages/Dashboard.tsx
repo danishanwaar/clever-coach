@@ -50,16 +50,16 @@ export default function Dashboard() {
     return (
       <div className="container mx-auto px-4 py-6 space-y-6">
           {/* Header */}
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gradient">
-                Admin Dashboard
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-base">
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gradient">
+                  Admin Dashboard
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
                 Welcome back, {user?.fld_name}! Here's what's happening in your platform.
-              </p>
-            </div>
+                </p>
+              </div>
             <div className="flex gap-3">
               <Button 
                 size="sm" 
@@ -69,19 +69,19 @@ export default function Dashboard() {
                 <Users className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Manage Students</span>
                 <span className="sm:hidden">Students</span>
-              </Button>
+                </Button>
               <Button 
                 variant="outline" 
                 size="sm"
                 className="border-gray-300 hover:border-primary hover:bg-primary/5 text-gray-700 hover:text-primary transition-all duration-300 px-6 py-2.5 rounded-lg font-medium"
                 onClick={() => window.location.href = '/settings'}
               >
-                <Settings className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Settings</span>
-              </Button>
+                  <Settings className="h-4 w-4 mr-2" />
+                  <span className="hidden sm:inline">Settings</span>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
 
         {/* Key Metrics Section - Modern White Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -92,10 +92,10 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Active Teachers</p>
                   <p className="text-3xl font-bold text-gray-900 mb-1">{adminStats.data?.totalTeachers || 0}</p>
-                  <p className="text-sm text-gray-500 flex items-center">
+                  <div className="text-sm text-gray-500 flex items-center">
                     <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                     Hired and available
-                  </p>
+                  </div>
                 </div>
                 <div className="h-12 w-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-200 transition-colors">
                   <GraduationCap className="h-6 w-6 text-green-600" />
@@ -111,10 +111,10 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Active Students</p>
                   <p className="text-3xl font-bold text-gray-900 mb-1">{adminStats.data?.totalStudents || 0}</p>
-                  <p className="text-sm text-gray-500 flex items-center">
+                  <div className="text-sm text-gray-500 flex items-center">
                     <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                     Currently enrolled
-                  </p>
+                  </div>
                 </div>
                 <div className="h-12 w-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
                   <Users className="h-6 w-6 text-blue-600" />
@@ -130,10 +130,10 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Monthly Revenue</p>
                   <p className="text-3xl font-bold text-gray-900 mb-1">€{financialOverview.data?.monthlyRevenue?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-gray-500 flex items-center">
+                  <div className="text-sm text-gray-500 flex items-center">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
                     Current month
-                  </p>
+                  </div>
                 </div>
                 <div className="h-12 w-12 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
                   <DollarSign className="h-6 w-6 text-emerald-600" />
@@ -149,10 +149,10 @@ export default function Dashboard() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Pending Applications</p>
                   <p className="text-3xl font-bold text-gray-900 mb-1">{adminStats.data?.totalApplicants || 0}</p>
-                  <p className="text-sm text-gray-500 flex items-center">
+                  <div className="text-sm text-gray-500 flex items-center">
                     <div className="w-2 h-2 bg-amber-500 rounded-full mr-2"></div>
                     Requiring review
-                  </p>
+                  </div>
                 </div>
                 <div className="h-12 w-12 bg-amber-100 rounded-xl flex items-center justify-center group-hover:bg-amber-200 transition-colors">
                   <BarChart3 className="h-6 w-6 text-amber-600" />
@@ -160,7 +160,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+            </div>
 
         {/* Additional Metrics Section - Modern White Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -227,7 +227,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+            </div>
 
         {/* Student Status Breakdown - Modern White Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -296,7 +296,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+            </div>
 
 
 
@@ -362,7 +362,7 @@ export default function Dashboard() {
                 Recent Lesson Logged
               </CardTitle>
               <CardDescription className="text-gray-600">Latest lesson entries in the system</CardDescription>
-            </CardHeader>
+                </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
                 {recentLessons.data?.map((lesson) => (

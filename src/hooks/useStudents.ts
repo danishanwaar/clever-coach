@@ -42,6 +42,10 @@ export interface Student {
   fld_edate: string;
   fld_uid: number;
   fld_nec: string;
+  fld_reg_fee: number | null;
+  fld_rf_flag: string | null;
+  fld_f_lead: string | null;
+  fld_per_l_rate: number | null;
   created_at: string | null;
   updated_at: string | null;
   // Joined data
@@ -49,6 +53,11 @@ export interface Student {
     fld_id: number;
     fld_name: string;
   };
+  contracts?: {
+    fld_id: number;
+    fld_status: string;
+  }[];
+  tbl_students_subjects?: StudentSubject[];
 }
 
 // Student Subject Interface
@@ -108,31 +117,87 @@ export interface StudentActivity {
   updated_at: string | null;
 }
 
-// Hook for fetching students by status
-export const useStudents = (status: StudentStatus | "All" | "Eng") => {
+// Hook for fetching students by status with preloaded data
+export const useStudents = (status: StudentStatus | "All" | "Eng", searchTerm: string = "") => {
   const { user } = useAuthStore();
 
   const studentsQuery = useQuery({
-    queryKey: ["students", status],
+    queryKey: ["students", status, searchTerm],
     queryFn: async () => {
+      // Build base query with all related data preloaded
       let query = supabase.from("tbl_students").select(`
           *,
           tbl_users!fk_students_user (
             fld_id,
             fld_name
+          ),
+          contracts:tbl_contracts (
+            fld_id,
+            fld_status
+          ),
+          tbl_students_subjects!fk_student_subjects_student (
+            fld_id,
+            fld_sid,
+            fld_suid,
+            fld_cid,
+            fld_c_eid,
+            fld_detail,
+            fld_edate,
+            fld_uname,
+            created_at,
+            updated_at,
+            tbl_subjects:fld_suid (
+              fld_id,
+              fld_subject,
+              fld_image
+            )
           )
         `);
 
+      // Apply status filter
       if (status !== "All" && status !== "Eng") {
         query = query.eq("fld_status", status as any);
       } else if (status === "Eng") {
         query = query.eq("fld_nec", "N");
       }
 
-      const { data, error } = await query.order("fld_id", { ascending: false });
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_s_first_name.ilike.%${searchTerm}%,fld_s_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%,fld_zip.ilike.%${searchTerm}%`);
+      }
 
+      // Order by ID descending
+      query = query.order("fld_id", { ascending: false });
+
+      const { data, error } = await query;
       if (error) throw error;
-      return data as unknown as Student[];
+
+      // Get status-wise counts
+      const statusCounts: Record<string, number> = {};
+      const statuses = ["Leads", "Mediation Open", "Partially Mediated", "Mediated", "Specialist Consulting", "Contracted Customers", "Suspended", "Deleted", "Unplaceable", "Waiting List", "Appointment Call", "Follow-up", "Appl", "Eng"];
+      
+      for (const status of statuses) {
+        let statusQuery = supabase.from("tbl_students").select("fld_id", { count: "exact", head: true });
+        
+        if (status === "Eng") {
+          statusQuery = statusQuery.eq("fld_nec", "N");
+        } else {
+          statusQuery = statusQuery.eq("fld_status", status as any);
+        }
+        
+        const { count } = await statusQuery;
+        statusCounts[status] = count || 0;
+      }
+      
+      // Get total count
+      const { count: total } = await supabase.from("tbl_students").select("fld_id", { count: "exact", head: true });
+      statusCounts["All"] = total || 0;
+
+      return {
+        data: data as unknown as Student[],
+        statusCounts: statusCounts,
+        totalCount: data?.length || 0
+      };
     },
     enabled: !!user,
   });

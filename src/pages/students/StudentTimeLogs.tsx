@@ -118,10 +118,14 @@ export default function StudentTimeLogs() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h2 className="text-lg sm:text-xl font-semibold text-primary">Time Logs</h2>
+          <p className="text-xs sm:text-sm text-gray-600">Track and manage student lesson time logs</p>
+        </div>
         <Dialog open={isAddTimeLogOpen} onOpenChange={setIsAddTimeLogOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               Record Time Log
             </Button>
@@ -188,95 +192,106 @@ export default function StudentTimeLogs() {
         </Dialog>
       </div>
 
-      {/* Time Logs Table */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Time Logs</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search time logs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
+      {/* Search Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search time logs..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 border-gray-300 focus:border-primary focus:ring-primary/20"
+          />
+        </div>
+      </div>
+
+      {/* Time Logs Cards */}
+      <div className="space-y-4">
+        {filteredTimeLogs.length > 0 ? (
+          filteredTimeLogs.map((log) => (
+            <div 
+              key={log.fld_id}
+              className="bg-white rounded-lg shadow-sm border-l-4 border-l-primary hover:shadow-md transition-all duration-200 group"
+            >
+              <div className="p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                  {/* Left Section - Time Log Info */}
+                  <div className="flex items-start space-x-3 flex-1 min-w-0">
+                    {/* Time Log Icon */}
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm shadow-sm flex-shrink-0">
+                      <Clock className="h-5 w-5" />
+                    </div>
+                    
+                    {/* Time Log Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                          {log.tbl_students_subjects?.tbl_subjects?.fld_subject || 'Unknown Subject'}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-green-100 text-green-800 text-xs font-medium">
+                            {Math.round(log.fld_lesson)} lessons
+                          </Badge>
+                          <Badge className={`${getStatusColor(log.fld_status)} text-xs font-medium`}>
+                            {log.fld_status || 'Pending'}
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Time Log Info */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-600 mb-3">
+                        <div className="flex items-center">
+                          <User className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">
+                            {log.tbl_students?.fld_first_name} {log.tbl_students?.fld_last_name}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{formatDate(log.fld_edate)}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <BookOpen className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">By: {log.tbl_users?.fld_name}</span>
+                        </div>
+                      </div>
+
+                      {/* Remarks */}
+                      {log.fld_notes && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                          <p className="text-sm text-gray-700">
+                            <span className="font-medium">Remarks:</span> {log.fld_notes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Clock className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No time logs found</h3>
+            <p className="text-gray-500 mb-6">
+              {searchTerm ? 'No time logs match your search criteria.' : 'This student has no time logs yet.'}
+            </p>
+            {!searchTerm && (
+              <Button 
+                className="bg-primary hover:bg-primary/90" 
+                onClick={() => setIsAddTimeLogOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Record First Time Log
+              </Button>
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
-          {filteredTimeLogs.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left py-3 px-5 font-medium text-gray-600">Student</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Subject</th>
-                    <th className="text-center py-3 px-4 font-medium text-gray-600">No of Lessons</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Remarks</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Created On</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Created By</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTimeLogs.map((log) => (
-                    <tr key={log.fld_id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-5 font-medium">
-                        {log.tbl_students?.fld_first_name} {log.tbl_students?.fld_last_name}
-                      </td>
-                      <td className="py-3 px-4 text-gray-600">
-                        {log.tbl_students_subjects?.tbl_subjects?.fld_subject}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          {Math.round(log.fld_lesson)}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600">
-                        {log.fld_notes || '-'}
-                      </td>
-                      <td className="py-3 px-4 text-gray-600">
-                        {formatDate(log.fld_edate)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                          {log.tbl_users?.fld_name}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge className={getStatusColor(log.fld_status)}>
-                          {log.fld_status || 'Pending'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No time logs found</h3>
-              <p className="text-gray-600">
-                {searchTerm ? 'No time logs match your search criteria.' : 'This student has no time logs yet.'}
-              </p>
-              {!searchTerm && (
-                <Button 
-                  className="mt-4" 
-                  onClick={() => setIsAddTimeLogOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Record First Time Log
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </div>
     </div>
   );
 }

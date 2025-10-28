@@ -117,10 +117,14 @@ export default function StudentProgressNotes() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h2 className="text-lg sm:text-xl font-semibold text-primary">Progress Notes</h2>
+          <p className="text-xs sm:text-sm text-gray-600">Track and manage student progress notes</p>
+        </div>
         <Dialog open={isAddNoteOpen} onOpenChange={setIsAddNoteOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="bg-primary hover:bg-primary/90">
               <Plus className="h-4 w-4 mr-2" />
               Add Note
             </Button>
@@ -165,126 +169,129 @@ export default function StudentProgressNotes() {
         </Dialog>
       </div>
 
-      {/* Search and Notes */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Progress Notes</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search notes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {filteredNotes.length > 0 ? (
-            <div className="space-y-4">
-              {filteredNotes.map((note) => (
-                <Card key={note.fld_id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      {/* Student Avatar */}
-                      <div className="flex-shrink-0">
-                        <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                          <span className="text-red-600 font-semibold text-sm">
-                            {getInitials(
-                              note.tbl_students?.fld_first_name || '',
-                              note.tbl_students?.fld_last_name || ''
-                            )}
+      {/* Search Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search notes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 border-gray-300 focus:border-primary focus:ring-primary/20"
+          />
+        </div>
+      </div>
+
+      {/* Notes Cards */}
+      <div className="space-y-4">
+        {filteredNotes.length > 0 ? (
+          filteredNotes.map((note) => (
+            <div 
+              key={note.fld_id}
+              className="bg-white rounded-lg shadow-sm border-l-4 border-l-primary hover:shadow-md transition-all duration-200 group"
+            >
+              <div className="p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                  {/* Left Section - Note Info */}
+                  <div className="flex items-start space-x-3 flex-1 min-w-0">
+                    {/* Note Icon */}
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm shadow-sm flex-shrink-0">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    
+                    {/* Note Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                          {note.fld_subject}
+                        </h3>
+                        <Badge className="bg-blue-100 text-blue-800 text-xs font-medium self-start sm:self-auto">
+                          {formatDate(note.fld_edate)}
+                        </Badge>
+                      </div>
+                      
+                      {/* Note Info */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-600 mb-3">
+                        <div className="flex items-center">
+                          <User className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">
+                            {note.tbl_students?.fld_first_name} {note.tbl_students?.fld_last_name}
                           </span>
+                        </div>
+                        <div className="flex items-center">
+                          <Calendar className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">By: {note.tbl_users?.fld_name}</span>
                         </div>
                       </div>
 
                       {/* Note Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
-                              {note.tbl_students?.fld_first_name} {note.tbl_students?.fld_last_name}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              Subject: {note.fld_subject}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <div className="text-right">
-                              <p className="text-sm text-gray-500">
-                                {formatDate(note.fld_edate)}
-                              </p>
-                              <p className="text-sm text-gray-500">
-                                {note.tbl_users?.fld_name}
-                              </p>
-                            </div>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                  disabled={isDeleting}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    You want to delete this progress note. This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteNote(note.fld_id)}
-                                    className="bg-red-600 hover:bg-red-700"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </div>
-                        <div className="mt-2">
-                          <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                            {note.fld_body}
-                          </p>
-                        </div>
+                      <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                        <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                          {note.fld_body}
+                        </p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+
+                  {/* Right Section - Actions */}
+                  <div className="flex items-center justify-end sm:justify-start space-x-2 flex-shrink-0 sm:self-start">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          <span className="hidden sm:inline">Delete</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            You want to delete this progress note. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteNote(note.fld_id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No progress notes found</h3>
-              <p className="text-gray-600">
-                {searchTerm ? 'No notes match your search criteria.' : 'This student has no progress notes yet.'}
-              </p>
-              {!searchTerm && (
-                <Button 
-                  className="mt-4" 
-                  onClick={() => setIsAddNoteOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add First Note
-                </Button>
-              )}
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FileText className="h-8 w-8 text-gray-400" />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No progress notes found</h3>
+            <p className="text-gray-500 mb-6">
+              {searchTerm ? 'No notes match your search criteria.' : 'This student has no progress notes yet.'}
+            </p>
+            {!searchTerm && (
+              <Button 
+                className="bg-primary hover:bg-primary/90" 
+                onClick={() => setIsAddNoteOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add First Note
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

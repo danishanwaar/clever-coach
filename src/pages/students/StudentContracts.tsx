@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStudentContracts, ContractEngagement } from '@/hooks/useStudentContracts';
 import { useStudents, useStudent } from '@/hooks/useStudents';
@@ -14,9 +14,9 @@ import {
   Calendar, 
   Euro, 
   Clock, 
-  User, 
+  User,
   BookOpen, 
-  CheckCircle, 
+  CheckCircle,
   XCircle, 
   AlertCircle,
   Plus,
@@ -89,7 +89,7 @@ export default function StudentContracts() {
     if (activeContracts.length > 0) {
       fetchEngagements();
     }
-  }, [activeContracts, fetchContractEngagements]);
+  }, [activeContracts.map(c => c.fld_id).join(',')]); // Use contract IDs as dependency
 
   // Initialize minimum lessons
   useEffect(() => {
@@ -98,7 +98,7 @@ export default function StudentContracts() {
       initialMinimumLessons[contract.fld_id] = contract.fld_min_lesson;
     });
     setMinimumLessons(initialMinimumLessons);
-  }, [activeContracts]);
+  }, [activeContracts.map(c => c.fld_id).join(',')]); // Use contract IDs as dependency
 
   const handleCancelContract = (contractId: number) => {
     if (window.confirm('Are you sure you want to cancel this contract?')) {
@@ -205,51 +205,51 @@ export default function StudentContracts() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end mb-4">
         {student.fld_status !== 'Contracted Customers' && (
           <Button 
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="inline-flex items-end px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="inline-flex items-center px-3 py-2 primary rounded-md text-sm"
           >
-            <Plus className="h-4 w-4 mr-2" />
-            {showCreateForm ? 'Cancel' : 'Create Contract'}
-          </Button>
+            <Plus className="h-4 w-4" />
+                Create Contract
+              </Button>
         )}
       </div>
 
       {/* Contract Creation Form */}
       {showCreateForm && (
         <Card>
-          <CardHeader>
-            <CardTitle>Create New Contract</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+              <CardHeader>
+                <CardTitle>Create New Contract</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Contract Duration (months)</label>
-                <Input
+                    <Input
                   type="text"
                   value={contractForm.fld_ct}
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_ct: e.target.value }))}
-                  placeholder="e.g., 6"
-                />
-              </div>
+                      placeholder="e.g., 6"
+                    />
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Start Date</label>
-                <Input
-                  type="date"
+                    <Input
+                      type="date"
                   value={contractForm.fld_start_date}
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_start_date: e.target.value }))}
-                />
-              </div>
+                    />
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">End Date</label>
-                <Input
-                  type="date"
+                    <Input
+                      type="date"
                   value={contractForm.fld_end_date}
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_end_date: e.target.value }))}
-                />
-              </div>
+                    />
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Payment Method</label>
                 <select
@@ -260,7 +260,7 @@ export default function StudentContracts() {
                   <option value="Überweisung">Überweisung</option>
                   <option value="Lastschrift">Lastschrift</option>
                 </select>
-              </div>
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Learning Preference</label>
                 <select
@@ -271,7 +271,7 @@ export default function StudentContracts() {
                   <option value="Online">Online</option>
                   <option value="Onsite">Onsite</option>
                 </select>
-              </div>
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Lesson Duration</label>
                 <Input
@@ -280,31 +280,31 @@ export default function StudentContracts() {
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_lesson_dur: e.target.value }))}
                   placeholder="e.g., 60 minutes"
                 />
-              </div>
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Minimum Lessons per Month</label>
-                <Input
-                  type="number"
+                    <Input
+                      type="number"
                   value={contractForm.fld_min_lesson}
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_min_lesson: parseInt(e.target.value) || 0 }))}
-                />
-              </div>
+                    />
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Registration Fee (€)</label>
-                <Input
-                  type="number"
+                    <Input
+                      type="number"
                   value={contractForm.fld_reg_fee}
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_reg_fee: parseFloat(e.target.value) || 0 }))}
-                />
-              </div>
+                    />
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Per Lesson Rate (€)</label>
-                <Input
-                  type="number"
+                    <Input
+                      type="number"
                   value={contractForm.fld_s_per_lesson_rate}
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_s_per_lesson_rate: parseFloat(e.target.value) || 0 }))}
-                />
-              </div>
+                    />
+                  </div>
               <div>
                 <label className="block text-sm font-medium mb-1">Bypass Signature</label>
                 <select
@@ -315,230 +315,297 @@ export default function StudentContracts() {
                   <option value="">No</option>
                   <option value="Yes">Yes</option>
                 </select>
-              </div>
-            </div>
+                  </div>
+                </div>
             <div className="flex justify-end space-x-2">
               <Button
                 variant="outline"
                 onClick={() => setShowCreateForm(false)}
               >
-                Cancel
-              </Button>
+                    Cancel
+                  </Button>
               <Button
                 onClick={handleCreateContract}
                 disabled={createContractMutation.isPending}
               >
                 {createContractMutation.isPending ? 'Creating...' : 'Create Contract'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
       )}
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Active Contracts */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Active Contracts</h2>
           {activeContracts.length > 0 ? (
             activeContracts.map((contract) => (
-              <Card key={contract.fld_id} className="border border-gray-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Contract #{contract.fld_id} - €{Math.round(contract.fld_s_per_lesson_rate)}/lesson</span>
-                    <Badge className={getStatusColor(contract.fld_status)}>
-                      {contract.fld_status}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Date</label>
-                      <p className="text-gray-900">{formatDate(contract.fld_edate)}</p>
+              <Card key={contract.fld_id} className="border border-gray-400">
+                <CardContent className="p-4 sm:p-5">
+                  <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+                    Contract # {contract.fld_id} - €{Math.round(contract.fld_s_per_lesson_rate)}/lesson
+                  </h3>
+                  
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Date</span>
+                      </div>
+                      <div className="text-gray-600">
+                        {formatDate(contract.fld_edate)}
+                      </div>
                     </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Lesson Duration</label>
-                      <p className="text-gray-900">{contract.fld_lesson_dur}</p>
+                        <span className="text-sm font-medium">Lesson Duration</span>
+                      </div>
+                      <div className="text-gray-600">
+                        {contract.fld_lesson_dur}
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Learning Preference</label>
-                      <p className="text-gray-900">{contract.fld_lp}</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Learning Preference</span>
+                  </div>
+                      <div className="text-gray-600">
+                        {contract.fld_lp}
+                  </div>
+                </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Lesson Rate</span>
+                      </div>
+                      <div className="text-gray-600">
+                        €{Math.round(contract.fld_s_per_lesson_rate)} / lesson
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Lesson Rate</label>
-                      <p className="text-gray-900">€{Math.round(contract.fld_s_per_lesson_rate)} / lesson</p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Minimum Lessons</label>
-                      <Input
-                        type="number"
-                        value={minimumLessons[contract.fld_id] || contract.fld_min_lesson}
-                        onChange={(e) => handleMinimumLessonsChange(contract.fld_id, e.target.value)}
-                        onBlur={() => handleMinimumLessonsBlur(contract.fld_id)}
-                        className="w-full"
-                        disabled={isUpdatingMinimumLessons}
-                      />
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Minimum Lessons</span>
+                      </div>
+                      <div className="col-span-1">
+                        <Input
+                          type="number"
+                          value={minimumLessons[contract.fld_id] || contract.fld_min_lesson}
+                          onChange={(e) => handleMinimumLessonsChange(contract.fld_id, e.target.value)}
+                          onBlur={() => handleMinimumLessonsBlur(contract.fld_id)}
+                          className="w-full"
+                          disabled={isUpdatingMinimumLessons}
+                        />
+                      </div>
+                  </div>
+                  
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Status</span>
+                      </div>
+                      <div>
+                        <Badge className="bg-green-100 text-green-800">
+                          {contract.fld_status}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="flex gap-2">
+                  
+                  <div className="mt-4">
                     <Link 
                       to={`/students/${studentId}/create-engagement?contractId=${contract.fld_id}`}
-                      className="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                      className="inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
                     >
-                      <Plus className="h-4 w-4 mr-1" />
                       Create Engagement
                     </Link>
-                    <Link 
-                      to={`/students/${studentId}/contract-download`}
-                      className="inline-flex items-center px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-                    >
-                      <Download className="h-4 w-4 mr-1" />
-                      Download Contract
-                    </Link>
-                    {contract.fld_status === 'Pending Signature' && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSendContractEmail(contract.fld_id)}
-                        disabled={sendContractEmailMutation.isPending}
-                      >
-                        <Send className="h-4 w-4 mr-1" />
-                        {sendContractEmailMutation.isPending ? 'Sending...' : 'Send Contract Email'}
-                      </Button>
-                    )}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleCancelContract(contract.fld_id)}
-                      disabled={isCancellingContract}
-                    >
-                      <XCircle className="h-4 w-4 mr-1" />
-                      Cancel Contract
-                    </Button>
                   </div>
-
+                  
                   {/* Engagements */}
                   {contractEngagements[contract.fld_id] && contractEngagements[contract.fld_id].length > 0 && (
                     <div className="mt-6">
-                      <Separator className="my-4" />
-                      <h4 className="font-medium mb-3">Engagements</h4>
                       {contractEngagements[contract.fld_id].map((engagement, index) => (
-                        <div key={engagement.fld_id} className="bg-gray-50 p-4 rounded-lg mb-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <h5 className="font-medium">Engagement {index + 1}</h5>
-                            <Badge className={getStatusColor(engagement.fld_status)}>
-                              {engagement.fld_status}
-                            </Badge>
+                        <div key={engagement.fld_id} className="mb-4">
+                          <div className="mb-3 sm:mb-4 px-4 sm:px-5">
+                            <h5 className="text-lg font-medium">Engagement {index + 1}</h5>
                           </div>
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                              <span className="text-gray-600">Teacher Name:</span>
-                              <p className="font-medium">
+                          
+                          <div className="px-4 sm:px-8 space-y-3 sm:space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                              <div>
+                                <span className="text-sm font-medium">Teacher Name</span>
+                    </div>
+                              <div className="text-gray-600">
                                 {engagement.tbl_teachers?.fld_first_name} {engagement.tbl_teachers?.fld_last_name}
-                              </p>
+                  </div>
+                </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                              <div>
+                                <span className="text-sm font-medium">Teacher Rate</span>
+                  </div>
+                              <div className="text-gray-600">
+                                €{Math.round(engagement.fld_t_per_lesson_rate)}
+                </div>
                             </div>
-                            <div>
-                              <span className="text-gray-600">Teacher Rate:</span>
-                              <p className="font-medium">€{Math.round(engagement.fld_t_per_lesson_rate)}</p>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                              <div>
+                                <span className="text-sm font-medium">Lesson Logged</span>
+                              </div>
+                              <div className="text-gray-600">
+                                <Badge className="bg-blue-100 text-blue-800">
+                                  {engagement.lesson_count || 0}
+                                </Badge>
+                              </div>
                             </div>
-                            <div>
-                              <span className="text-gray-600">Lessons Logged:</span>
-                              <Badge variant="secondary" className="ml-1">
-                                {engagement.lesson_count || 0}
-                              </Badge>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Subject:</span>
-                              <p className="font-medium">
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                              <div>
+                                <span className="text-sm font-medium">Subject</span>
+                              </div>
+                              <div className="text-gray-600">
                                 {engagement.tbl_students_subjects?.tbl_subjects?.fld_subject}
-                              </p>
                             </div>
                           </div>
-                          <div className="mt-3">
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => handleCancelEngagement(engagement.fld_id)}
-                              disabled={isCancellingEngagement}
-                            >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Cancel Engagement
-                            </Button>
+                          
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                              <div>
+                                <span className="text-sm font-medium">Status</span>
+                              </div>
+                              <div>
+                                <Badge className="bg-green-100 text-green-800">
+                                  {engagement.fld_status}
+                                </Badge>
+                              </div>
+                            </div>
+                            
+                            <div className="mt-4">
+                              <button 
+                                className="text-primary hover:text-primary/80"
+                                onClick={() => handleCancelEngagement(engagement.fld_id)}
+                                disabled={isCancellingEngagement}
+                              >
+                                Cancel Engagement
+                              </button>
+                            </div>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
+                  
+                  <div className="mt-4">
+                    <button 
+                      className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
+                      onClick={() => handleCancelContract(contract.fld_id)}
+                      disabled={isCancellingContract}
+                    >
+                      Cancel Contract
+                    </button>
+                  </div>
                 </CardContent>
               </Card>
             ))
           ) : (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>No Active Contract Available</AlertDescription>
-            </Alert>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-5 flex items-center">
+              <AlertCircle className="h-8 w-8 text-blue-600 mr-4" />
+              <div>
+                <h4 className="text-blue-600 font-medium mb-1">No Active Contract Available</h4>
+                <span className="text-blue-600"></span>
+              </div>
+            </div>
           )}
         </div>
 
         {/* Pending Contracts */}
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Pending Signature</h2>
           {pendingContracts.length > 0 ? (
             pendingContracts.map((contract) => (
-              <Card key={contract.fld_id} className="border border-red-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Contract #{contract.fld_id} - €{contract.fld_s_per_lesson_rate}/lesson</span>
-                    <Badge className={getStatusColor(contract.fld_status)}>
-                      {contract.fld_status}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Date</label>
-                      <p className="text-gray-900">{formatDate(contract.fld_edate)}</p>
+              <Card key={contract.fld_id} className="border border-red-400">
+                <CardContent className="p-4 sm:p-5">
+                  <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+                    Contract # {contract.fld_id} - €{contract.fld_s_per_lesson_rate}/lesson
+                  </h3>
+                  
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Date</span>
+                      </div>
+                      <div className="text-gray-600">
+                        {formatDate(contract.fld_edate)}
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Contract Duration</label>
-                      <p className="text-gray-900">{contract.fld_ct}</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Contract Duration</span>
+                      </div>
+                      <div className="text-gray-600">
+                        {contract.fld_ct}
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Lesson Duration</label>
-                      <p className="text-gray-900">{contract.fld_lesson_dur}</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Lesson Duration</span>
+                      </div>
+                      <div className="text-gray-600">
+                        {contract.fld_lesson_dur}
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Learning Preference</label>
-                      <p className="text-gray-900">{contract.fld_lp}</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Learning Preference</span>
+                      </div>
+                      <div className="text-gray-600">
+                        {contract.fld_lp}
+                      </div>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-600">Lesson Rate</label>
-                      <p className="text-gray-900">€{Math.round(contract.fld_s_per_lesson_rate)} / lesson</p>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Lesson Rate</span>
+                      </div>
+                      <div className="text-gray-600">
+                        €{Math.round(contract.fld_s_per_lesson_rate)} / lesson
+                      </div>
+                </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <span className="text-sm font-medium">Status</span>
+                      </div>
+                      <div>
+                        <Badge className="bg-red-100 text-red-800">
+                          {contract.fld_status}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    <Button
-                      variant="destructive"
-                      size="sm"
+                  <div className="mt-4">
+                    <button 
+                      className="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90"
                       onClick={() => handleCancelContract(contract.fld_id)}
                       disabled={isCancellingContract}
                     >
-                      <XCircle className="h-4 w-4 mr-1" />
                       Cancel Contract
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                    </button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
           ) : (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>No Pending Contract Available</AlertDescription>
-            </Alert>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-5 flex items-center">
+              <AlertCircle className="h-8 w-8 text-red-600 mr-4" />
+              <div>
+                <h4 className="text-red-600 font-medium mb-1">No Pending Contract Available</h4>
+                <span className="text-red-600"></span>
+              </div>
+            </div>
           )}
         </div>
       </div>

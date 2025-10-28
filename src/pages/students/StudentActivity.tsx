@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { 
   ArrowLeft, 
   Plus, 
-  Search, 
+  Search,
   Activity, 
   User,
   Calendar,
@@ -51,7 +51,7 @@ export default function StudentActivity() {
   const [isAddActivityOpen, setIsAddActivityOpen] = useState(false);
 
   // Filter activities based on search term
-  const filteredActivities = activities.filter(activity => 
+  const filteredActivities = activities.filter(activity =>
     activity.tbl_students?.fld_first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     activity.tbl_students?.fld_last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     activity.tbl_activities_types?.fld_activity_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -94,142 +94,139 @@ export default function StudentActivity() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-end">
-        <Button onClick={() => setIsAddActivityOpen(true)}>
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h2 className="text-lg sm:text-xl font-semibold text-primary">Activity Log</h2>
+          <p className="text-xs sm:text-sm text-gray-600">Track and manage student activities</p>
+        </div>
+        <Button onClick={() => setIsAddActivityOpen(true)} className="bg-primary hover:bg-primary/90">
           <Plus className="h-4 w-4 mr-2" />
           Record Activity
         </Button>
       </div>
 
-      {/* Activities List */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Activities</CardTitle>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  type="text"
-                  placeholder="Search activities..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
-                />
+      {/* Search Bar */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search activities..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 border-gray-300 focus:border-primary focus:ring-primary/20"
+          />
+        </div>
+      </div>
+
+      {/* Activities Cards */}
+      <div className="space-y-4">
+        {filteredActivities.length > 0 ? (
+          filteredActivities.map((activity) => (
+            <div 
+              key={activity.fld_id}
+              className="bg-white rounded-lg shadow-sm border-l-4 border-l-primary hover:shadow-md transition-all duration-200 group"
+            >
+              <div className="p-4 sm:p-5">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
+                  {/* Left Section - Activity Info */}
+                  <div className="flex items-start space-x-3 flex-1 min-w-0">
+                    {/* Activity Icon */}
+                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-sm shadow-sm flex-shrink-0">
+                      <Activity className="h-5 w-5" />
+                    </div>
+                    
+                    {/* Activity Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                        <h3 className="font-semibold text-sm sm:text-base text-gray-900">
+                          {activity.tbl_activities_types?.fld_activity_name || 'Unknown Activity'}
+                        </h3>
+                        <Badge className="bg-blue-100 text-blue-800 text-xs font-medium self-start sm:self-auto">
+                          {formatDate(activity.fld_edate)}
+                        </Badge>
+                      </div>
+                      
+                      {/* Activity Info */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs sm:text-sm text-gray-600 mb-3">
+                        <div className="flex items-center">
+                          <User className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">
+                            {activity.tbl_students?.fld_first_name} {activity.tbl_students?.fld_last_name}
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <FileText className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                          <span className="truncate">{activity.fld_description || 'No description'}</span>
+                        </div>
+                        {activity.fld_notes && (
+                          <div className="flex items-center">
+                            <AlertCircle className="h-3 w-3 mr-2 text-gray-400 flex-shrink-0" />
+                            <span className="truncate">{activity.fld_notes}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Section - Actions */}
+                  <div className="flex items-center justify-end sm:justify-start space-x-2 flex-shrink-0 sm:self-start">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 px-3 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-3 w-3 mr-1" />
+                          <span className="hidden sm:inline">Delete</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            You want to delete this activity. This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteActivity(activity.fld_id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Activity className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No activities found</h3>
+            <p className="text-gray-500 mb-6">
+              {searchTerm ? 'No activities match your search criteria.' : 'This student has no activities yet.'}
+            </p>
+            {!searchTerm && (
+              <Button 
+                className="bg-primary hover:bg-primary/90" 
+                onClick={() => setIsAddActivityOpen(true)}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Record First Activity
+              </Button>
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
-          {filteredActivities.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b bg-gray-50">
-                    <th className="text-left py-3 px-5 font-medium text-gray-600">Student</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Activity Type</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Description</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Notes</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-gray-600">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredActivities.map((activity) => (
-                    <tr key={activity.fld_id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-5">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                            <span className="text-red-600 font-semibold text-xs">
-                              {getInitials(
-                                activity.tbl_students?.fld_first_name || '',
-                                activity.tbl_students?.fld_last_name || ''
-                              )}
-                            </span>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-gray-900">
-                              {activity.tbl_students?.fld_first_name} {activity.tbl_students?.fld_last_name}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                          {activity.tbl_activities_types?.fld_activity_name}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-4 text-gray-700 max-w-xs">
-                        <p className="text-sm truncate" title={activity.fld_description || ''}>
-                          {activity.fld_description || '-'}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600 max-w-xs">
-                        <p className="text-sm truncate" title={activity.fld_notes || ''}>
-                          {activity.fld_notes || '-'}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4 text-gray-600">
-                        <p className="text-sm">
-                          {formatDate(activity.fld_edate)}
-                        </p>
-                      </td>
-                      <td className="py-3 px-4">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              disabled={isDeleting}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                You want to delete this activity. This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteActivity(activity.fld_id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No activities found</h3>
-              <p className="text-gray-600">
-                {searchTerm ? 'No activities match your search criteria.' : 'This student has no activities yet.'}
-              </p>
-              {!searchTerm && (
-                <Button 
-                  className="mt-4" 
-                  onClick={() => setIsAddActivityOpen(true)}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Record First Activity
-                </Button>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       {/* Activity Modal */}
       <ActivityModal

@@ -13,6 +13,7 @@ import {
   Edit, 
   Trash2, 
   ArrowRight, 
+  ArrowLeft,
   FileText, 
   Plus,
   Search,
@@ -26,10 +27,11 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  UserCheck
+  UserCheck,
+  Target
 } from 'lucide-react';
 import { useStudents, useStudentSubjects, useStudentMediationStages, useStudentMutations, useMediationTypes, StudentStatus } from '@/hooks/useStudents';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/authStore';
 import { formatPhoneNumber } from '@/lib/utils';
 import ActivityModal from '@/components/ActivityModal';
 import { StudentFormModal } from '@/components/StudentFormModal';
@@ -76,7 +78,7 @@ const statusIcons = {
 
 // Student Card Component
 interface StudentCardProps {
-  student: any;
+    student: any;
   onStatusChange: (studentId: number, newStatus: string) => void;
   onActivityClick: () => void;
   isUpdatingStatus?: boolean;
@@ -88,8 +90,9 @@ const StudentCard: React.FC<StudentCardProps> = ({
   onActivityClick, 
   isUpdatingStatus = false 
 }) => {
-  const { data: subjects = [] } = useStudentSubjects(student.fld_id);
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuthStore();
+  const isAdmin = () => user?.fld_rid === 1;
+  const subjects = student.tbl_students_subjects || [];
   
   const initials = `${student.fld_first_name?.[0] || ''}${student.fld_last_name?.[0] || ''}`.toUpperCase();
   const studentName = `${student.fld_first_name || ''} ${student.fld_last_name || ''}`.trim();
@@ -116,80 +119,142 @@ const StudentCard: React.FC<StudentCardProps> = ({
   
   const buttonInfo = getStatusButtonInfo(student.fld_status);
 
-  // Subject display logic - show only 2, then show "more" indicator
-  const displaySubjects = subjects.slice(0, 2);
-  const remainingCount = subjects.length - 2;
+  // Subject display logic - show only 3, then show "more" indicator
+  const displaySubjects = subjects.slice(0, 3);
+  const remainingCount = subjects.length - 3;
   
   return (
     <div 
-      className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 group cursor-pointer"
+      className="bg-white rounded-lg shadow-sm border-l-4 border-l-primary hover:shadow-md transition-all duration-200 group cursor-pointer"
       onClick={() => window.location.href = `/students/${student.fld_id}`}
     >
-      <div className="p-3 sm:p-4">
-        <div className="flex items-start justify-between gap-4">
+      <div className="p-2 sm:p-3">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-3">
           {/* Left Section - Student Info */}
-          <div className="flex items-start space-x-3 flex-1 min-w-0">
+          <div className="flex items-start space-x-2 flex-1 min-w-0">
             {/* Avatar */}
-            <div className="w-10 h-10 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center text-primary font-bold text-sm shadow-sm flex-shrink-0 group-hover:shadow-md transition-shadow">
+            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-bold text-xs shadow-sm flex-shrink-0">
               {initials}
             </div>
             
             {/* Basic Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2 mb-2">
-                <h3 className="font-semibold text-base text-gray-900 truncate">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
+                <h3 className="font-semibold text-sm text-gray-900 truncate">
                   {studentName}
                 </h3>
-                <Badge className={`${statusColors[student.fld_status as keyof typeof statusColors]} text-xs font-medium flex-shrink-0`}>
+                <Badge className={`${statusColors[student.fld_status as keyof typeof statusColors]} text-xs font-medium self-start sm:self-auto`}>
                   {student.fld_status}
                 </Badge>
               </div>
               
-              <p className="text-sm text-gray-600 truncate mb-2">{student.fld_email || ''}</p>
+              {/* Email */}
+              <div className="flex items-center text-xs text-gray-600 mb-1">
+                <Mail className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                <span className="truncate">{student.fld_email || ''}</span>
+              </div>
               
               {/* Contact Info - Compact */}
-              <div className="flex items-center space-x-4 mb-3">
-                <div className="flex items-center text-xs text-gray-600">
-                  <MapPin className="h-3 w-3 mr-1 text-gray-400" />
-                  {student.fld_city || ''}
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-600 mb-2">
+                <div className="flex items-center">
+                  <MapPin className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                  <span className="truncate">{student.fld_city || ''}</span>
                 </div>
-                <div className="flex items-center text-xs text-gray-600">
-                  <Phone className="h-3 w-3 mr-1 text-gray-400" />
-                  {student.fld_mobile || ''}
+                <div className="flex items-center">
+                  <Phone className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                  <span className="truncate">{student.fld_mobile || ''}</span>
+                </div>
+                {student.fld_per_l_rate && (
+                  <div className="flex items-center">
+                    <DollarSign className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                    <span>€{student.fld_per_l_rate}</span>
+                  </div>
+                )}
+                <div className="flex items-center">
+                  <GraduationCap className="h-3 w-3 mr-1 text-gray-400 flex-shrink-0" />
+                  <span className="truncate">{student.fld_level || 'N/A'}</span>
+                </div>
+              </div>
+
+              {/* Status Indicators - All in same row */}
+              <div className="flex items-center gap-3 text-xs text-gray-600 mb-2">
+                {/* Registration Fee Status */}
+                <div className="flex items-center">
+                  <div className={`w-2 h-2 rounded-full mr-1 flex-shrink-0 ${
+                    student.fld_reg_fee && student.fld_reg_fee > 0 
+                      ? (student.fld_rf_flag === 'Yes' ? 'bg-green-500' : 'bg-orange-500')
+                      : 'bg-gray-400'
+                  }`}></div>
+                  <span>Reg Fee: {
+                    student.fld_reg_fee && student.fld_reg_fee > 0 
+                      ? (student.fld_rf_flag === 'Yes' ? 'Paid' : 'Pending')
+                      : 'Not Set'
+                  }</span>
+                </div>
+                
+                {/* Contract Status */}
+                <div className="flex items-center">
+                  <div className={`w-2 h-2 rounded-full mr-1 flex-shrink-0 ${
+                    student.fld_nec === 'Yes' 
+                      ? (student.contracts && student.contracts.length > 0 
+                          ? (student.contracts.some(c => c.fld_status === 'Active') ? 'bg-green-500' : 'bg-yellow-500')
+                          : 'bg-red-500')
+                      : 'bg-gray-400'
+                  }`}></div>
+                  <span>Contract: {
+                    student.fld_nec === 'Yes' 
+                      ? (student.contracts && student.contracts.length > 0 
+                          ? (student.contracts.some(c => c.fld_status === 'Active') ? 'Active' : 'Pending')
+                          : 'Needed')
+                      : 'Not Required'
+                  }</span>
+                </div>
+                
+                {/* Source */}
+                <div className="flex items-center">
+                  <span>Source: {student.fld_f_lead || 'Unknown'}</span>
                 </div>
               </div>
 
               {/* Subjects & Levels - Compact with "more" indicator */}
-              <div className="flex flex-wrap gap-1">
-                {displaySubjects.length > 0 ? (
-                  <>
-                    {displaySubjects.map((subject) => (
-                      <div key={subject.fld_id} className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full px-2 py-1 text-xs font-medium border border-gray-200">
-                        <span className="font-semibold">{subject.tbl_subjects?.fld_subject}</span>
-                        <span className="text-gray-500">({student.fld_level || 'N/A'})</span>
-                      </div>
-                    ))}
-                    {remainingCount > 0 && (
-                      <div className="inline-flex items-center gap-1 bg-gray-200 text-gray-600 rounded-full px-2 py-1 text-xs font-medium border border-gray-300">
-                        <span>+{remainingCount} more</span>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-xs text-gray-500 italic">No subjects assigned</div>
-                )}
+              <div className="border-t border-gray-100 pt-2">
+                <h4 className="text-xs font-medium text-gray-700 mb-1 flex items-center">
+                  <GraduationCap className="h-3 w-3 mr-1 text-primary flex-shrink-0" />
+                  <span className="hidden sm:inline">Subjects & Levels</span>
+                  <span className="sm:hidden">Subjects</span>
+                </h4>
+                <div className="flex flex-wrap gap-1">
+                  {displaySubjects.length > 0 ? (
+                    <>
+                      {displaySubjects.map((subject) => (
+                        <div key={subject.fld_id} className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full px-2 py-0.5 text-xs font-medium border border-gray-200">
+                          <span className="font-semibold">{subject.tbl_subjects?.fld_subject}</span>
+                          <span className="text-gray-500 hidden sm:inline">{student.fld_level || 'N/A'}</span>
+                          <span className="text-gray-500 sm:hidden">({student.fld_level || 'N/A'})</span>
+                        </div>
+                      ))}
+                      {remainingCount > 0 && (
+                        <div className="inline-flex items-center gap-1 bg-gray-200 text-gray-600 rounded-full px-2 py-0.5 text-xs font-medium border border-gray-300">
+                          <span>+{remainingCount} more</span>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="text-xs text-gray-500 italic">No subjects assigned</div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Right Section - Contact Actions */}
-          <div className="flex items-center space-x-1 flex-shrink-0">
-            <Button variant="ghost" size="sm" asChild title="Email" className="h-7 w-7 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-end sm:justify-start space-x-0.5 flex-shrink-0 sm:self-start">
+            <Button variant="ghost" size="sm" asChild title="Email" className="h-6 w-6 p-0 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors" onClick={(e) => e.stopPropagation()}>
               <a href={`mailto:${student.fld_email}`}>
                 <Mail className="h-3 w-3" />
               </a>
             </Button>
-            <Button variant="ghost" size="sm" asChild title="WhatsApp" className="h-7 w-7 p-0 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors" onClick={(e) => e.stopPropagation()}>
+            <Button variant="ghost" size="sm" asChild title="WhatsApp" className="h-6 w-6 p-0 hover:bg-green-50 hover:text-green-600 rounded-lg transition-colors" onClick={(e) => e.stopPropagation()}>
               <a href={`https://wa.me/${formatPhoneNumber(student.fld_mobile || '')}`} target="_blank" rel="noopener noreferrer">
                 <MessageCircle className="h-3 w-3" />
               </a>
@@ -202,15 +267,30 @@ const StudentCard: React.FC<StudentCardProps> = ({
                 e.stopPropagation();
                 onActivityClick();
               }}
-              className="h-7 w-7 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
+              className="h-6 w-6 p-0 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
             >
               <FileText className="h-3 w-3" />
             </Button>
+            {/* Dynamic Matcher Button - Only show for Mediation Open and Partially Mediated students */}
+            {(student.fld_status === 'Mediation Open' || student.fld_status === 'Partially Mediated') && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                title="Dynamic Matcher"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = `/dynamic-matcher?studentId=${student.fld_id}`;
+                }}
+                className="h-6 w-6 p-0 hover:bg-purple-50 hover:text-purple-600 rounded-lg transition-colors"
+              >
+                <Target className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </div>
 
-        {/* Bottom Section - Status Controls */}
-        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+        {/* Bottom Section - Smart Action Buttons */}
+        <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-100">
           {/* Status Action Button */}
           {!isFinalState && buttonInfo && (
             <Button
@@ -221,7 +301,7 @@ const StudentCard: React.FC<StudentCardProps> = ({
                 onStatusChange(student.fld_id, buttonInfo.next);
               }}
               disabled={isUpdatingStatus}
-              className="h-7 px-3 text-xs"
+              className="h-6 px-2 text-xs flex-shrink"
             >
               {isUpdatingStatus ? (
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
@@ -247,13 +327,13 @@ const StudentCard: React.FC<StudentCardProps> = ({
                 }
               }}
             >
-              <SelectTrigger className="w-40 h-7 text-xs" onClick={(e) => e.stopPropagation()}>
+              <SelectTrigger className="h-6 text-xs w-auto max-w-[140px] sm:max-w-none truncate" onClick={(e) => e.stopPropagation()}>
                 <SelectValue placeholder="Change Status" />
               </SelectTrigger>
               <SelectContent>
                 {statusOptions.filter(status => status !== 'All').map((status) => {
                   const Icon = statusIcons[status as keyof typeof statusIcons] || Users;
-                  return (
+    return (
                     <SelectItem 
                       key={status} 
                       value={status}
@@ -284,7 +364,10 @@ const Students: React.FC = () => {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isLeadFormModalOpen, setIsLeadFormModalOpen] = useState(false);
 
-  const { data: students = [], isLoading } = useStudents(selectedStatus);
+  const { data: studentsData, isLoading } = useStudents(selectedStatus, searchTerm);
+  const students = studentsData?.data || [];
+  const statusStats = studentsData?.statusCounts || {};
+  const totalCount = studentsData?.totalCount || 0;
   const { data: mediationTypes = [] } = useMediationTypes();
   const { updateStatus, updateNotes, updateIMStatus, moveToMediationOpen, deleteMediation, isUpdating } = useStudentMutations();
 
@@ -294,45 +377,14 @@ const Students: React.FC = () => {
     return [];
   };
 
-  // Calculate status statistics
-  const statusStats = useMemo(() => {
-    const stats: Record<string, number> = {};
-    statusOptions.forEach(status => {
-      if (status === 'All') {
-        stats[status] = students?.length || 0;
-      } else {
-        stats[status] = students?.filter(student => student.fld_status === status).length || 0;
-      }
-    });
-    return stats;
-  }, [students]);
+  // Handle search and filter changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+  };
 
-  // Filter students based on search term and status
-  const filteredStudents = useMemo(() => {
-    if (!students || !Array.isArray(students)) {
-      return [];
-    }
-
-    let filtered = students;
-
-    // Apply status filter
-    if (selectedStatus !== 'All') {
-      filtered = filtered.filter(student => student.fld_status === selectedStatus);
-    }
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(student =>
-        `${student.fld_first_name} ${student.fld_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        `${student.fld_s_first_name} ${student.fld_s_last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.fld_email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.fld_city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.fld_zip.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    return filtered;
-  }, [students, selectedStatus, searchTerm]);
+  const handleStatusChange = (status: StudentStatus | 'All' | 'Eng') => {
+    setSelectedStatus(status);
+  };
 
   const getStatusBadgeColor = (status: StudentStatus) => {
     switch (status) {
@@ -353,7 +405,7 @@ const Students: React.FC = () => {
     }
   };
 
-  const handleStatusChange = (studentId: number, newStatus: string) => {
+  const handleStudentStatusChange = (studentId: number, newStatus: string) => {
     if (newStatus) {
       updateStatus({ studentId, status: newStatus as StudentStatus });
     }
@@ -393,44 +445,59 @@ const Students: React.FC = () => {
     <div className="min-h-screen bg-gray-50/50">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
           {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold text-primary">Students</h1>
-            <p className="text-sm sm:text-base text-gray-600">Manage all students in the platform</p>
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Students</h1>
+          <div className="flex items-center gap-2 bg-white rounded-lg sm:rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm border border-gray-200 flex-shrink-0">
+            <Users className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
+            <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">{totalCount} Total</span>
           </div>
-          <div className="flex items-center gap-2 bg-white rounded-xl px-4 py-2 shadow-sm border border-gray-200 self-start sm:self-auto">
-            <Users className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold text-gray-700">{students.length} Total</span>
-          </div>
-            </div>
+        </div>
 
-        {/* Status Statistics */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-          <div className="flex flex-wrap gap-2">
-            {statusOptions.map((status) => {
-              const count = statusStats[status];
-              const Icon = statusIcons[status as keyof typeof statusIcons] || Users;
-              const isSelected = selectedStatus === status;
-              
-              return (
-                <Button
-                  key={status}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setSelectedStatus(status as StudentStatus | 'All' | 'Eng')}
-                  className={`flex items-center gap-2 rounded-lg text-xs sm:text-sm transition-all duration-200 ${
-                    isSelected 
-                      ? 'bg-primary text-white shadow-md hover:bg-primary/90' 
-                      : 'bg-gray-50 text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <Icon className="h-3 w-3 sm:h-4 sm:w-4" />
-                  <span className="hidden sm:inline">{count} {status}</span>
-                  <span className="sm:hidden">{count}</span>
-                </Button>
-              );
-            })}
-          </div>
+        {/* Status Statistics Pills - Hidden on mobile */}
+        <div className="hidden sm:flex flex-wrap gap-2 justify-center sm:justify-start">
+          {statusOptions.map((status) => {
+            const count = statusStats[status];
+            const Icon = statusIcons[status as keyof typeof statusIcons] || Users;
+            const isSelected = selectedStatus === status;
+
+            // Define icon colors based on status
+            const getIconColor = (status: string) => {
+              switch (status) {
+                case 'Leads': return 'text-blue-500';
+                case 'Mediation Open': return 'text-yellow-500';
+                case 'Partially Mediated': return 'text-orange-500';
+                case 'Mediated': return 'text-green-500';
+                case 'Specialist Consulting': return 'text-purple-500';
+                case 'Contracted Customers': return 'text-green-600';
+                case 'Suspended': return 'text-red-500';
+                case 'Deleted': return 'text-red-600';
+                case 'Unplaceable': return 'text-gray-500';
+                case 'Waiting List': return 'text-indigo-500';
+                case 'Appointment Call': return 'text-blue-600';
+                case 'Follow-up': return 'text-teal-500';
+                case 'Appl': return 'text-cyan-500';
+                case 'Eng': return 'text-emerald-500';
+                default: return 'text-gray-500';
+              }
+            };
+
+            return (
+              <button
+                key={status}
+                onClick={() => handleStatusChange(status as StudentStatus | 'All' | 'Eng')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all duration-200 ${
+                  isSelected
+                    ? "bg-primary text-white border-primary shadow-sm hover:bg-primary/90"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                }`}
+              >
+                <Icon className={`h-3.5 w-3.5 ${isSelected ? 'text-white' : getIconColor(status)}`} />
+                <span className="text-xs font-medium">
+                  <span className="font-semibold">{count}</span> {status}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Search and Filter Bar */}
@@ -441,11 +508,11 @@ const Students: React.FC = () => {
                     <Input
                       placeholder="Search students..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10 border-gray-300 focus:border-primary focus:ring-primary/20"
                     />
                   </div>
-            <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as StudentStatus | 'All' | 'Eng')}>
+            <Select value={selectedStatus} onValueChange={(value) => handleStatusChange(value as StudentStatus | 'All' | 'Eng')}>
               <SelectTrigger className="w-full sm:w-48 border-gray-300 focus:border-primary focus:ring-primary/20">
                 <SelectValue placeholder="All Statuses" />
                   </SelectTrigger>
@@ -472,14 +539,14 @@ const Students: React.FC = () => {
 
         {/* Student Cards */}
         <div className="space-y-4">
-          {filteredStudents.map((student) => {
+          {students.map((student) => {
             if (!student) return null;
             
             return (
               <StudentCard
                 key={student.fld_id}
                 student={student}
-                onStatusChange={handleStatusChange}
+                onStatusChange={handleStudentStatusChange}
                 onActivityClick={() => {
                   setSelectedStudent(student.fld_id);
                   setIsActivityModalOpen(true);
@@ -490,8 +557,9 @@ const Students: React.FC = () => {
           })}
           </div>
 
+
         {/* Empty State */}
-        {filteredStudents.length === 0 && (
+        {students.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Users className="h-8 w-8 text-gray-400" />

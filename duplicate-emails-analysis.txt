@@ -1,0 +1,1024 @@
+🔍 Analyzing duplicate emails in tbl_users...
+
+📡 Fetching all users from tbl_users...
+📊 Found 1000 total users
+
+📈 Analysis Results:
+   Total Users: 1000
+   Unique Emails: 616
+   Duplicate Emails: 79
+
+🔍 Duplicate Email Analysis:
+
+================================================================================
+
+1. Email: 1999.luigi@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 206 | Name: 1999.luigi@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 575 | Name: Luigi Ferraioli | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+2. Email: 1senad.berisa@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 342 | Name: 1senad.berisa@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 736 | Name: Senad Berisa | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+3. Email: a.do@posteo.de
+   Count: 2 users
+   Users:
+     1. ID: 201 | Name: a.do@posteo.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 570 | Name: Akira Dossow | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+4. Email: a.rahmanihh@hotmail.de
+   Count: 2 users
+   Users:
+     1. ID: 199 | Name: a.rahmanihh@hotmail.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 568 | Name: Arasch Rahmani | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+5. Email: aaron.oum30@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 213 | Name: aaron.oum30@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 582 | Name: Aaron Oumongou | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+6. Email: aaron.oumongou@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 212 | Name: aaron.oumongou@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 581 | Name: Aaron Oumongou | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+7. Email: abdelbarisaoufi3@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 8 | Name: abdelbarisaoufi3@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 268 | Name: Abdelbari  Saoufi  | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+8. Email: afruzm@hotmail.de
+   Count: 2 users
+   Users:
+     1. ID: 192 | Name: afruzm@hotmail.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 561 | Name: Afruz Mohmmand | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+9. Email: ahlammerzagua@hotmail.com
+   Count: 2 users
+   Users:
+     1. ID: 12 | Name: ahlammerzagua@hotmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 272 | Name: Ahlam Merzagua | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+10. Email: ahmad.doudin@hotmail
+   Count: 3 users
+   Users:
+     1. ID: 4457 | Name: Ahmad Doudin | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 4458 | Name: Ahmad Doudin | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     3. ID: 4459 | Name: Ahmad Doudin | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  3 inactive user(s) with this email
+   ------------------------------------------------------------
+
+11. Email: akirawolter@icloud.com
+   Count: 2 users
+   Users:
+     1. ID: 129 | Name: akirawolter@icloud.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 438 | Name: Akira Herbert Wolter | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+12. Email: alaraaydin2580@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 315 | Name: Alara Aydin | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 55 | Name: alaraaydin2580@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+13. Email: alessandro16102003@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 48 | Name: alessandro16102003@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 308 | Name: Alessandro Guidara | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+14. Email: alexandra.wahn@gmx.de
+   Count: 2 users
+   Users:
+     1. ID: 99 | Name: alexandra.wahn@gmx.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 407 | Name: Alexandra  Wahn | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+15. Email: alexej-demerza@gmx.de
+   Count: 2 users
+   Users:
+     1. ID: 69 | Name: alexej-demerza@gmx.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 358 | Name: Alexej Demerza | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+16. Email: alicebenedetti122@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 322 | Name: alicebenedetti122@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 716 | Name: Alice Benedetti | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+17. Email: alicia.penzel1@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 45 | Name: alicia.penzel1@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 305 | Name: Alicia Penzel | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+18. Email: aliciahellbach@icloud.com
+   Count: 2 users
+   Users:
+     1. ID: 203 | Name: aliciahellbach@icloud.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 572 | Name: Alicia  Hellbach  | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+19. Email: alina.angelinabobkova@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 110 | Name: alina.angelinabobkova@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 418 | Name: Alina  Bobkova | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+20. Email: alja_zec@hotmail.com
+   Count: 2 users
+   Users:
+     1. ID: 219 | Name: alja_zec@hotmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 588 | Name: Alja Zec Peskiric | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+21. Email: amaellenny@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 194 | Name: amaellenny@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 563 | Name: Mael Atchan | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+22. Email: ameliekudlich@web.de
+   Count: 2 users
+   Users:
+     1. ID: 380 | Name: ameliekudlich@web.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 774 | Name: Amelie Kudlich | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+23. Email: amnayasin0606@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 3573 | Name: Amna Yasin | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 3574 | Name: Amna Yasin | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  2 inactive user(s) with this email
+   ------------------------------------------------------------
+
+24. Email: anamey152@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 3428 | Name: Ana Meyer | Status: Active | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 3429 | Name: Ana Meyer | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+25. Email: andre.verwold@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 567 | Name: Andre Verwold | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 198 | Name: andre.verwold@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+26. Email: andrewrobert740@gmail.com
+   Count: 3 users
+   Users:
+     1. ID: 4737 | Name: Andrew-Robert Rüdiger | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 4738 | Name: Andrew-Robert Rüdiger | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     3. ID: 4739 | Name: Andrew-Robert Rüdiger | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  3 inactive user(s) with this email
+   ------------------------------------------------------------
+
+27. Email: anika-gottlieb@t-online.de
+   Count: 2 users
+   Users:
+     1. ID: 49 | Name: anika-gottlieb@t-online.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 309 | Name: Anika  Gottlieb  | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+28. Email: anke.bauer66@web.de
+   Count: 2 users
+   Users:
+     1. ID: 215 | Name: anke.bauer66@web.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 584 | Name: Anke Bauer | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+29. Email: anna.borowski01@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 1075 | Name: Anna Borowski | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 1074 | Name: Anna Borowski | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  2 inactive user(s) with this email
+   ------------------------------------------------------------
+
+30. Email: anna.iashina@yahoo.com
+   Count: 2 users
+   Users:
+     1. ID: 392 | Name: Anna Iashina | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 84 | Name: anna.iashina@yahoo.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+31. Email: anna.ktz@gmx.de
+   Count: 2 users
+   Users:
+     1. ID: 630 | Name: Anna Kratz | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 261 | Name: anna.ktz@gmx.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+32. Email: annachiara.ditaranto94@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 37 | Name: annachiara.ditaranto94@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 297 | Name: Annachiara Di Taranto | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+33. Email: ansch.bathija@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 320 | Name: Ansch Bathija | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 60 | Name: ansch.bathija@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+34. Email: antonia.heimlich@web.de
+   Count: 2 users
+   Users:
+     1. ID: 578 | Name: Antonia Heimlich | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 209 | Name: antonia.heimlich@web.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+35. Email: arditsadikusvk@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 82 | Name: arditsadikusvk@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 390 | Name: Ardit Sadiku | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+36. Email: arian.desije@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 184 | Name: arian.desije@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 552 | Name: Arian Desije | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+37. Email: artoem10@web.de
+   Count: 3 users
+   Users:
+     1. ID: 3247 | Name: art+ä#-üö  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 3248 | Name: art+ä#-üö  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     3. ID: 3249 | Name: art+ä#-üö  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  3 inactive user(s) with this email
+   ------------------------------------------------------------
+
+38. Email: askarovsaidamirkhon@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 614 | Name: Saidamirkhon  Askarov  | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 245 | Name: askarovsaidamirkhon@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+39. Email: ath.kapsali@gmail.com
+   Count: 25 users
+   Users:
+     1. ID: 857 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 858 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     3. ID: 859 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     4. ID: 860 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     5. ID: 861 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     6. ID: 862 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     7. ID: 863 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     8. ID: 864 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     9. ID: 865 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     10. ID: 866 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     11. ID: 867 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     12. ID: 868 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     13. ID: 869 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     14. ID: 870 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     15. ID: 871 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     16. ID: 872 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     17. ID: 873 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     18. ID: 874 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     19. ID: 875 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     20. ID: 876 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     21. ID: 877 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     22. ID: 878 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     23. ID: 879 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     24. ID: 880 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     25. ID: 881 | Name: Athanasia Kapsali | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  25 inactive user(s) with this email
+   ------------------------------------------------------------
+
+40. Email: aufatmen1970@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 87 | Name: aufatmen1970@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 395 | Name: Stefan Rode | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+41. Email: aydin.vm14@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 239 | Name: aydin.vm14@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 608 | Name: Aydin Moradi | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+42. Email: ayush45n@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 368 | Name: ayush45n@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 762 | Name: Ayush Nair | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+43. Email: badr.assouli@gmx.de
+   Count: 2 users
+   Users:
+     1. ID: 97 | Name: badr.assouli@gmx.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 405 | Name: Badr Assouli | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+44. Email: badr.assouli88@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 404 | Name: Badr Assouli | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 96 | Name: badr.assouli88@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+45. Email: barkambirifaycal@googlemail.com
+   Count: 2 users
+   Users:
+     1. ID: 2880 | Name: Faycal Barkambiri | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 2881 | Name: Faycal Barkambiri | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  2 inactive user(s) with this email
+   ------------------------------------------------------------
+
+46. Email: bartosiewiczangelique1@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 2099 | Name: Angelique Bartosiewicz | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 2100 | Name: Angelique Bartosiewicz | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  2 inactive user(s) with this email
+   ------------------------------------------------------------
+
+47. Email: benjoel.krause12@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 3577 | Name: Ben-Joel Krause | Status: Active | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 3578 | Name: Ben-Joel Krause | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+48. Email: bennetfreitag@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 159 | Name: bennetfreitag@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 523 | Name: Bennet Freitag | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+49. Email: bertami93@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 216 | Name: bertami93@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 585 | Name: Khalil Bertami | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+50. Email: beyza.esentuerk@hotmail.de
+   Count: 2 users
+   Users:
+     1. ID: 26 | Name: beyza.esentuerk@hotmail.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 286 | Name: Beyza  Esentürk  | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+51. Email: biomaster4711@yahoo.de
+   Count: 2 users
+   Users:
+     1. ID: 220 | Name: biomaster4711@yahoo.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 589 | Name: FRANK PAUL SCHEID | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+52. Email: bnkm13@gmx.de
+   Count: 2 users
+   Users:
+     1. ID: 33 | Name: bnkm13@gmx.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 293 | Name: Berna Dilara Karaman | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+53. Email: bocivilma@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 52 | Name: bocivilma@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 312 | Name: Vilma Boci | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+54. Email: borancanmurat@hotmail.de
+   Count: 2 users
+   Users:
+     1. ID: 32 | Name: borancanmurat@hotmail.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 292 | Name: Boran Can Murat | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+55. Email: buketcal@hotmail.com
+   Count: 2 users
+   Users:
+     1. ID: 149 | Name: buketcal@hotmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 513 | Name: Buket Cal | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+56. Email: candas.yildirim@study.hs-duesseldorf.de
+   Count: 2 users
+   Users:
+     1. ID: 224 | Name: candas.yildirim@study.hs-duesseldorf.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 593 | Name: Candas Yildirim | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+57. Email: candasyildirim@outlook.de
+   Count: 2 users
+   Users:
+     1. ID: 586 | Name: Candas Yildirim | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 217 | Name: candasyildirim@outlook.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+58. Email: cansu.yuecedag@hotmail.com
+   Count: 2 users
+   Users:
+     1. ID: 191 | Name: cansu.yuecedag@hotmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 560 | Name: Cansu Yücedag | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+59. Email: carla.rochell@web.de
+   Count: 2 users
+   Users:
+     1. ID: 2969 | Name: Carla Rochell | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 2970 | Name: Carla Rochell | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  2 inactive user(s) with this email
+   ------------------------------------------------------------
+
+60. Email: caro2@mail.de
+   Count: 2 users
+   Users:
+     1. ID: 113 | Name: caro2@mail.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 421 | Name: Caroline Haase | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+61. Email: carolina.oetkerkast@icloud.com
+   Count: 2 users
+   Users:
+     1. ID: 381 | Name: carolina.oetkerkast@icloud.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 775 | Name: Carolina Oetker-Kast | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+62. Email: carolinaoetkerkast@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 776 | Name: Carolina Oetker-Kast | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 382 | Name: carolinaoetkerkast@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+63. Email: carolinpohl5@yahoo.de
+   Count: 2 users
+   Users:
+     1. ID: 262 | Name: carolinpohl5@yahoo.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 631 | Name: Carolin Pohl | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+64. Email: cevenini@gmx.de
+   Count: 2 users
+   Users:
+     1. ID: 76 | Name: cevenini@gmx.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 384 | Name: Annalisa Cevenini | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+65. Email: charleenschmitz1806@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 174 | Name: charleenschmitz1806@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 542 | Name: Charleen  Schmitz  | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+66. Email: chidera.odo@icloud.com
+   Count: 2 users
+   Users:
+     1. ID: 747 | Name: Chidera Odo | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 353 | Name: chidera.odo@icloud.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+67. Email: chlorena@web.de
+   Count: 2 users
+   Users:
+     1. ID: 144 | Name: chlorena@web.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 508 | Name: Lorena Chaberny | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+68. Email: christina.maksimov@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 42 | Name: christina.maksimov@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 302 | Name: Christina Maksimov | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+69. Email: christopherschoell@icloud.com
+   Count: 2 users
+   Users:
+     1. ID: 46 | Name: christopherschoell@icloud.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 306 | Name: Christopher Schöll | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+70. Email: cjastrzab1410@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 4645 | Name: Charlotte  Jastrzab  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 4646 | Name: Charlotte  Jastrzab  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  2 inactive user(s) with this email
+   ------------------------------------------------------------
+
+71. Email: clara.sieg.1992@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 4712 | Name: Clara Sieg | Status: Active | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 4713 | Name: Clara Sieg | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+72. Email: clarapinzino@gmail.com
+   Count: 11 users
+   Users:
+     1. ID: 2175 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     2. ID: 2176 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     3. ID: 2177 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     4. ID: 2178 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     5. ID: 2179 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     6. ID: 2180 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     7. ID: 2181 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     8. ID: 2182 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     9. ID: 2183 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     10. ID: 2184 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+     11. ID: 2185 | Name: Clara  Pinzino  | Status: Inactive | Role: Teacher | Legacy | Created: 10/25/2025
+   ℹ️  11 inactive user(s) with this email
+   ------------------------------------------------------------
+
+73. Email: cmuelle3@uni-muenster.de
+   Count: 2 users
+   Users:
+     1. ID: 240 | Name: cmuelle3@uni-muenster.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 609 | Name: Corinna  Müller | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+74. Email: crysantea@web.de
+   Count: 2 users
+   Users:
+     1. ID: 238 | Name: crysantea@web.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 607 | Name: Frauke Spengler | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+75. Email: d.rampolt@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 79 | Name: d.rampolt@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 387 | Name: David Rampolt | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+76. Email: daana.rkj+d1@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 338 | Name: daana.rkj+d1@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 732 | Name: Daana Rukaj | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+77. Email: dali.aljene123@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 221 | Name: dali.aljene123@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 590 | Name: Mohamed Ali Aljen | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+78. Email: daniel_spomer@hotmail.de
+   Count: 2 users
+   Users:
+     1. ID: 171 | Name: daniel_spomer@hotmail.de | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 535 | Name: Daniel Spomer | Status: Active | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 2 active user(s) found with this email!
+   ------------------------------------------------------------
+
+79. Email: daniela.stoerzel@gmail.com
+   Count: 2 users
+   Users:
+     1. ID: 189 | Name: daniela.stoerzel@gmail.com | Status: Active | Role: Teacher | New | Created: 10/25/2025
+     2. ID: 558 | Name: Daniela Störzel | Status: Inactive | Role: Teacher | New | Created: 10/25/2025
+   ⚠️  WARNING: 1 active user(s) found with this email!
+   ℹ️  1 inactive user(s) with this email
+   ------------------------------------------------------------
+
+📊 Summary:
+   Total Users: 1000
+   Unique Emails: 616
+   Duplicate Emails: 79
+   Active Duplicates: 68
+   Inactive Duplicates: 68
+   Analysis Duration: 4s
+
+⚠️  WARNING: Found duplicate emails with active users!
+   This could cause authentication issues.
+   Consider merging or deactivating duplicate accounts.
+
+🔧 Suggested Cleanup Queries:
+==================================================
+
+-- Multiple active users for email: 1999.luigi@gmail.com
+-- Keep user ID 206, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 575;
+
+-- Multiple active users for email: 1senad.berisa@gmail.com
+-- Keep user ID 342, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 736;
+
+-- Multiple active users for email: a.do@posteo.de
+-- Keep user ID 201, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 570;
+
+-- Inactive users for email: a.rahmanihh@hotmail.de (active user exists)
+-- Consider deleting inactive user ID 568:
+DELETE FROM tbl_users WHERE fld_id = 568;
+
+-- Inactive users for email: aaron.oum30@gmail.com (active user exists)
+-- Consider deleting inactive user ID 582:
+DELETE FROM tbl_users WHERE fld_id = 582;
+
+-- Inactive users for email: aaron.oumongou@gmail.com (active user exists)
+-- Consider deleting inactive user ID 581:
+DELETE FROM tbl_users WHERE fld_id = 581;
+
+-- Inactive users for email: abdelbarisaoufi3@gmail.com (active user exists)
+-- Consider deleting inactive user ID 268:
+DELETE FROM tbl_users WHERE fld_id = 268;
+
+-- Inactive users for email: afruzm@hotmail.de (active user exists)
+-- Consider deleting inactive user ID 561:
+DELETE FROM tbl_users WHERE fld_id = 561;
+
+-- Multiple active users for email: ahlammerzagua@hotmail.com
+-- Keep user ID 12, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 272;
+
+-- Inactive users for email: akirawolter@icloud.com (active user exists)
+-- Consider deleting inactive user ID 438:
+DELETE FROM tbl_users WHERE fld_id = 438;
+
+-- Inactive users for email: alaraaydin2580@gmail.com (active user exists)
+-- Consider deleting inactive user ID 315:
+DELETE FROM tbl_users WHERE fld_id = 315;
+
+-- Inactive users for email: alessandro16102003@gmail.com (active user exists)
+-- Consider deleting inactive user ID 308:
+DELETE FROM tbl_users WHERE fld_id = 308;
+
+-- Inactive users for email: alexandra.wahn@gmx.de (active user exists)
+-- Consider deleting inactive user ID 407:
+DELETE FROM tbl_users WHERE fld_id = 407;
+
+-- Inactive users for email: alexej-demerza@gmx.de (active user exists)
+-- Consider deleting inactive user ID 358:
+DELETE FROM tbl_users WHERE fld_id = 358;
+
+-- Inactive users for email: alicebenedetti122@gmail.com (active user exists)
+-- Consider deleting inactive user ID 716:
+DELETE FROM tbl_users WHERE fld_id = 716;
+
+-- Inactive users for email: alicia.penzel1@gmail.com (active user exists)
+-- Consider deleting inactive user ID 305:
+DELETE FROM tbl_users WHERE fld_id = 305;
+
+-- Inactive users for email: aliciahellbach@icloud.com (active user exists)
+-- Consider deleting inactive user ID 572:
+DELETE FROM tbl_users WHERE fld_id = 572;
+
+-- Inactive users for email: alina.angelinabobkova@gmail.com (active user exists)
+-- Consider deleting inactive user ID 418:
+DELETE FROM tbl_users WHERE fld_id = 418;
+
+-- Inactive users for email: alja_zec@hotmail.com (active user exists)
+-- Consider deleting inactive user ID 588:
+DELETE FROM tbl_users WHERE fld_id = 588;
+
+-- Inactive users for email: amaellenny@gmail.com (active user exists)
+-- Consider deleting inactive user ID 563:
+DELETE FROM tbl_users WHERE fld_id = 563;
+
+-- Inactive users for email: ameliekudlich@web.de (active user exists)
+-- Consider deleting inactive user ID 774:
+DELETE FROM tbl_users WHERE fld_id = 774;
+
+-- Inactive users for email: anamey152@gmail.com (active user exists)
+-- Consider deleting inactive user ID 3429:
+DELETE FROM tbl_users WHERE fld_id = 3429;
+
+-- Inactive users for email: andre.verwold@gmail.com (active user exists)
+-- Consider deleting inactive user ID 567:
+DELETE FROM tbl_users WHERE fld_id = 567;
+
+-- Inactive users for email: anika-gottlieb@t-online.de (active user exists)
+-- Consider deleting inactive user ID 309:
+DELETE FROM tbl_users WHERE fld_id = 309;
+
+-- Inactive users for email: anke.bauer66@web.de (active user exists)
+-- Consider deleting inactive user ID 584:
+DELETE FROM tbl_users WHERE fld_id = 584;
+
+-- Inactive users for email: anna.iashina@yahoo.com (active user exists)
+-- Consider deleting inactive user ID 392:
+DELETE FROM tbl_users WHERE fld_id = 392;
+
+-- Inactive users for email: anna.ktz@gmx.de (active user exists)
+-- Consider deleting inactive user ID 630:
+DELETE FROM tbl_users WHERE fld_id = 630;
+
+-- Inactive users for email: annachiara.ditaranto94@gmail.com (active user exists)
+-- Consider deleting inactive user ID 297:
+DELETE FROM tbl_users WHERE fld_id = 297;
+
+-- Multiple active users for email: ansch.bathija@gmail.com
+-- Keep user ID 320, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 60;
+
+-- Inactive users for email: antonia.heimlich@web.de (active user exists)
+-- Consider deleting inactive user ID 578:
+DELETE FROM tbl_users WHERE fld_id = 578;
+
+-- Inactive users for email: arditsadikusvk@gmail.com (active user exists)
+-- Consider deleting inactive user ID 390:
+DELETE FROM tbl_users WHERE fld_id = 390;
+
+-- Inactive users for email: arian.desije@gmail.com (active user exists)
+-- Consider deleting inactive user ID 552:
+DELETE FROM tbl_users WHERE fld_id = 552;
+
+-- Inactive users for email: askarovsaidamirkhon@gmail.com (active user exists)
+-- Consider deleting inactive user ID 614:
+DELETE FROM tbl_users WHERE fld_id = 614;
+
+-- Inactive users for email: aufatmen1970@gmail.com (active user exists)
+-- Consider deleting inactive user ID 395:
+DELETE FROM tbl_users WHERE fld_id = 395;
+
+-- Inactive users for email: aydin.vm14@gmail.com (active user exists)
+-- Consider deleting inactive user ID 608:
+DELETE FROM tbl_users WHERE fld_id = 608;
+
+-- Inactive users for email: ayush45n@gmail.com (active user exists)
+-- Consider deleting inactive user ID 762:
+DELETE FROM tbl_users WHERE fld_id = 762;
+
+-- Inactive users for email: badr.assouli@gmx.de (active user exists)
+-- Consider deleting inactive user ID 405:
+DELETE FROM tbl_users WHERE fld_id = 405;
+
+-- Inactive users for email: badr.assouli88@gmail.com (active user exists)
+-- Consider deleting inactive user ID 404:
+DELETE FROM tbl_users WHERE fld_id = 404;
+
+-- Inactive users for email: benjoel.krause12@gmail.com (active user exists)
+-- Consider deleting inactive user ID 3578:
+DELETE FROM tbl_users WHERE fld_id = 3578;
+
+-- Inactive users for email: bennetfreitag@gmail.com (active user exists)
+-- Consider deleting inactive user ID 523:
+DELETE FROM tbl_users WHERE fld_id = 523;
+
+-- Inactive users for email: bertami93@gmail.com (active user exists)
+-- Consider deleting inactive user ID 585:
+DELETE FROM tbl_users WHERE fld_id = 585;
+
+-- Inactive users for email: beyza.esentuerk@hotmail.de (active user exists)
+-- Consider deleting inactive user ID 286:
+DELETE FROM tbl_users WHERE fld_id = 286;
+
+-- Inactive users for email: biomaster4711@yahoo.de (active user exists)
+-- Consider deleting inactive user ID 589:
+DELETE FROM tbl_users WHERE fld_id = 589;
+
+-- Multiple active users for email: bnkm13@gmx.de
+-- Keep user ID 33, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 293;
+
+-- Inactive users for email: bocivilma@gmail.com (active user exists)
+-- Consider deleting inactive user ID 312:
+DELETE FROM tbl_users WHERE fld_id = 312;
+
+-- Multiple active users for email: borancanmurat@hotmail.de
+-- Keep user ID 32, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 292;
+
+-- Inactive users for email: buketcal@hotmail.com (active user exists)
+-- Consider deleting inactive user ID 513:
+DELETE FROM tbl_users WHERE fld_id = 513;
+
+-- Multiple active users for email: candas.yildirim@study.hs-duesseldorf.de
+-- Keep user ID 224, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 593;
+
+-- Inactive users for email: candasyildirim@outlook.de (active user exists)
+-- Consider deleting inactive user ID 586:
+DELETE FROM tbl_users WHERE fld_id = 586;
+
+-- Inactive users for email: cansu.yuecedag@hotmail.com (active user exists)
+-- Consider deleting inactive user ID 560:
+DELETE FROM tbl_users WHERE fld_id = 560;
+
+-- Inactive users for email: caro2@mail.de (active user exists)
+-- Consider deleting inactive user ID 421:
+DELETE FROM tbl_users WHERE fld_id = 421;
+
+-- Inactive users for email: carolina.oetkerkast@icloud.com (active user exists)
+-- Consider deleting inactive user ID 775:
+DELETE FROM tbl_users WHERE fld_id = 775;
+
+-- Inactive users for email: carolinaoetkerkast@gmail.com (active user exists)
+-- Consider deleting inactive user ID 776:
+DELETE FROM tbl_users WHERE fld_id = 776;
+
+-- Inactive users for email: carolinpohl5@yahoo.de (active user exists)
+-- Consider deleting inactive user ID 631:
+DELETE FROM tbl_users WHERE fld_id = 631;
+
+-- Inactive users for email: cevenini@gmx.de (active user exists)
+-- Consider deleting inactive user ID 384:
+DELETE FROM tbl_users WHERE fld_id = 384;
+
+-- Multiple active users for email: charleenschmitz1806@gmail.com
+-- Keep user ID 174, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 542;
+
+-- Inactive users for email: chidera.odo@icloud.com (active user exists)
+-- Consider deleting inactive user ID 747:
+DELETE FROM tbl_users WHERE fld_id = 747;
+
+-- Inactive users for email: chlorena@web.de (active user exists)
+-- Consider deleting inactive user ID 508:
+DELETE FROM tbl_users WHERE fld_id = 508;
+
+-- Multiple active users for email: christina.maksimov@gmail.com
+-- Keep user ID 42, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 302;
+
+-- Inactive users for email: christopherschoell@icloud.com (active user exists)
+-- Consider deleting inactive user ID 306:
+DELETE FROM tbl_users WHERE fld_id = 306;
+
+-- Inactive users for email: clara.sieg.1992@gmail.com (active user exists)
+-- Consider deleting inactive user ID 4713:
+DELETE FROM tbl_users WHERE fld_id = 4713;
+
+-- Inactive users for email: cmuelle3@uni-muenster.de (active user exists)
+-- Consider deleting inactive user ID 609:
+DELETE FROM tbl_users WHERE fld_id = 609;
+
+-- Inactive users for email: crysantea@web.de (active user exists)
+-- Consider deleting inactive user ID 607:
+DELETE FROM tbl_users WHERE fld_id = 607;
+
+-- Inactive users for email: d.rampolt@gmail.com (active user exists)
+-- Consider deleting inactive user ID 387:
+DELETE FROM tbl_users WHERE fld_id = 387;
+
+-- Inactive users for email: daana.rkj+d1@gmail.com (active user exists)
+-- Consider deleting inactive user ID 732:
+DELETE FROM tbl_users WHERE fld_id = 732;
+
+-- Inactive users for email: dali.aljene123@gmail.com (active user exists)
+-- Consider deleting inactive user ID 590:
+DELETE FROM tbl_users WHERE fld_id = 590;
+
+-- Multiple active users for email: daniel_spomer@hotmail.de
+-- Keep user ID 171, deactivate others:
+UPDATE tbl_users SET fld_status = 'Inactive' WHERE fld_id = 535;
+
+-- Inactive users for email: daniela.stoerzel@gmail.com (active user exists)
+-- Consider deleting inactive user ID 558:
+DELETE FROM tbl_users WHERE fld_id = 558;

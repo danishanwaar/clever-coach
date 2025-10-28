@@ -194,20 +194,27 @@ export function useTeacherContract() {
           fld_last_name,
           fld_email,
           fld_city,
-          fld_phone,
-          tbl_teachers_subjects_expertise(
-            tbl_subjects(fld_subject)
-          )
+          fld_phone
         `)
         .eq('fld_id', teacherId)
         .single();
 
       if (teacherError) throw teacherError;
 
+      // Get teacher's subjects separately
+      const { data: subjectsData, error: subjectsError } = await supabase
+        .from('tbl_teachers_subjects_expertise')
+        .select(`
+          tbl_subjects(fld_subject)
+        `)
+        .eq('fld_tid', teacherId);
+
+      if (subjectsError) throw subjectsError;
+
       const teacherName = `${teacher.fld_first_name} ${teacher.fld_last_name}`;
-      const subjects = teacher.tbl_teachers_subjects_expertise
-        .map((ts: any) => ts.tbl_subjects.fld_subject)
-        .join(', ');
+      const subjects = subjectsData
+        ?.map((ts: any) => ts.tbl_subjects.fld_subject)
+        .join(', ') || '';
 
       // Send welcome email to teacher
       const { error: teacherEmailError } = await supabase.functions.invoke('send-email', {

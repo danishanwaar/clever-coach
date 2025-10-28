@@ -28,6 +28,7 @@ export interface Applicant {
   fld_latitude: string;
   fld_longitude: string;
   fld_uid: number;
+  tbl_teachers_subjects_expertise?: ApplicantSubject[];
 }
 
 export interface ApplicantSubject {
@@ -68,15 +69,16 @@ export interface ApplicantActivity {
   };
 }
 
-export const useApplicants = () => {
+export const useApplicants = (searchTerm: string = "") => {
   const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
 
-  // Fetch all applicants (filtering is done client-side for better real-time performance)
+  // Fetch all applicants with preloaded data
   const applicantsQuery = useQuery({
-    queryKey: ['applicants'],
+    queryKey: ['applicants', searchTerm],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Build base query with all related data preloaded
+      let query = supabase
         .from('tbl_teachers')
         .select(`
           fld_id,
@@ -102,45 +104,66 @@ export const useApplicants = () => {
           fld_per_l_rate,
           fld_latitude,
           fld_longitude,
-          fld_uid
-        `)
-        .neq('fld_status', 'Hired')
-        .order('fld_id', { ascending: false });
-
-      if (error) throw error;
-      return data as Applicant[];
-    },
-  });
-
-  // Fetch applicant subjects
-  const applicantSubjectsQuery = useQuery({
-    queryKey: ['applicant-subjects'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tbl_teachers_subjects_expertise')
-        .select(`
-          fld_id,
-          fld_tid,
-          fld_sid,
-          fld_level,
-          fld_experience,
-          fld_edate,
-          fld_uname,
-          tbl_subjects:fld_sid (
+          fld_uid,
+          tbl_teachers_subjects_expertise!fk_teacher_subjects_teacher (
             fld_id,
-            fld_subject,
-            fld_image
-          ),
-          tbl_levels:fld_level (
-            fld_id,
-            fld_level
+            fld_tid,
+            fld_sid,
+            fld_level,
+            fld_experience,
+            fld_edate,
+            fld_uname,
+            tbl_subjects:fld_sid (
+              fld_id,
+              fld_subject,
+              fld_image
+            ),
+            tbl_levels:fld_level (
+              fld_id,
+              fld_level
+            )
           )
-        `);
+        `)
+        .neq('fld_status', 'Hired');
 
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%`);
+      }
+
+      // Order by ID descending
+      query = query.order('fld_id', { ascending: false });
+
+      const { data, error } = await query;
       if (error) throw error;
-      return data as ApplicantSubject[];
+
+      // Get status-wise counts
+      const statusCounts: Record<string, number> = {};
+      const statuses = ["New", "Screening", "Interview", "Offer", "Pending For Signature", "Rejected", "Waiting List", "Unclear"];
+      
+      for (const status of statuses) {
+        const { count } = await supabase
+          .from('tbl_teachers')
+          .select('fld_id', { count: 'exact', head: true })
+          .eq('fld_status', status as any);
+        statusCounts[status] = count || 0;
+      }
+      
+      // Get total count
+      const { count: total } = await supabase
+        .from('tbl_teachers')
+        .select('fld_id', { count: 'exact', head: true })
+        .neq('fld_status', 'Hired');
+      statusCounts["All"] = total || 0;
+
+      return {
+        data: data as unknown as Applicant[],
+        statusCounts: statusCounts,
+        totalCount: data?.length || 0
+      };
     },
   });
+
 
   // Fetch activity types
   const activityTypesQuery = useQuery({
@@ -325,17 +348,18 @@ export const useApplicants = () => {
   });
 
   return {
-    applicants: applicantsQuery.data || [],
-    applicantSubjects: applicantSubjectsQuery.data || [],
+    applicants: applicantsQuery.data?.data || [],
     activityTypes: activityTypesQuery.data || [],
     applicantActivities: applicantActivitiesQuery.data || [],
     isLoading: applicantsQuery.isLoading,
-    isLoadingSubjects: applicantSubjectsQuery.isLoading,
     isLoadingActivities: applicantActivitiesQuery.isLoading,
     updateStatus: updateStatusMutation.mutate,
     recordActivity: recordActivityMutation.mutate,
     isUpdatingStatus: updateStatusMutation.isPending,
     isRecordingActivity: recordActivityMutation.isPending,
     refetch: () => applicantsQuery.refetch(),
+    // Data counts
+    totalCount: applicantsQuery.data?.totalCount || 0,
+    statusCounts: applicantsQuery.data?.statusCounts || {},
   };
 };

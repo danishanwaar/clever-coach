@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStudentSettings } from '@/hooks/useStudentSettings';
 import { useStudent } from '@/hooks/useStudents';
@@ -14,13 +14,14 @@ import {
   Save, 
   User, 
   GraduationCap,
-  CreditCard,
-  BookOpen,
+  CreditCard, 
+  BookOpen, 
   BarChart3,
-  FileText,
+  FileText, 
   AlertTriangle,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 import {
   AlertDialog,
@@ -58,6 +59,7 @@ export default function StudentSettings() {
     updateContract,
     updateBank,
     updateSubjects,
+    updateSubjectsMutation,
     deleteSubject,
     updateStatistics,
     updateNotes,
@@ -65,58 +67,149 @@ export default function StudentSettings() {
     isUpdating,
   } = useStudentSettings(studentId);
 
-  // Form states
+  // Subject emoji mapping
+  const getSubjectEmoji = (subjectName: string) => {
+    const emojiMap: Record<string, string> = {
+      'Mathematik': '📐',
+      'Deutsch': '📝',
+      'Englisch': '🇬🇧',
+      'Französisch': '🇫🇷',
+      'Spanisch': '🇪🇸',
+      'Physik': '⚡',
+      'Chemie': '🧪',
+      'Biologie': '🌱',
+      'Geschichte': '📜',
+      'Geographie': '🗺️',
+      'Wirtschaft': '💼',
+      'Informatik': '💻',
+      'Kunst': '🎨',
+      'Musik': '🎵',
+      'Sport': '⚽',
+      'Latein': '🏛️',
+      'Philosophie': '🤔',
+      'Politik': '🏛️',
+      'Religion': '✨',
+    };
+    return emojiMap[subjectName] || '📚';
+  };
+
+  // Get available subjects (not enrolled)
+  const availableSubjects = subjects.filter(subject => 
+    !studentSubjects.some(s => s.fld_suid === subject.fld_id)
+  );
+
+  // Form states - Update when studentData changes
   const [basicForm, setBasicForm] = useState({
-    fld_sal: studentData?.fld_sal || '',
-    fld_first_name: studentData?.fld_first_name || '',
-    fld_last_name: studentData?.fld_last_name || '',
-    fld_sd: studentData?.fld_sd || '',
-    fld_s_first_name: studentData?.fld_s_first_name || '',
-    fld_s_last_name: studentData?.fld_s_last_name || '',
-    fld_level: studentData?.fld_level?.toString() || '',
-    fld_school: studentData?.fld_school || '',
-    fld_reason: studentData?.fld_reason || '',
+    fld_sal: '',
+    fld_first_name: '',
+    fld_last_name: '',
+    fld_sd: '',
+    fld_s_first_name: '',
+    fld_s_last_name: '',
+    fld_level: '',
+    fld_school: '',
+    fld_reason: '',
   });
 
   const [contactForm, setContactForm] = useState({
-    fld_email: studentData?.fld_email || '',
-    fld_mobile: studentData?.fld_mobile || '',
-    fld_phone: studentData?.fld_phone || '',
-    fld_city: studentData?.fld_city || '',
-    fld_zip: studentData?.fld_zip || '',
-    fld_address: studentData?.fld_address || '',
+    fld_email: '',
+    fld_mobile: '',
+    fld_phone: '',
+    fld_city: '',
+    fld_zip: '',
+    fld_address: '',
   });
 
   const [bankForm, setBankForm] = useState({
-    fld_iban: contract?.fld_iban || '',
-    fld_bi: contract?.fld_bi || '',
+    fld_iban: '',
+    fld_bi: '',
   });
 
   const [contractForm, setContractForm] = useState({
-    fld_payer: studentData?.fld_payer || '',
-    fld_ct: studentData?.fld_ct?.toString() || '',
-    fld_wh: studentData?.fld_wh?.toString() || '',
-    fld_ld: studentData?.fld_ld || '',
-    fld_l_mode: studentData?.fld_l_mode || '',
-    fld_price: studentData?.fld_price || '',
-    fld_reg_fee: studentData?.fld_reg_fee || '',
+    fld_payer: '',
+    fld_ct: '',
+    fld_wh: '',
+    fld_ld: '',
+    fld_l_mode: '',
+    fld_price: '',
+    fld_reg_fee: '',
   });
 
   const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
 
   const [statisticsForm, setStatisticsForm] = useState({
-    fld_f_lead: studentData?.fld_f_lead || '',
-    fld_uname: studentData?.fld_uname?.toString() || '',
+    fld_f_lead: '',
+    fld_uname: '',
   });
 
   const [notesForm, setNotesForm] = useState({
-    fld_notes: studentData?.fld_notes || '',
+    fld_notes: '',
   });
 
   const [statusForm, setStatusForm] = useState({
-    fld_status: studentData?.fld_status || '',
-    fld_reason: studentData?.fld_reason || '',
+    fld_status: '',
+    fld_reason: '',
   });
+
+  // Update form states when studentData changes
+  React.useEffect(() => {
+    if (studentData) {
+      setBasicForm({
+        fld_sal: studentData?.fld_sal || '',
+        fld_first_name: studentData?.fld_first_name || '',
+        fld_last_name: studentData?.fld_last_name || '',
+        fld_sd: studentData?.fld_sd || '',
+        fld_s_first_name: studentData?.fld_s_first_name || '',
+        fld_s_last_name: studentData?.fld_s_last_name || '',
+        fld_level: studentData?.fld_level?.toString() || '',
+        fld_school: studentData?.fld_school || '',
+        fld_reason: studentData?.fld_reason || '',
+      });
+
+        setContactForm({
+        fld_email: studentData?.fld_email || '',
+        fld_mobile: studentData?.fld_mobile || '',
+        fld_phone: studentData?.fld_phone || '',
+        fld_city: studentData?.fld_city || '',
+        fld_zip: studentData?.fld_zip || '',
+        fld_address: studentData?.fld_address || '',
+        });
+
+        setContractForm({
+        fld_payer: studentData?.fld_payer || '',
+        fld_ct: studentData?.fld_ct?.toString() || '',
+        fld_wh: studentData?.fld_wh?.toString() || '',
+        fld_ld: studentData?.fld_ld || '',
+        fld_l_mode: studentData?.fld_l_mode || '',
+        fld_price: studentData?.fld_price?.toString() || '',
+        fld_reg_fee: studentData?.fld_reg_fee?.toString() || '',
+        });
+
+        setStatisticsForm({
+        fld_f_lead: studentData?.fld_f_lead || '',
+        fld_uname: studentData?.fld_uname?.toString() || '',
+        });
+
+        setNotesForm({
+        fld_notes: studentData?.fld_notes || '',
+        });
+
+        setStatusForm({
+        fld_status: studentData?.fld_status || '',
+        fld_reason: studentData?.fld_reason || '',
+      });
+    }
+  }, [studentData]);
+
+  // Update bank form when contract changes
+  React.useEffect(() => {
+    if (contract) {
+      setBankForm({
+        fld_iban: contract?.fld_iban || '',
+        fld_bi: contract?.fld_bi || '',
+      });
+    }
+  }, [contract]);
 
   const handleBasicSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,9 +237,15 @@ export default function StudentSettings() {
     updateContract(formData);
   };
 
-  const handleSubjectsSubmit = (e: React.FormEvent) => {
+  const handleSubjectsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateSubjects(selectedSubjects);
+    try {
+      await updateSubjectsMutation.mutateAsync(selectedSubjects);
+      // Clear selected subjects after successful save
+      setSelectedSubjects([]);
+    } catch (error) {
+      console.error('Failed to update subjects:', error);
+    }
   };
 
   const handleStatisticsSubmit = (e: React.FormEvent) => {
@@ -188,12 +287,12 @@ export default function StudentSettings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Contact Person Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-primary text-base sm:text-lg">
+            <User className="h-4 w-4 sm:h-5 sm:w-5" />
             Ansprechpartner (Contact Person)
           </CardTitle>
         </CardHeader>
@@ -215,7 +314,7 @@ export default function StudentSettings() {
                     <SelectItem value="Divers">Divers</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+          </div>
               <div>
                 <Label htmlFor="fld_first_name">Vorname (First Name)</Label>
                 <Input
@@ -224,7 +323,7 @@ export default function StudentSettings() {
                   onChange={(e) => setBasicForm(prev => ({ ...prev, fld_first_name: e.target.value }))}
                   required
                 />
-              </div>
+            </div>
               <div>
                 <Label htmlFor="fld_last_name">Nachname (Last Name)</Label>
                 <Input
@@ -233,14 +332,14 @@ export default function StudentSettings() {
                   onChange={(e) => setBasicForm(prev => ({ ...prev, fld_last_name: e.target.value }))}
                   required
                 />
-              </div>
+          </div>
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={isUpdating}>
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
                 Save Changes
-              </Button>
-            </div>
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>
@@ -248,8 +347,8 @@ export default function StudentSettings() {
       {/* Student Data Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <GraduationCap className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-primary text-base sm:text-lg">
+            <GraduationCap className="h-4 w-4 sm:h-5 sm:w-5" />
             Schülerdaten (Student Data)
           </CardTitle>
         </CardHeader>
@@ -271,7 +370,7 @@ export default function StudentSettings() {
                     <SelectItem value="Andere">Andere</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
+          </div>
               <div>
                 <Label htmlFor="fld_s_first_name">Nachname (Last Name)</Label>
                 <Input
@@ -279,8 +378,8 @@ export default function StudentSettings() {
                   value={basicForm.fld_s_first_name}
                   onChange={(e) => setBasicForm(prev => ({ ...prev, fld_s_first_name: e.target.value }))}
                   required
-                />
-              </div>
+            />
+          </div>
               <div>
                 <Label htmlFor="fld_s_last_name">Vorname (First Name)</Label>
                 <Input
@@ -349,10 +448,10 @@ export default function StudentSettings() {
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={isUpdating}>
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
                 Save Changes
-              </Button>
-            </div>
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>
@@ -360,7 +459,7 @@ export default function StudentSettings() {
       {/* Customer Data Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Kundendaten (Customer Data)</CardTitle>
+          <CardTitle className="text-primary text-base sm:text-lg">Kundendaten (Customer Data)</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleContactSubmit} className="space-y-4">
@@ -374,7 +473,7 @@ export default function StudentSettings() {
                   onChange={(e) => setContactForm(prev => ({ ...prev, fld_email: e.target.value }))}
                   required
                 />
-              </div>
+          </div>
               <div>
                 <Label htmlFor="fld_mobile">Tel. Mobil (Mobile)</Label>
                 <Input
@@ -424,10 +523,10 @@ export default function StudentSettings() {
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={isUpdating}>
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
                 Save Changes
-              </Button>
-            </div>
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>
@@ -435,8 +534,8 @@ export default function StudentSettings() {
       {/* Bank Account Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-primary text-base sm:text-lg">
+            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
             Bankkonto Information (Bank Account)
           </CardTitle>
         </CardHeader>
@@ -452,7 +551,7 @@ export default function StudentSettings() {
                   pattern="[a-zA-Z0-9]{22}"
                   required
                 />
-              </div>
+          </div>
               <div>
                 <Label htmlFor="fld_bi">Bankinstitut (Bank Institution)</Label>
                 <Input
@@ -465,10 +564,10 @@ export default function StudentSettings() {
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={isUpdating}>
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
                 Save Changes
-              </Button>
-            </div>
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>
@@ -476,7 +575,7 @@ export default function StudentSettings() {
       {/* Lessons and Price Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Unterricht und Preis (Lessons and Price)</CardTitle>
+          <CardTitle className="text-primary text-base sm:text-lg">Unterricht und Preis (Lessons and Price)</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleContractSubmit} className="space-y-4">
@@ -489,7 +588,7 @@ export default function StudentSettings() {
                   onChange={(e) => setContractForm(prev => ({ ...prev, fld_payer: e.target.value }))}
                   required
                 />
-              </div>
+          </div>
               <div>
                 <Label htmlFor="fld_ct">Vertragslaufzeit (Contract Duration)</Label>
                 <Select
@@ -584,26 +683,28 @@ export default function StudentSettings() {
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={isUpdating}>
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
                 Save Changes
-              </Button>
-            </div>
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>
 
       {/* Subjects Section */}
-      <Card>
+      <Card className="hover:shadow-lg transition-shadow">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-primary text-base sm:text-lg">
+            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
             Fach/Fächer (Subjects)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubjectsSubmit} className="space-y-4">
+          <form onSubmit={handleSubjectsSubmit} className="space-y-6">
             <div>
-              <Label htmlFor="subjects">In welchem Fach benötigt Ihr Kind Nachhilfe?</Label>
+              <Label htmlFor="subjects" className="text-sm font-semibold mb-2 block">
+                In welchem Fach benötigt Ihr Kind Nachhilfe?
+              </Label>
               <Select
                 value=""
                 onValueChange={(value) => {
@@ -613,39 +714,49 @@ export default function StudentSettings() {
                   }
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="h-10">
                   <SelectValue placeholder="Select subjects" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((subject) => (
+                  </SelectTrigger>
+                  <SelectContent>
+                  {availableSubjects.map((subject) => (
                     <SelectItem key={subject.fld_id} value={subject.fld_id.toString()}>
-                      {subject.fld_subject}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">{getSubjectEmoji(subject.fld_subject)}</span>
+                        <span>{subject.fld_subject}</span>
+                      </div>
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            
+            {/* Selected Subjects Display */}
             {selectedSubjects.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {selectedSubjects.map((subjectId) => {
-                  const subject = subjects.find(s => s.fld_id === subjectId);
-                  return (
-                    <Badge key={subjectId} variant="secondary" className="flex items-center gap-1">
-                      {subject?.fld_subject}
-                      <button
-                        type="button"
-                        onClick={() => setSelectedSubjects(prev => prev.filter(id => id !== subjectId))}
-                        className="ml-1 text-red-500 hover:text-red-700"
-                      >
-                        ×
-                      </button>
-                    </Badge>
-                  );
-                })}
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold">Selected Subjects</Label>
+                <div className="flex flex-wrap gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  {selectedSubjects.map((subjectId) => {
+                    const subject = subjects.find(s => s.fld_id === subjectId);
+                    return (
+                      <Badge key={subjectId} variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 transition-colors">
+                        <span className="text-base">{getSubjectEmoji(subject?.fld_subject || '')}</span>
+                        <span className="font-medium">{subject?.fld_subject}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSubjects(prev => prev.filter(id => id !== subjectId))}
+                          className="ml-1 hover:bg-red-100 rounded-full p-0.5 transition-colors"
+                        >
+                          <X className="h-3 w-3 text-red-600" />
+                        </button>
+                      </Badge>
+                    );
+                  })}
+            </div>
               </div>
             )}
+
             <div className="flex justify-end">
-              <Button type="submit" disabled={isUpdating}>
+              <Button type="submit" disabled={isUpdating} className="bg-primary hover:bg-primary/90">
                 <Save className="h-4 w-4 mr-2" />
                 Save Changes
               </Button>
@@ -654,18 +765,24 @@ export default function StudentSettings() {
 
           {/* Enrolled Subjects */}
           {studentSubjects.length > 0 && (
-            <div className="mt-6">
-              <h4 className="font-semibold mb-3">Enrolled Subjects</h4>
-              <div className="space-y-2">
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
+                <GraduationCap className="h-5 w-5" />
+                Enrolled Subjects
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {studentSubjects.map((studentSubject) => (
-                  <div key={studentSubject.fld_id} className="flex items-center justify-between p-3 border rounded">
-                    <span>{studentSubject.tbl_subjects?.fld_subject}</span>
+                  <div key={studentSubject.fld_id} className="group flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{getSubjectEmoji(studentSubject.tbl_subjects?.fld_subject || '')}</span>
+                      <span className="font-medium text-gray-900">{studentSubject.tbl_subjects?.fld_subject}</span>
+                      </div>
                     {!hasActiveContracts && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm">
+                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600">
                             <Trash2 className="h-4 w-4" />
-                          </Button>
+                      </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
@@ -685,11 +802,11 @@ export default function StudentSettings() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                    )}
-                  </div>
-                ))}
+                )}
               </div>
+                ))}
             </div>
+          </div>
           )}
         </CardContent>
       </Card>
@@ -697,8 +814,8 @@ export default function StudentSettings() {
       {/* Statistics Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-primary text-base sm:text-lg">
+            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
             Statistik (Statistics)
           </CardTitle>
         </CardHeader>
@@ -727,17 +844,19 @@ export default function StudentSettings() {
                 <Label htmlFor="fld_uname">Kunde erfasst von (Recorded by)</Label>
                 <Input
                   id="fld_uname"
-                  value={userData?.fld_name || 'Loading...'}
+                  value={userData?.fld_name || ''}
                   readOnly
+                  placeholder={isLoading ? 'Loading...' : 'Not set'}
+                  className={!userData?.fld_name ? 'text-gray-500' : ''}
                 />
               </div>
             </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={isUpdating}>
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
                 Save Changes
-              </Button>
-            </div>
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>
@@ -745,8 +864,8 @@ export default function StudentSettings() {
       {/* Notes Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-primary text-base sm:text-lg">
+            <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
             Notiz (Notes)
           </CardTitle>
         </CardHeader>
@@ -754,28 +873,29 @@ export default function StudentSettings() {
           <form onSubmit={handleNotesSubmit} className="space-y-4">
             <div>
               <Label htmlFor="fld_notes">Notiz (Notes)</Label>
-              <Input
+            <Textarea
                 id="fld_notes"
                 value={notesForm.fld_notes}
                 onChange={(e) => setNotesForm(prev => ({ ...prev, fld_notes: e.target.value }))}
-                required
-              />
-            </div>
+              rows={4}
+                placeholder="Enter additional notes..."
+            />
+          </div>
             <div className="flex justify-end">
               <Button type="submit" disabled={isUpdating}>
-                <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-2" />
                 Save Changes
-              </Button>
-            </div>
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>
 
       {/* Danger Zone Section */}
-      <Card className="border-red-500">
+      <Card className="border-red-500 bg-red-50/30 mt-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-red-600">
-            <AlertTriangle className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-red-600 text-base sm:text-lg">
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />
             Gefahrenzone (Danger Zone)
           </CardTitle>
         </CardHeader>
@@ -818,14 +938,14 @@ export default function StudentSettings() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
             </div>
+          </div>
             <div className="flex justify-end">
-              <Button type="submit" variant="destructive" disabled={isUpdating}>
+              <Button type="submit" variant="destructive" disabled={isUpdating} className="bg-red-600 hover:bg-red-700">
                 <Save className="h-4 w-4 mr-2" />
-                Save
-              </Button>
-            </div>
+                Save Status
+            </Button>
+          </div>
           </form>
         </CardContent>
       </Card>

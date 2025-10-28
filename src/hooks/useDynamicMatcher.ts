@@ -139,10 +139,19 @@ export function useDynamicMatcher() {
     },
   });
 
-  // Get student subjects
+  // Get student subjects (following legacy logic)
   const getStudentSubjects = useMutation({
     mutationFn: async (studentId: number) => {
-      const { data, error } = await supabase
+      // First get all active subjects
+      const { data: allSubjects, error: subjectsError } = await supabase
+        .from('tbl_subjects')
+        .select('fld_id, fld_subject')
+        .eq('fld_status', 'Active');
+
+      if (subjectsError) throw subjectsError;
+
+      // Then get student's subjects
+      const { data: studentSubjects, error: studentSubjectsError } = await supabase
         .from('tbl_students_subjects')
         .select(`
           fld_id,
@@ -152,14 +161,31 @@ export function useDynamicMatcher() {
         `)
         .eq('fld_sid', studentId);
 
-      if (error) throw error;
-      return data.map(item => ({
-        fld_id: item.fld_id,
-        fld_sid: item.fld_sid,
-        fld_suid: item.fld_suid,
-        fld_subject: item.tbl_subjects.fld_subject,
-        is_mediated: false, // Will be updated by mediation stages query
-      })) as StudentSubject[];
+        if (studentSubjectsError) throw studentSubjectsError;
+
+      // Get mediation stages for this student
+      const { data: mediationStages, error: mediationError } = await supabase
+        .from('tbl_students_mediation_stages')
+        .select('fld_ssid')
+        .eq('fld_sid', studentId);
+
+      if (mediationError) throw mediationError;
+
+      // Create a set of mediated subject IDs
+      const mediatedSubjectIds = new Set(mediationStages.map(stage => stage.fld_ssid));
+
+      // Filter subjects: only include subjects the student has that are not yet in mediation
+      const filteredSubjects = studentSubjects
+        .filter(studentSubject => !mediatedSubjectIds.has(studentSubject.fld_id))
+        .map(item => ({
+          fld_id: item.fld_id,
+          fld_sid: item.fld_sid,
+          fld_suid: item.fld_suid,
+          fld_subject: item.tbl_subjects.fld_subject,
+          is_mediated: false,
+        })) as StudentSubject[];
+
+      return filteredSubjects;
     },
   });
 
@@ -219,7 +245,7 @@ export function useDynamicMatcher() {
         `);
 
       // Apply filters
-      if (formData.fld_gender) {
+      if (formData.fld_gender && formData.fld_gender.trim() !== '') {
         query = query.eq('fld_gender', formData.fld_gender as 'Männlich' | 'Weiblich' | 'Divers');
       }
 

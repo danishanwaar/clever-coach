@@ -28,6 +28,7 @@ export interface Teacher {
   fld_latitude: string;
   fld_longitude: string;
   fld_uid: number;
+  tbl_teachers_subjects_expertise?: TeacherSubject[];
 }
 
 export interface TeacherSubject {
@@ -68,44 +69,40 @@ export interface ActivityType {
   fld_status: string;
 }
 
-export const useTeachers = (status?: string) => {
+export const useTeachers = (status?: string, searchTerm: string = "") => {
   const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
 
-  // Fetch teachers based on status
+  // Fetch teachers based on status with preloaded data
   const teachersQuery = useQuery({
-    queryKey: ['teachers', status],
+    queryKey: ['teachers', status, searchTerm],
     queryFn: async () => {
+      // Build base query with all related data preloaded
       let query = supabase
         .from('tbl_teachers')
         .select(`
-          fld_id,
-          fld_first_name,
-          fld_last_name,
-          fld_email,
-          fld_phone,
-          fld_city,
-          fld_zip,
-          fld_street,
-          fld_gender,
-          fld_dob,
-          fld_education,
-          fld_t_mode,
-          fld_l_mode,
-          fld_short_bio,
-          fld_self,
-          fld_source,
-          fld_evaluation,
-          fld_status,
-          fld_edate,
-          fld_onboard_date,
-          fld_per_l_rate,
-          fld_latitude,
-          fld_longitude,
-          fld_uid
-        `)
-        .order('fld_id', { ascending: false });
+          *,
+          tbl_teachers_subjects_expertise!fk_teacher_subjects_teacher (
+            fld_id,
+            fld_tid,
+            fld_sid,
+            fld_level,
+            fld_experience,
+            fld_edate,
+            fld_uname,
+            tbl_subjects:fld_sid (
+              fld_id,
+              fld_subject,
+              fld_image
+            ),
+            tbl_levels:fld_level (
+              fld_id,
+              fld_level
+            )
+          )
+        `);
 
+      // Apply status filter
       if (status && status !== 'All') {
         query = query.eq('fld_status', status as any);
       } else {
@@ -113,41 +110,43 @@ export const useTeachers = (status?: string) => {
         query = query.eq('fld_status', 'Hired');
       }
 
+      // Apply search filter
+      if (searchTerm) {
+        query = query.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%`);
+      }
+
+      // Order by ID descending
+      query = query.order('fld_id', { ascending: false });
+
       const { data, error } = await query;
       if (error) throw error;
-      return data as Teacher[];
+
+      // Get status-wise counts
+      const statusCounts: Record<string, number> = {};
+      const statuses = ["Hired", "Inactive", "Deleted"];
+      
+      for (const status of statuses) {
+        const { count } = await supabase
+          .from('tbl_teachers')
+          .select('fld_id', { count: 'exact', head: true })
+          .eq('fld_status', status as any);
+        statusCounts[status] = count || 0;
+      }
+      
+      // Get total count
+      const { count: total } = await supabase
+        .from('tbl_teachers')
+        .select('fld_id', { count: 'exact', head: true });
+      statusCounts["All"] = total || 0;
+
+      return {
+        data: data as unknown as Teacher[],
+        statusCounts: statusCounts,
+        totalCount: data?.length || 0
+      };
     },
   });
 
-  // Fetch teacher subjects
-  const teacherSubjectsQuery = useQuery({
-    queryKey: ['teacher-subjects'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tbl_teachers_subjects_expertise')
-        .select(`
-          fld_id,
-          fld_tid,
-          fld_sid,
-          fld_level,
-          fld_experience,
-          fld_edate,
-          fld_uname,
-          tbl_subjects:fld_sid (
-            fld_id,
-            fld_subject,
-            fld_image
-          ),
-          tbl_levels:fld_level (
-            fld_id,
-            fld_level
-          )
-        `);
-
-      if (error) throw error;
-      return data as TeacherSubject[];
-    },
-  });
 
   // Fetch activity types
   const activityTypesQuery = useQuery({
@@ -280,12 +279,10 @@ export const useTeachers = (status?: string) => {
   });
 
   return {
-    teachers: teachersQuery.data || [],
-    teacherSubjects: teacherSubjectsQuery.data || [],
+    teachers: teachersQuery.data?.data || [],
     teacherActivities: teacherActivitiesQuery.data || [],
     activityTypes: activityTypesQuery.data || [],
     isLoading: teachersQuery.isLoading,
-    isLoadingSubjects: teacherSubjectsQuery.isLoading,
     isLoadingActivities: teacherActivitiesQuery.isLoading,
     updateStatus: updateStatusMutation.mutate,
     updateRate: updateRateMutation.mutate,
@@ -294,5 +291,8 @@ export const useTeachers = (status?: string) => {
     isUpdatingRate: updateRateMutation.isPending,
     isRecordingActivity: recordActivityMutation.isPending,
     refetch: () => teachersQuery.refetch(),
+    // Data counts
+    totalCount: teachersQuery.data?.totalCount || 0,
+    statusCounts: teachersQuery.data?.statusCounts || {},
   };
 };

@@ -9,7 +9,7 @@ import {
   Trash2,
   Euro,
   Clock,
-  BookOpen,
+  BookOpen, 
   Calendar
 } from 'lucide-react';
 import { 
@@ -177,13 +177,13 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, studentId, studentNa
               <div className="flex-1">
                 <div className="font-semibold text-gray-900">
                   Contract #{contract.fld_id} - €{Math.round(contract.fld_s_per_lesson_rate || 0)}/lesson
-                </div>
+          </div>
                 <div className="text-sm text-gray-500">
                   {contract.tbl_contracts_engagement?.[0]?.tbl_teachers?.fld_first_name} {contract.tbl_contracts_engagement?.[0]?.tbl_teachers?.fld_last_name} | 
                   Dated {formatDate(contract.fld_edate)}
-                </div>
-              </div>
-            </div>
+                    </div>
+                    </div>
+                  </div>
 
             {/* Contract Metrics */}
             <div className="grid grid-cols-3 gap-2">
@@ -197,40 +197,40 @@ const SubjectCard: React.FC<SubjectCardProps> = ({ subject, studentId, studentNa
               <div className="border border-gray-300 border-dashed rounded py-2 px-3 text-center">
                 <div className="text-sm font-bold text-gray-700">
                   {contract.fld_lesson_dur || 'N/A'}
-                </div>
+                  </div>
                 <div className="text-xs text-gray-500">Lesson Dur.</div>
-              </div>
+                        </div>
               
               <div className="border border-gray-300 border-dashed rounded py-2 px-3 text-center">
                 <div className="text-sm font-bold text-gray-700">
                   {Math.round(contract.fld_min_lesson || 0)}
-                </div>
+                      </div>
                 <div className="text-xs text-gray-500">Min Lessons</div>
-              </div>
-            </div>
-          </div>
+                        </div>
+                        </div>
+                      </div>
         ) : (
           <div className="text-center py-8">
             <h3 className="text-gray-500 text-lg">No Contract Available</h3>
             <p className="text-gray-400 text-sm mt-2">This subject doesn't have an active contract yet.</p>
-          </div>
-        )}
+                  </div>
+                )}
 
         {/* Delete Button */}
         <div className="pt-4 border-t">
-          <Button 
+                      <Button 
             variant="destructive" 
-            size="sm" 
+                        size="sm"
             onClick={handleDeleteSubject}
             disabled={isDeleting}
             className="w-full"
-          >
+                      >
             <Trash2 className="h-4 w-4 mr-2" />
             {isDeleting ? 'Deleting...' : 'Delete Subject'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+                      </Button>
+                </div>
+              </CardContent>
+            </Card>
   );
 };
 

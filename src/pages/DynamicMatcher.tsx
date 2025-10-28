@@ -13,7 +13,9 @@ import {
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Search, MapPin, Phone, Mail, MessageCircle, User, Users, BookOpen } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { ArrowLeft, Search, MapPin, Phone, Mail, MessageCircle, User, Users, BookOpen, X, Check, ChevronsUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import TeacherMatchModal from '../components/TeacherMatchModal';
 import ActivityModal from '../components/ActivityModal';
@@ -51,6 +53,7 @@ const DynamicMatcher = () => {
     fld_lid: 0,
   });
   const [studentSubjects, setStudentSubjects] = useState<any[]>([]);
+  const [subjectsOpen, setSubjectsOpen] = useState(false);
 
   // Load student details when student is selected
   useEffect(() => {
@@ -190,18 +193,19 @@ const DynamicMatcher = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Dynamic Matcher</h1>
-          <p className="text-muted-foreground">Match students with teachers based on criteria</p>
+    <div className="min-h-screen bg-gray-50/50">
+      <div className="container mx-auto p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Dynamic Matcher</h1>
+            <p className="text-sm sm:text-base text-gray-600 hidden sm:block">Match students with teachers based on criteria</p>
+          </div>
+          <Button variant="outline" onClick={() => window.history.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
         </div>
-        <Button variant="outline" onClick={() => window.history.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-      </div>
 
       {/* Search Form */}
       <Card>
@@ -245,24 +249,63 @@ const DynamicMatcher = () => {
             {/* Subjects */}
             <div className="space-y-2">
               <Label htmlFor="subjects">Subjects</Label>
-              <div className="space-y-2">
-                {subjects.map((subject) => (
-                  <label key={subject.fld_id} className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={formData.fld_suid.includes(subject.fld_id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          handleSubjectChange([...formData.fld_suid, subject.fld_id]);
-                        } else {
-                          handleSubjectChange(formData.fld_suid.filter(id => id !== subject.fld_id));
-                        }
-                      }}
-                    />
-                    <span>{subject.fld_subject}</span>
-                  </label>
-                ))}
-              </div>
+              <Popover open={subjectsOpen} onOpenChange={setSubjectsOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={subjectsOpen}
+                    className="w-full justify-between min-h-[42px] h-auto py-2"
+                  >
+                    <div className="flex flex-wrap gap-1.5 flex-1">
+                      {formData.fld_suid.length > 0 ? (
+                        formData.fld_suid.map((subjectId) => {
+                          const subject = subjects.find(s => s.fld_id === subjectId);
+                          return subject ? (
+                            <Badge key={subjectId} variant="secondary" className="text-xs px-2 py-0.5">
+                              {subject.fld_subject}
+                            </Badge>
+                          ) : null;
+                        })
+                      ) : (
+                        <span className="text-muted-foreground">Select subjects</span>
+                      )}
+                    </div>
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search subjects..." />
+                    <CommandEmpty>No subject found.</CommandEmpty>
+                    <CommandGroup className="max-h-60 overflow-y-auto">
+                      {subjects.map((subject) => {
+                        const isSelected = formData.fld_suid.includes(subject.fld_id);
+                        return (
+                          <CommandItem
+                            key={subject.fld_id}
+                            value={subject.fld_subject}
+                            onSelect={() => {
+                              if (isSelected) {
+                                handleSubjectChange(formData.fld_suid.filter(id => id !== subject.fld_id));
+                              } else {
+                                handleSubjectChange([...formData.fld_suid, subject.fld_id]);
+                              }
+                            }}
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 ${
+                                isSelected ? "opacity-100" : "opacity-0"
+                              }`}
+                            />
+                            {subject.fld_subject}
+                          </CommandItem>
+                        );
+                      })}
+                    </CommandGroup>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Radius */}
@@ -475,15 +518,12 @@ const DynamicMatcher = () => {
         isLoading={matchTeacherMutation.isPending}
       />
 
-      <ActivityModal
-        isOpen={showActivityModal}
-        onClose={() => setShowActivityModal(false)}
-        teacher={selectedTeacher}
-        studentSubjects={studentSubjects}
-        mediationTypes={mediationTypes}
-        onSubmit={handleRecordActivitySubmit}
-        isLoading={recordActivityMutation.isPending}
-      />
+        <ActivityModal
+          isOpen={showActivityModal}
+          onClose={() => setShowActivityModal(false)}
+          teacher={selectedTeacher}
+        />
+      </div>
     </div>
   );
 };

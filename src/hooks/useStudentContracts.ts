@@ -83,12 +83,12 @@ export function useStudentContracts() {
   // Get all contracts for a student
   const getStudentContracts = (studentId: number) => {
     return useQuery({
-      queryKey: ['student-contracts', studentId],
-      queryFn: async () => {
-        const { data, error } = await supabase
+    queryKey: ['student-contracts', studentId],
+    queryFn: async () => {
+      const { data, error } = await supabase
           .from('tbl_contracts')
-          .select(`
-            *,
+        .select(`
+          *,
             student:tbl_students(
               fld_id,
               fld_first_name,
@@ -109,7 +109,7 @@ export function useStudentContracts() {
           .neq('fld_status', 'Deleted')
           .order('fld_id', { ascending: false });
 
-        if (error) throw error;
+      if (error) throw error;
         return data as StudentContract[];
       },
     });
@@ -119,10 +119,10 @@ export function useStudentContracts() {
   const getContractForSigning = (contractId: number) => {
     return useQuery({
       queryKey: ['contract-signing', contractId],
-      queryFn: async () => {
-        const { data, error } = await supabase
+    queryFn: async () => {
+      const { data, error } = await supabase
           .from('tbl_contracts')
-          .select(`
+        .select(`
             *,
             student:tbl_students(
               fld_id,
@@ -144,7 +144,7 @@ export function useStudentContracts() {
           .neq('fld_status', 'Deleted')
           .single();
 
-        if (error) throw error;
+      if (error) throw error;
         return data as StudentContract;
       },
     });
@@ -389,31 +389,121 @@ export function useStudentContracts() {
         *,
         tbl_teachers(fld_first_name, fld_last_name),
         tbl_students_subjects(
+          fld_id,
+          fld_sid,
+          fld_suid,
           tbl_subjects(fld_subject)
         )
       `)
       .eq('fld_cid', contractId);
 
     if (error) throw error;
-    return data as ContractEngagement[];
+
+    // Get lesson counts for each engagement (following legacy logic)
+    const engagementsWithLessonCounts = await Promise.all(
+      data.map(async (engagement) => {
+        if (engagement.tbl_students_subjects && Array.isArray(engagement.tbl_students_subjects) && engagement.tbl_students_subjects.length > 0) {
+          const studentSubject = engagement.tbl_students_subjects[0];
+          const { data: lessonData, error: lessonError } = await supabase
+            .from('tbl_teachers_lessons_history')
+            .select('fld_lesson')
+            .eq('fld_sid', studentSubject.fld_sid)
+            .eq('fld_ssid', studentSubject.fld_suid);
+
+          if (lessonError) {
+            console.error('Error fetching lesson count:', lessonError);
+            return { ...engagement, lesson_count: 0 };
+          }
+
+          const lessonCount = lessonData?.reduce((sum, lesson) => sum + (lesson.fld_lesson || 0), 0) || 0;
+          return { ...engagement, lesson_count: lessonCount };
+        }
+        return { ...engagement, lesson_count: 0 };
+      })
+    );
+
+    return engagementsWithLessonCounts as ContractEngagement[];
   };
 
   const cancelContract = async (contractId: number) => {
-    const { error } = await supabase
+    // Get all engagements for this contract
+    const { data: engagements, error: engagementsError } = await supabase
+      .from('tbl_contracts_engagement')
+      .select('fld_ssid')
+      .eq('fld_cid', contractId);
+
+    if (engagementsError) throw engagementsError;
+
+    // Update student subjects to remove contract references (following legacy logic)
+    if (engagements && engagements.length > 0) {
+      const engagementIds = engagements.map(e => e.fld_ssid);
+      const { error: subjectsError } = await supabase
+        .from('tbl_students_subjects')
+        .update({ fld_cid: 0, fld_c_eid: 0 })
+        .in('fld_id', engagementIds);
+
+      if (subjectsError) throw subjectsError;
+    }
+
+    // Update contract status to 'Deleted'
+    const { error: contractError } = await supabase
       .from('tbl_contracts')
       .update({ fld_status: 'Deleted' })
       .eq('fld_id', contractId);
 
-    if (error) throw error;
+    if (contractError) throw contractError;
+
+    // Update engagements status to 'Inactive'
+    const { error: engagementStatusError } = await supabase
+      .from('tbl_contracts_engagement')
+      .update({ fld_status: 'Inactive' })
+      .eq('fld_cid', contractId);
+
+    if (engagementStatusError) throw engagementStatusError;
   };
 
   const cancelEngagement = async ({ engagementId, studentId }: { engagementId: number; studentId: number }) => {
-    const { error } = await supabase
+    // Get engagement details first
+    const { data: engagement, error: engagementError } = await supabase
+      .from('tbl_contracts_engagement')
+      .select('fld_ssid')
+      .eq('fld_id', engagementId)
+      .single();
+
+    if (engagementError) throw engagementError;
+
+    // Update mediation stages to remove teacher (following legacy logic)
+    const { error: mediationError } = await supabase
+      .from('tbl_students_mediation_stages')
+      .update({ fld_tid: 0 })
+      .eq('fld_ssid', engagement.fld_ssid)
+      .eq('fld_m_flag', 'X');
+
+    if (mediationError) throw mediationError;
+
+    // Update student subjects to remove contract references
+    const { error: subjectsError } = await supabase
+      .from('tbl_students_subjects')
+      .update({ fld_cid: 0, fld_c_eid: 0 })
+      .eq('fld_id', engagement.fld_ssid);
+
+    if (subjectsError) throw subjectsError;
+
+    // Delete the engagement
+    const { error: deleteError } = await supabase
       .from('tbl_contracts_engagement')
       .delete()
       .eq('fld_id', engagementId);
 
-    if (error) throw error;
+    if (deleteError) throw deleteError;
+
+    // Update student NEC flag to 'N' (following legacy logic)
+    const { error: studentError } = await supabase
+      .from('tbl_students')
+      .update({ fld_nec: 'N' })
+      .eq('fld_id', studentId);
+
+    if (studentError) throw studentError;
   };
 
   const updateMinimumLessons = async ({ contractId, minimumLessons }: { contractId: number; minimumLessons: number }) => {

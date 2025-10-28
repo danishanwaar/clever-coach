@@ -144,7 +144,7 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
       
       await createStudent(formDataWithUser);
       toast.success('Student created successfully!');
-      onClose();
+      
       // Reset form
       setFormData({
         fld_sal: '',
@@ -173,6 +173,9 @@ export const StudentFormModal: React.FC<StudentFormModalProps> = ({
         fld_f_lead: '',
         fld_notes: '',
       });
+      
+      // Close modal after successful creation
+      onClose();
     } catch (error) {
       toast.error('Failed to create student. Please try again.');
     }

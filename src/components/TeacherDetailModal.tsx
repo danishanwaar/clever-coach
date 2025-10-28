@@ -65,7 +65,7 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
   useEffect(() => {
     if (teacher) {
       setCurrentStatus(teacher.fld_status);
-      setRate(teacher.fld_per_l_rate && Number(teacher.fld_per_l_rate) > 0 ? teacher.fld_per_l_rate : '');
+      setRate(teacher.fld_per_l_rate && Number(teacher.fld_per_l_rate) > 0 ? String(teacher.fld_per_l_rate) : '');
     }
   }, [teacher]);
 
@@ -139,34 +139,34 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[95vh] p-0 flex flex-col bg-white border-0 shadow-2xl rounded-xl">
+      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[95vh] p-0 flex flex-col bg-white border-0 shadow-2xl rounded-xl sm:rounded-xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Teacher Details</DialogTitle>
           <DialogDescription>View and manage teacher information, status, and details</DialogDescription>
         </DialogHeader>
 
         {/* Header Section */}
-        <div className="bg-white border-b border-gray-200 p-4 sm:p-6 flex-shrink-0 rounded-t-xl">
+        <div className="bg-white border-b border-gray-200 p-3 sm:p-4 lg:p-6 flex-shrink-0 rounded-t-xl">
           {/* Status Controls */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-semibold text-gray-700">
+          <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Label className="text-xs sm:text-sm font-semibold text-gray-700">
                   Per Lesson Rate
                 </Label>
                 <Input 
                   type="number" 
                   placeholder="€/hour" 
-                  className="w-44 text-sm rounded-lg border-gray-300 bg-gray-50 cursor-not-allowed"
+                  className="w-full sm:w-44 text-xs sm:text-sm rounded-lg border-gray-300 bg-gray-50 cursor-not-allowed"
                   value={rate}
                   disabled={true}
                   autoFocus={false}
                 />
               </div>
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-semibold text-gray-700">Status</Label>
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Label className="text-xs sm:text-sm font-semibold text-gray-700">Status</Label>
                 <Select value={currentStatus} disabled={true}>
-                  <SelectTrigger className="w-48 text-sm border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                  <SelectTrigger className="w-full sm:w-48 text-xs sm:text-sm border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -185,16 +185,16 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
           </div>
 
           {/* Teacher Header */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center text-primary font-bold text-xl shadow-sm">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center text-primary font-bold text-lg sm:text-xl shadow-sm">
                 {teacher.fld_first_name?.[0]}{teacher.fld_last_name?.[0]}
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 truncate">
                   {teacher.fld_first_name} {teacher.fld_last_name}
                 </h1>
-                <Badge className={`mt-2 ${statusColors[currentStatus as keyof typeof statusColors]} px-3 py-1 text-sm font-semibold rounded-lg`}>
+                <Badge className={`mt-1 sm:mt-2 ${statusColors[currentStatus as keyof typeof statusColors]} px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold rounded-lg`}>
                   {currentStatus}
                 </Badge>
               </div>
@@ -203,18 +203,18 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
             <div className="space-y-2">
               {/* Role and Email in same row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div className="flex items-center space-x-3 text-sm bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
-                  <User className="h-4 w-4 text-primary" />
+                <div className="flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm bg-gray-50 rounded-lg px-3 sm:px-4 py-2 sm:py-3 border border-gray-200">
+                  <User className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                   <span className="text-gray-700 font-medium">Teacher</span>
                 </div>
-                <div className="flex items-center space-x-3 text-sm bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
-                  <Mail className="h-4 w-4 text-primary" />
+                <div className="flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm bg-gray-50 rounded-lg px-3 sm:px-4 py-2 sm:py-3 border border-gray-200">
+                  <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                   <span className="text-gray-700 truncate">{teacher.fld_email}</span>
                 </div>
               </div>
               {/* Address separate */}
-              <div className="flex items-center space-x-3 text-sm bg-gray-50 rounded-lg px-4 py-3 border border-gray-200">
-                <MapPin className="h-4 w-4 text-primary" />
+              <div className="flex items-center space-x-2 sm:space-x-3 text-xs sm:text-sm bg-gray-50 rounded-lg px-3 sm:px-4 py-2 sm:py-3 border border-gray-200">
+                <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-primary flex-shrink-0" />
                 <span className="text-gray-700 truncate">{teacher.fld_street}, {teacher.fld_zip} {teacher.fld_city}</span>
               </div>
             </div>
@@ -222,38 +222,38 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
         </div>
 
         {/* Content Section */}
-        <ScrollArea className="flex-1 px-4 sm:px-6 py-4 min-h-0">
+        <ScrollArea className="flex-1 px-3 sm:px-4 lg:px-6 py-3 sm:py-4 min-h-0">
           <Tabs defaultValue="documents" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg mb-4">
-              <TabsTrigger value="documents" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg mb-3 sm:mb-4">
+              <TabsTrigger value="documents" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs font-medium px-1 sm:px-2 py-1.5 sm:py-2">
                 <span className="hidden sm:inline">Unterlagen</span>
                 <span className="sm:hidden">Docs</span>
               </TabsTrigger>
-              <TabsTrigger value="subjects" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
+              <TabsTrigger value="subjects" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs font-medium px-1 sm:px-2 py-1.5 sm:py-2">
                 <span className="hidden sm:inline">Unterrichtsfächer</span>
                 <span className="sm:hidden">Fächer</span>
               </TabsTrigger>
-              <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs sm:text-sm font-medium px-2 py-2">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-sm rounded-md text-xs font-medium px-1 sm:px-2 py-1.5 sm:py-2">
                 <span className="hidden sm:inline">Überblick</span>
                 <span className="sm:hidden">Überblick</span>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="documents" className="space-y-4">
+            <TabsContent value="documents" className="space-y-3 sm:space-y-4">
               {/* Coordinates */}
-              <div className="bg-white rounded-xl p-5 border border-gray-200 border-l-4 border-l-primary shadow-sm">
-                <Label className="text-sm font-semibold text-gray-700 flex items-center mb-4">
-                  <MapPin className="h-4 w-4 mr-2 text-primary" />
+              <div className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-5 border border-gray-200 border-l-4 border-l-primary shadow-sm">
+                <Label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center mb-3 sm:mb-4">
+                  <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-primary flex-shrink-0" />
                   COORDINATES
                 </Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
-                    <Label className="text-xs font-medium text-gray-600 mb-2 block">LATITUDE</Label>
-                    <p className="text-sm text-gray-600 font-mono bg-gray-50 rounded-lg px-3 py-2">{teacher.fld_latitude || 'N/A'}</p>
+                    <Label className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 block">LATITUDE</Label>
+                    <p className="text-xs sm:text-sm text-gray-600 font-mono bg-gray-50 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">{teacher.fld_latitude || 'N/A'}</p>
                   </div>
                   <div>
-                    <Label className="text-xs font-medium text-gray-600 mb-2 block">LONGITUDE</Label>
-                    <p className="text-sm text-gray-600 font-mono bg-gray-50 rounded-lg px-3 py-2">{teacher.fld_longitude || 'N/A'}</p>
+                    <Label className="text-xs font-medium text-gray-600 mb-1 sm:mb-2 block">LONGITUDE</Label>
+                    <p className="text-xs sm:text-sm text-gray-600 font-mono bg-gray-50 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2">{teacher.fld_longitude || 'N/A'}</p>
                   </div>
                 </div>
               </div>
@@ -269,7 +269,7 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
                 </p>
                 <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                   <p className="text-sm text-gray-700 leading-relaxed">
-                    {teacher.fld_short_bio || 'No introduction provided'}
+                    {teacher.fld_self || 'No introduction provided'}
                   </p>
                 </div>
               </div>
@@ -393,13 +393,13 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
         </ScrollArea>
 
         {/* Footer Actions */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-4 sm:p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0 gap-3 rounded-b-xl">
-          <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-3 sm:p-4 lg:p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0 gap-2 sm:gap-3 rounded-b-xl">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
             {canReject && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="sm" className="text-xs sm:text-sm font-medium rounded-lg">
-                    <X className="h-4 w-4 mr-1 sm:mr-2" />
+                  <Button variant="destructive" size="sm" className="text-xs font-medium rounded-lg h-8 sm:h-9">
+                    <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     <span className="hidden sm:inline">Reject Teacher</span>
                     <span className="sm:hidden">Reject</span>
                   </Button>
@@ -422,8 +422,8 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
             )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="sm" className="text-xs sm:text-sm font-medium rounded-lg">
-                  <Trash2 className="h-4 w-4 mr-1 sm:mr-2" />
+                <Button variant="destructive" size="sm" className="text-xs font-medium rounded-lg h-8 sm:h-9">
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                   <span className="hidden sm:inline">Delete</span>
                   <span className="sm:hidden">Delete</span>
                 </Button>
@@ -445,8 +445,8 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
             </AlertDialog>
           </div>
           
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <Button variant="outline" onClick={onClose} className="text-xs sm:text-sm font-medium rounded-lg">
+          <div className="flex items-center justify-end sm:justify-start">
+            <Button variant="outline" onClick={onClose} className="text-xs font-medium rounded-lg h-8 sm:h-9 w-full sm:w-auto">
               Close
             </Button>
           </div>

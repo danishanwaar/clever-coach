@@ -197,28 +197,28 @@ export default function ApplicantDetailModal({ applicant, isOpen, onClose }: App
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[95vh] p-0 flex flex-col bg-white border-0 shadow-2xl rounded-xl">
+      <DialogContent className="w-[95vw] max-w-4xl h-[95vh] max-h-[95vh] p-0 flex flex-col bg-white border-0 shadow-2xl rounded-xl sm:rounded-xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Applicant Details</DialogTitle>
           <DialogDescription>View and manage applicant information, status, and details</DialogDescription>
         </DialogHeader>
 
         {/* Header Section */}
-        <div className="bg-white border-b border-gray-200 p-4 sm:p-6 flex-shrink-0 rounded-t-xl">
+        <div className="bg-white border-b border-gray-200 p-3 sm:p-4 lg:p-6 flex-shrink-0 rounded-t-xl">
           {/* Status Controls */}
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between mb-6 gap-4">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-semibold text-gray-700 flex items-center">
+          <div className="flex flex-col gap-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Label className="text-xs sm:text-sm font-semibold text-gray-700 flex items-center">
                   Per Lesson Rate
                   {currentStatus === 'Offer' && (!rate || parseFloat(rate) <= 0) && (
-                    <AlertTriangle className="h-4 w-4 ml-2 text-orange-500" />
+                    <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 ml-2 text-orange-500 flex-shrink-0" />
                   )}
                 </Label>
                 <Input 
                   type="number" 
                   placeholder="€/hour" 
-                  className={`w-44 text-sm rounded-lg ${
+                  className={`w-full sm:w-44 text-xs sm:text-sm rounded-lg ${
                     rateError || (currentStatus === 'Offer' && (!rate || parseFloat(rate) <= 0))
                       ? 'border-orange-500 focus:border-orange-500 focus:ring-orange-500'
                       : 'border-gray-300'
@@ -231,10 +231,10 @@ export default function ApplicantDetailModal({ applicant, isOpen, onClose }: App
                   <p className="text-xs text-orange-600">Please enter a valid rate</p>
                 )}
               </div>
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm font-semibold text-gray-700">Status</Label>
+              <div className="flex flex-col space-y-2 w-full sm:w-auto">
+                <Label className="text-xs sm:text-sm font-semibold text-gray-700">Status</Label>
                 <Select value={currentStatus} onValueChange={handleStatusChange}>
-                  <SelectTrigger className="w-48 text-sm border-gray-300 rounded-lg">
+                  <SelectTrigger className="w-full sm:w-48 text-xs sm:text-sm border-gray-300 rounded-lg">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

@@ -38,6 +38,7 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import AdminSignup from "./pages/auth/AdminSignup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -90,6 +91,10 @@ const App = () => (
                 <ForgotPassword />
               </AuthGuard>
             } 
+          />
+          <Route 
+            path="/auth/reset-password" 
+            element={<ResetPassword />} 
           />
           
           {/* Protected Routes */}

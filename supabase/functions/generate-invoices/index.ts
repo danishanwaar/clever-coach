@@ -15,6 +15,50 @@ serve(async (req) => {
   try {
     const { type, period } = await req.json()
     
+    // Extract user ID from authorization header
+    const authHeader = req.headers.get('authorization')
+    let userId: number | null = null
+    
+    if (authHeader) {
+      try {
+        // Create a client with the user's JWT token to get user info
+        const userSupabase = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+          {
+            global: {
+              headers: {
+                Authorization: authHeader
+              }
+            }
+          }
+        )
+        
+        const { data: { user }, error: userError } = await userSupabase.auth.getUser()
+        
+        if (!userError && user) {
+          // Get the user ID from tbl_users table
+          const { data: dbUser, error: dbUserError } = await userSupabase
+            .from('tbl_users')
+            .select('fld_id')
+            .eq('auth_user_id', user.id)
+            .single()
+          
+          if (!dbUserError && dbUser) {
+            userId = dbUser.fld_id
+          }
+        }
+      } catch (error) {
+        console.warn('Could not extract user ID from auth header:', error)
+      }
+    }
+    
+    // Fallback to a default admin user if no user ID found
+    if (!userId) {
+      userId = 1 // Default admin user
+      console.warn('Using default admin user (ID: 1) for invoice generation')
+    }
+    
     if (!type || !period) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
@@ -40,22 +84,40 @@ serve(async (req) => {
       year = now.getFullYear()
       date = now.toISOString().split('T')[0]
     } else {
-      // Previous month
+      // Previous month (based on PHP logic)
       const lastMonth = new Date()
       lastMonth.setMonth(lastMonth.getMonth() - 1)
       month = lastMonth.getMonth() + 1
       year = lastMonth.getFullYear()
-      date = new Date(year, month - 1, 0).toISOString().split('T')[0] // Last day of previous month
+      // Last day of previous month (based on PHP generate-pm-* files)
+      date = new Date(year, month, 0).toISOString().split('T')[0]
     }
 
+    let result = { success: true, message: '', count: 0 }
+
     if (type === 'receivables') {
-      await generateStudentInvoices(supabaseClient, month, year, date)
+      result = await generateStudentInvoices(supabaseClient, month, year, date, userId)
     } else if (type === 'payables') {
-      await generateTeacherInvoices(supabaseClient, month, year, date)
+      result = await generateTeacherInvoices(supabaseClient, month, year, date, userId)
+    } else {
+      return new Response(
+        JSON.stringify({ error: 'Invalid type. Must be "receivables" or "payables"' }),
+        { 
+          status: 400, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      )
     }
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Invoices generated successfully' }),
+      JSON.stringify({ 
+        success: result.success, 
+        message: result.message,
+        count: result.count,
+        period: period,
+        month: month,
+        year: year
+      }),
       { 
         status: 200, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -73,7 +135,7 @@ serve(async (req) => {
   }
 })
 
-async function generateStudentInvoices(supabase: any, month: number, year: number, date: string) {
+async function generateStudentInvoices(supabase: any, month: number, year: number, date: string, userId: number): Promise<{success: boolean, message: string, count: number}> {
   // Get distinct students with active lessons for the period
   const { data: students, error: studentsError } = await supabase
     .from('tbl_teachers_lessons_history')
@@ -82,11 +144,15 @@ async function generateStudentInvoices(supabase: any, month: number, year: numbe
     .eq('fld_year', year.toString())
     .eq('fld_status', 'Active')
 
-  if (studentsError) throw studentsError
+  if (studentsError) {
+    console.error('Error fetching students:', studentsError)
+    return { success: false, message: 'Failed to fetch students', count: 0 }
+  }
 
   const uniqueStudents = [...new Set(students.map(s => s.fld_sid))]
 
-  for (const studentId of uniqueStudents) {
+  try {
+    for (const studentId of uniqueStudents) {
     // Get student registration fee info
     const { data: student, error: studentError } = await supabase
       .from('tbl_students')
@@ -96,7 +162,7 @@ async function generateStudentInvoices(supabase: any, month: number, year: numbe
 
     if (studentError) throw studentError
 
-    // Get lesson history for this student
+    // Get lesson history for this student with proper joins
     const { data: lessons, error: lessonsError } = await supabase
       .from('tbl_teachers_lessons_history')
       .select(`
@@ -137,6 +203,7 @@ async function generateStudentInvoices(supabase: any, month: number, year: numbe
     let edate = ''
     let perLessonRate = 0
     let weeklyHours = 0
+    let regFee = 0
 
     for (const lesson of lessons) {
       const subject = lesson.tbl_students_subjects.tbl_subjects.fld_subject
@@ -162,22 +229,22 @@ async function generateStudentInvoices(supabase: any, month: number, year: numbe
         .eq('fld_id', lesson.fld_id)
     }
 
-    // Calculate final hours
+    // Calculate final hours based on PHP logic
     const finalHours = totalHours < weeklyHours && student.fld_rf_flag === 'Y' 
       ? weeklyHours 
       : totalHours
 
-    // Create invoice
+    // Create invoice with initial values (following PHP pattern)
     const { data: invoice, error: invoiceError } = await supabase
       .from('tbl_students_invoices')
       .insert({
         fld_sid: studentId,
         fld_lhid: lhid.slice(0, -1), // Remove trailing comma
-        fld_invoice_total: 0,
-        fld_invoice_hr: 0,
+        fld_invoice_total: 0, // Initial value, will be updated
+        fld_invoice_hr: 0, // Always 0 in PHP
         fld_min_lesson: weeklyHours,
         fld_edate: date,
-        fld_uname: 1, // TODO: Get from auth context
+        fld_uname: userId,
         fld_status: 'Paid'
       })
       .select()
@@ -202,8 +269,10 @@ async function generateStudentInvoices(supabase: any, month: number, year: numbe
 
     if (detailError) throw detailError
 
-    // Add registration fee if needed
+    // Add registration fee detail if needed (based on PHP logic)
     if (student.fld_rf_flag === 'N') {
+      regFee = student.fld_reg_fee
+      
       await supabase
         .from('tbl_students_invoices_detail')
         .insert({
@@ -225,17 +294,27 @@ async function generateStudentInvoices(supabase: any, month: number, year: numbe
         .eq('fld_id', studentId)
     }
 
-    // Calculate and update total
-    const totalAmount = (finalHours * perLessonRate) + (student.fld_rf_flag === 'N' ? student.fld_reg_fee : 0)
+    // Calculate and update total (following PHP pattern)
+    const totalAmount = (finalHours * perLessonRate) + regFee
     
     await supabase
       .from('tbl_students_invoices')
       .update({ fld_invoice_total: totalAmount })
       .eq('fld_id', invoice.fld_id)
+    }
+
+    return {
+      success: true,
+      message: `Successfully generated ${uniqueStudents.length} student invoices for ${month}/${year}`,
+      count: uniqueStudents.length
+    }
+  } catch (error) {
+    console.error('Error generating student invoices:', error)
+    return { success: false, message: 'Failed to generate student invoices', count: 0 }
   }
 }
 
-async function generateTeacherInvoices(supabase: any, month: number, year: number, date: string) {
+async function generateTeacherInvoices(supabase: any, month: number, year: number, date: string, userId: number): Promise<{success: boolean, message: string, count: number}> {
   // Get distinct teachers with pending lessons for the period
   const { data: teachers, error: teachersError } = await supabase
     .from('tbl_teachers_lessons_history')
@@ -244,20 +323,24 @@ async function generateTeacherInvoices(supabase: any, month: number, year: numbe
     .eq('fld_year', year.toString())
     .eq('fld_status', 'Pending')
 
-  if (teachersError) throw teachersError
+  if (teachersError) {
+    console.error('Error fetching teachers:', teachersError)
+    return { success: false, message: 'Failed to fetch teachers', count: 0 }
+  }
 
   const uniqueTeachers = [...new Set(teachers.map(t => t.fld_tid))]
 
-  for (const teacherId of uniqueTeachers) {
-    // Create teacher invoice
+  try {
+    for (const teacherId of uniqueTeachers) {
+    // Create teacher invoice first (following PHP pattern)
     const { data: invoice, error: invoiceError } = await supabase
       .from('tbl_teachers_invoices')
       .insert({
         fld_tid: teacherId,
-        fld_lhid: '',
-        fld_invoice_total: 0,
+        fld_lhid: '', // Empty initially, will be updated
+        fld_invoice_total: 0, // Initial value, will be updated
         fld_edate: date,
-        fld_uname: 1, // TODO: Get from auth context
+        fld_uname: userId,
         fld_status: 'Paid'
       })
       .select()
@@ -265,7 +348,7 @@ async function generateTeacherInvoices(supabase: any, month: number, year: numbe
 
     if (invoiceError) throw invoiceError
 
-    // Get teacher lessons
+    // Get teacher lessons (following PHP pattern)
     const { data: lessons, error: lessonsError } = await supabase
       .from('tbl_teachers_lessons_history')
       .select(`
@@ -286,18 +369,23 @@ async function generateTeacherInvoices(supabase: any, month: number, year: numbe
 
     if (lessonsError) throw lessonsError
 
+    if (lessons.length === 0) continue
+
     let totalAmount = 0
     let lhid = ''
 
+    // Process lessons and create details (following PHP pattern)
     for (const lesson of lessons) {
       const subject = lesson.tbl_students_subjects.tbl_subjects.fld_subject
       const contract = lesson.tbl_students_subjects.tbl_contracts
       const student = lesson.tbl_students
 
-      const detail = `${subject} Tutoring ${contract.fld_lp} ${student.fld_s_first_name} ${student.fld_s_last_name}`
+      // Create detail string based on PHP logic
+      const customerName = `${student.fld_s_first_name} ${student.fld_s_last_name}`
+      const detail = `${subject} Tutoring ${contract.fld_lp} ${customerName}`
 
-      // Create invoice detail
-      await supabase
+      // Create invoice detail (based on PHP insert)
+      const { error: detailError } = await supabase
         .from('tbl_teachers_invoices_detail')
         .insert({
           fld_iid: invoice.fld_id,
@@ -312,6 +400,9 @@ async function generateTeacherInvoices(supabase: any, month: number, year: numbe
           fld_my: `${month.toString().padStart(2, '0')}.${year}`
         })
 
+      if (detailError) throw detailError
+
+      // Calculate total and build lesson history IDs (following PHP logic)
       totalAmount += lesson.fld_t_rate * lesson.fld_lesson
       lhid += `${lesson.fld_id},`
 
@@ -322,7 +413,7 @@ async function generateTeacherInvoices(supabase: any, month: number, year: numbe
         .eq('fld_id', lesson.fld_id)
     }
 
-    // Update invoice with totals
+    // Update invoice with totals (following PHP pattern)
     await supabase
       .from('tbl_teachers_invoices')
       .update({
@@ -330,5 +421,15 @@ async function generateTeacherInvoices(supabase: any, month: number, year: numbe
         fld_invoice_total: totalAmount
       })
       .eq('fld_id', invoice.fld_id)
+    }
+
+    return {
+      success: true,
+      message: `Successfully generated ${uniqueTeachers.length} teacher invoices for ${month}/${year}`,
+      count: uniqueTeachers.length
+    }
+  } catch (error) {
+    console.error('Error generating teacher invoices:', error)
+    return { success: false, message: 'Failed to generate teacher invoices', count: 0 }
   }
 }

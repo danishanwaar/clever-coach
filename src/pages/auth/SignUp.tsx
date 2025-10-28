@@ -45,6 +45,7 @@ export default function SignUp() {
   const [isFocused, setIsFocused] = useState({});
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     // Step 1: Subjects
     selectedSubjects: [] as Array<{ id: string; name: string; class: string }>,
@@ -217,17 +218,30 @@ export default function SignUp() {
       return;
     }
 
-    // Create comprehensive teacher account with all form data
-    const result = await signUpTeacher(formData);
-    
-    // Show success modal instead of redirecting
-    if (result.success) {
-      setShowSuccessModal(true);
+    // Set local loading state immediately
+    setIsSubmitting(true);
+
+    try {
+      // Create comprehensive teacher account with all form data
+      const result = await signUpTeacher(formData);
+      
+      // Show success modal instead of redirecting
+      if (result.success) {
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      // Error handling is managed by the useAuth hook
+      // The loading state will be automatically reset
+      console.error('Sign up error:', error);
+    } finally {
+      // Reset local loading state
+      setIsSubmitting(false);
     }
   };
 
   const handleCloseSuccessModal = () => {
     setShowSuccessModal(false);
+    setIsSubmitting(false);
     // Reset form to initial state
     setCurrentStep(1);
     setFormData({
@@ -1273,10 +1287,10 @@ export default function SignUp() {
                 </Button>
                 <Button 
                   onClick={handleSubmit} 
-                  disabled={loading || !formData.termsAccepted || !formData.authorizationMinors}
+                  disabled={isSubmitting || loading || !formData.termsAccepted || !formData.authorizationMinors}
                   className="btn-hero px-8 py-4 rounded-xl font-semibold group w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loading ? (
+                  {(isSubmitting || loading) ? (
                     <div className="flex items-center space-x-3">
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                       <span>Processing Application...</span>

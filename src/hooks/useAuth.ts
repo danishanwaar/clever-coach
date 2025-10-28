@@ -53,9 +53,10 @@ export function useAuth() {
     });
 
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userLoaded, user?.auth_user_id, isSigningUpTeacher]);
 
-  const fetchUserProfile = async (authUserId: string) => {
+  const fetchUserProfile = useCallback(async (authUserId: string) => {
     try {
       const { data, error } = await supabase
         .from("tbl_users")
@@ -110,7 +111,7 @@ export function useAuth() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   const signIn = async (email: string, password: string) => {
     setLoading(true);

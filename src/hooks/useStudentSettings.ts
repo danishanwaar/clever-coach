@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuthStore } from '@/stores/authStore';
 
 // Types
 export interface StudentSettings {
@@ -104,6 +105,7 @@ export interface Subject {
   fld_id: number;
   fld_subject: string;
   fld_status: string;
+  fld_image?: string;
 }
 
 export interface StudentSubject {
@@ -113,6 +115,7 @@ export interface StudentSubject {
   tbl_subjects?: {
     fld_id: number;
     fld_subject: string;
+    fld_image?: string;
   };
 }
 
@@ -141,6 +144,7 @@ export interface Contract {
 // Hook for managing student settings
 export function useStudentSettings(studentId: number) {
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user);
 
   // Fetch student data
   const { data: student, isLoading: studentLoading } = useQuery({
@@ -166,10 +170,10 @@ export function useStudentSettings(studentId: number) {
         .select('*')
         .eq('fld_sid', studentId)
         .in('fld_status', ['Active', 'Pending Signature'])
-        .single();
+        .limit(1);
 
-      if (error && error.code !== 'PGRST116') throw error;
-      return data as Contract | null;
+      if (error) throw error;
+      return data?.[0] as Contract | null;
     },
   });
 
@@ -257,7 +261,8 @@ export function useStudentSettings(studentId: number) {
           fld_suid,
           tbl_subjects!fld_suid (
             fld_id,
-            fld_subject
+            fld_subject,
+            fld_image
           )
         `)
         .eq('fld_sid', studentId);
@@ -429,9 +434,10 @@ export function useStudentSettings(studentId: number) {
             subjectIds.map(suid => ({
               fld_sid: studentId,
               fld_suid: suid,
-              fld_cid: 0, // Default value
+              fld_cid: null, // Default value
               fld_edate: new Date().toISOString(),
-              fld_uname: 1, // Default user ID - should be replaced with actual user
+              fld_c_eid: null,
+              fld_uname: user?.fld_id || null,
             }))
           );
 
@@ -565,6 +571,7 @@ export function useStudentSettings(studentId: number) {
     updateContract: updateContractMutation.mutate,
     updateBank: updateBankMutation.mutate,
     updateSubjects: updateSubjectsMutation.mutate,
+    updateSubjectsMutation,
     deleteSubject: deleteSubjectMutation.mutate,
     updateStatistics: updateStatisticsMutation.mutate,
     updateNotes: updateNotesMutation.mutate,
