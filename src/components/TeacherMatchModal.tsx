@@ -32,11 +32,11 @@ const TeacherMatchModal: React.FC<TeacherMatchModalProps> = ({
 }) => {
   const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
 
-  const handleSubjectToggle = (subjectId: number) => {
+  const handleSubjectToggle = (studentSubjectId: number) => {
     setSelectedSubjects(prev =>
-      prev.includes(subjectId)
-        ? prev.filter(id => id !== subjectId)
-        : [...prev, subjectId]
+      prev.includes(studentSubjectId)
+        ? prev.filter(id => id !== studentSubjectId)
+        : [...prev, studentSubjectId]
     );
   };
 

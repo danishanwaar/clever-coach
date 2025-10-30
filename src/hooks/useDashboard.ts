@@ -26,7 +26,7 @@ export const useDashboard = () => {
         leadStudentsResult,
         contractedStudentsResult
       ] = await Promise.all([
-        supabase.from('tbl_teachers').select('fld_id').not('fld_status', 'in', '(Deleted,Hired,Rejected)'),
+        supabase.from('tbl_teachers').select('fld_id').neq('fld_status', 'Deleted').neq('fld_status', 'Hired').neq('fld_status', 'Rejected'),
         supabase.from('tbl_teachers').select('fld_id').eq('fld_status', 'Hired'),
         supabase.from('tbl_students').select('fld_id').neq('fld_status', 'Deleted'),
         supabase.from('tbl_contracts').select('fld_id').eq('fld_status', 'Active'),

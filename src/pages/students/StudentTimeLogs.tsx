@@ -6,12 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   ArrowLeft, 
-  Plus, 
   Search, 
   Clock, 
   BookOpen,
@@ -20,15 +16,6 @@ import {
   AlertCircle,
   FileText
 } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { format } from 'date-fns';
 
 export default function StudentTimeLogs() {
@@ -40,17 +27,9 @@ export default function StudentTimeLogs() {
     timeLogs,
     studentSubjects,
     isLoading,
-    createTimeLog,
-    isCreating,
   } = useStudentTimeLogs(studentId);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [isAddTimeLogOpen, setIsAddTimeLogOpen] = useState(false);
-  const [newTimeLog, setNewTimeLog] = useState({
-    fld_ssid: '',
-    fld_lesson: '',
-    fld_notes: '',
-  });
 
   // Filter time logs based on search term
   const filteredTimeLogs = timeLogs.filter(log => 
@@ -60,22 +39,6 @@ export default function StudentTimeLogs() {
     log.fld_notes?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.tbl_users?.fld_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleAddTimeLog = () => {
-    if (!newTimeLog.fld_ssid || !newTimeLog.fld_lesson) {
-      return;
-    }
-
-    createTimeLog({
-      fld_sid: studentId,
-      fld_ssid: parseInt(newTimeLog.fld_ssid),
-      fld_lesson: parseFloat(newTimeLog.fld_lesson),
-      fld_notes: newTimeLog.fld_notes || undefined,
-    });
-
-    setNewTimeLog({ fld_ssid: '', fld_lesson: '', fld_notes: '' });
-    setIsAddTimeLogOpen(false);
-  };
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), 'dd-MMM-yy');
@@ -118,78 +81,9 @@ export default function StudentTimeLogs() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h2 className="text-lg sm:text-xl font-semibold text-primary">Time Logs</h2>
-          <p className="text-xs sm:text-sm text-gray-600">Track and manage student lesson time logs</p>
-        </div>
-        <Dialog open={isAddTimeLogOpen} onOpenChange={setIsAddTimeLogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
-              Record Time Log
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Record Time Log</DialogTitle>
-              <DialogDescription>
-                Record a new time log for {student.fld_first_name} {student.fld_last_name}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="subject">Subject</Label>
-                <Select
-                  value={newTimeLog.fld_ssid}
-                  onValueChange={(value) => setNewTimeLog(prev => ({ ...prev, fld_ssid: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a subject" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {studentSubjects.map((subject) => (
-                      <SelectItem key={subject.fld_id} value={subject.fld_id.toString()}>
-                        {subject.tbl_subjects.fld_subject}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="lessons">No of Lessons</Label>
-                <Input
-                  id="lessons"
-                  type="number"
-                  placeholder="Enter number of lessons"
-                  value={newTimeLog.fld_lesson}
-                  onChange={(e) => setNewTimeLog(prev => ({ ...prev, fld_lesson: e.target.value }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="notes">Remarks</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Enter remarks (optional)"
-                  rows={3}
-                  value={newTimeLog.fld_notes}
-                  onChange={(e) => setNewTimeLog(prev => ({ ...prev, fld_notes: e.target.value }))}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddTimeLogOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleAddTimeLog} 
-                disabled={isCreating || !newTimeLog.fld_ssid || !newTimeLog.fld_lesson}
-              >
-                {isCreating ? 'Recording...' : 'Save'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+      <div className="space-y-1">
+        <h2 className="text-lg sm:text-xl font-semibold text-primary">Time Logs</h2>
+        <p className="text-xs sm:text-sm text-gray-600">Track and manage student lesson time logs</p>
       </div>
 
       {/* Search Bar */}
@@ -277,18 +171,9 @@ export default function StudentTimeLogs() {
               <Clock className="h-8 w-8 text-gray-400" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No time logs found</h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-gray-500">
               {searchTerm ? 'No time logs match your search criteria.' : 'This student has no time logs yet.'}
             </p>
-            {!searchTerm && (
-              <Button 
-                className="bg-primary hover:bg-primary/90" 
-                onClick={() => setIsAddTimeLogOpen(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Record First Time Log
-              </Button>
-            )}
           </div>
         )}
       </div>

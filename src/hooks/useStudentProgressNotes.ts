@@ -85,7 +85,7 @@ export function useStudentProgressNotes(studentId: number) {
           fld_body: noteData.fld_body,
           fld_edate: new Date().toISOString(),
           fld_uname: userData.fld_id,
-          fld_tid: noteData.fld_tid || 0, // Default to 0 if not provided
+          fld_tid: noteData.fld_tid || null, // Default to 0 if not provided
         });
 
       if (error) throw error;

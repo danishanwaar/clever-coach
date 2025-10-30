@@ -122,25 +122,24 @@ export function useStudentInvoices() {
 
   // Send email mutation
   const sendEmailMutation = useMutation({
-    mutationFn: async ({ studentId, invoiceId, email }: { studentId: number; invoiceId: number; email: string }) => {
-      // This would typically call an edge function or API endpoint
-      // For now, we'll simulate the email sending
-      const { error } = await supabase.functions.invoke('send-contract-email', {
+    mutationFn: async ({ studentId, invoiceId, email, type }: { studentId: number; invoiceId: number; email: string; type: 'receivables' | 'payables' }) => {
+      const { error } = await supabase.functions.invoke('send-invoice', {
         body: {
           studentId,
           invoiceId,
           email,
-          type: 'invoice'
+          type,
+          baseUrl: window.location.origin
         }
       });
 
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success('Email sent successfully');
+      toast.success('Invoice email sent successfully');
     },
     onError: (error) => {
-      toast.error('Failed to send email: ' + error.message);
+      toast.error('Failed to send invoice email: ' + error.message);
     },
   });
 
@@ -251,6 +250,29 @@ export function useTeacherInvoices() {
     },
   });
 
+  // Send email mutation
+  const sendEmailMutation = useMutation({
+    mutationFn: async ({ teacherId, invoiceId, email, type }: { teacherId: number; invoiceId: number; email: string; type: 'receivables' | 'payables' }) => {
+      const { error } = await supabase.functions.invoke('send-invoice', {
+        body: {
+          studentId: teacherId, // Using teacherId as studentId for the function
+          invoiceId,
+          email,
+          type,
+          baseUrl: window.location.origin
+        }
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success('Invoice email sent successfully');
+    },
+    onError: (error) => {
+      toast.error('Failed to send invoice email: ' + error.message);
+    },
+  });
+
   // Generate invoices mutation
   const generateInvoicesMutation = useMutation({
     mutationFn: async ({ type, period }: GenerateInvoiceParams) => {
@@ -281,8 +303,10 @@ export function useTeacherInvoices() {
     stats,
     isLoading,
     updateStatus: updateStatusMutation.mutate,
+    sendEmail: sendEmailMutation.mutate,
     generateInvoices: generateInvoicesMutation.mutate,
     isUpdating: updateStatusMutation.isPending,
+    isSendingEmail: sendEmailMutation.isPending,
     isGenerating: generateInvoicesMutation.isPending,
   };
 }

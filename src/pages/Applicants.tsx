@@ -477,16 +477,18 @@ export default function Applicants() {
                             className="h-6 px-2 text-xs flex-shrink-0"
                           >
                             {isProcessing ? (
-                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              <>
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                <span className="hidden sm:inline">Processing...</span>
+                                <span className="sm:hidden">...</span>
+                              </>
                             ) : (
-                              <IconComponent className="h-3 w-3 mr-1" />
+                              <>
+                                <IconComponent className="h-3 w-3 mr-1" />
+                                <span className="hidden sm:inline">{buttonInfo.label}</span>
+                                <span className="sm:hidden">{buttonInfo.label.split(" ")[0]}</span>
+                              </>
                             )}
-                            <span className="hidden sm:inline">
-                              {isProcessing ? "Processing..." : buttonInfo.label}
-                            </span>
-                            <span className="sm:hidden">
-                              {isProcessing ? "..." : buttonInfo.label.split(" ")[0]}
-                            </span>
                           </Button>
                         );
                     })()}
@@ -504,14 +506,18 @@ export default function Applicants() {
                         className="h-6 px-2 text-xs flex-shrink-0"
                       >
                         {processingApplicantId === applicant.fld_id ? (
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          <>
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            <span className="hidden sm:inline">Sending...</span>
+                            <span className="sm:hidden">...</span>
+                          </>
                         ) : (
-                          <Send className="h-3 w-3 mr-1" />
+                          <>
+                            <Send className="h-3 w-3 mr-1" />
+                            <span className="hidden sm:inline">Resend Contract</span>
+                            <span className="sm:hidden">Resend</span>
+                          </>
                         )}
-                        <span className="hidden sm:inline">
-                          {processingApplicantId === applicant.fld_id ? "Sending..." : "Resend Contract"}
-                        </span>
-                        <span className="sm:hidden">{processingApplicantId === applicant.fld_id ? "..." : "Resend"}</span>
                       </Button>
                     )}
 
@@ -528,12 +534,18 @@ export default function Applicants() {
                         className="h-6 px-2 text-xs flex-shrink-0"
                       >
                         {processingApplicantId === applicant.fld_id ? (
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          <>
+                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                            <span className="hidden sm:inline">Processing...</span>
+                            <span className="sm:hidden">...</span>
+                          </>
                         ) : (
-                          <X className="h-3 w-3 mr-1" />
-                        )}
-                        <span className="hidden sm:inline">{processingApplicantId === applicant.fld_id ? "Processing..." : "Reject"}</span>
-                        <span className="sm:hidden">{processingApplicantId === applicant.fld_id ? "..." : "Reject"}</span>
+                          <>
+                            <X className="h-3 w-3 mr-1" />
+                            <span className="hidden sm:inline">Reject</span>
+                            <span className="sm:hidden">Reject</span>
+            </>
+          )}
                       </Button>
                     )}
                         </div>

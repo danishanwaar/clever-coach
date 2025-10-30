@@ -20,6 +20,8 @@ import Receivables from "./pages/Receivables";
 import Payables from "./pages/Payables";
 import CreateTeacherInvoice from "./pages/invoices/CreateTeacherInvoice";
 import CreateStudentInvoice from "./pages/invoices/CreateStudentInvoice";
+import InvoiceView from "./pages/invoices/InvoiceView";
+import InvoiceEdit from "./pages/invoices/InvoiceEdit";
 import DynamicMatcher from "./pages/DynamicMatcher";
 import TeacherContractSigning from "./pages/TeacherContractSigning";
 import ContractSignedSuccess from "./pages/ContractSignedSuccess";
@@ -218,7 +220,19 @@ const App = () => (
             path="/teacher/profile" 
             element={
               <ProtectedRoute requiredRole="teacher">
-                <TeacherProfile />
+                <Layout>
+                  <TeacherProfile />
+                </Layout>
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/teacher/profile/:tab" 
+            element={
+              <ProtectedRoute requiredRole="teacher">
+                <Layout>
+                  <TeacherProfile />
+                </Layout>
               </ProtectedRoute>
             } 
           />
@@ -332,6 +346,29 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
+          
+          {/* Invoice Management Routes */}
+          <Route 
+            path="/invoices/view/:id"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Layout>
+                  <InvoiceView />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          <Route 
+            path="/invoices/edit/:id"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <Layout>
+                  <InvoiceEdit />
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+          
   
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

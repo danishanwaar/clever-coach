@@ -60,7 +60,8 @@ export function useInvoiceCreation() {
       const { data, error } = await supabase
         .from('tbl_teachers')
         .select('fld_id, fld_first_name, fld_last_name, fld_status')
-        .not('fld_status', 'in', ['Deleted', 'Rejected'])
+        .neq('fld_status', 'Deleted')
+        .neq('fld_status', 'Rejected')
         .order('fld_first_name');
 
       if (error) throw error;
@@ -143,7 +144,7 @@ export function useInvoiceCreation() {
   // Create teacher invoice
   const createTeacherInvoiceMutation = useMutation({
     mutationFn: async (data: InvoiceFormData & { tempId: string }) => {
-      // First, get all temporary details
+      // First, get all temporary details - following PHP logic exactly
       const { data: tempDetails, error: tempError } = await supabase
         .from('tbl_temp_students_invoices_detail')
         .select('*')
@@ -155,67 +156,95 @@ export function useInvoiceCreation() {
         throw new Error('No invoice details found');
       }
 
-      // Calculate total amount and hours from temp details
-      let totalAmount = 0;
-      let totalLessons = 0;
-      tempDetails.forEach(detail => {
-        totalAmount += detail.fld_lesson * detail.fld_s_rate;
-        totalLessons += detail.fld_lesson;
-      });
+      // Calculate end date (last day of the month) - following PHP logic exactly
+      // PHP: $l_date = $_POST['FLD_YR'].'-'.$_POST['FLD_MN'].'-01';
+      // PHP: $FLD_EDATE = date("Y-m-t", strtotime($l_date));
+      const lDate = `${data.fld_yr}-${data.fld_mn}-01`;
+      const endDate = new Date(parseInt(data.fld_yr), parseInt(data.fld_mn), 0);
+      const fldEdate = endDate.toISOString().split('T')[0];
 
-      // Create the main invoice record
+      // PHP: $FLD_MY = $_POST['FLD_MN'].'.'.$_POST['FLD_YR'];
+      const fldMy = `${data.fld_mn}.${data.fld_yr}`;
+
+      // PHP: Insert invoice with FLD_INVOICE_TOTAL = '0' initially
       const { data: invoice, error: invoiceError } = await supabase
         .from('tbl_teachers_invoices')
         .insert({
           fld_tid: data.fld_id,
-          fld_edate: new Date().toISOString(),
+          fld_lhid: null, // PHP uses '0' but we use null as per user request
+          fld_cid: null, // PHP uses '0' but we use null as per user request
+          fld_invoice_total: 0, // PHP: '0' initially
+          fld_edate: fldEdate,
           fld_uname: data.fld_uname,
-          fld_status: 'Active', // Default status
-          fld_invoice_total: totalAmount,
-          fld_invoice_hr: totalLessons,
-          fld_min_lesson: totalLessons, // Assuming min_lesson is total lessons for now
-          fld_ch_hr: 'N', // Default
-          fld_cid: null, // Default
-          fld_lhid: null, // Default
-          fld_notes: null, // Default
+          fld_status: 'Paid', // PHP sets status to 'Paid'
         })
         .select()
         .single();
 
       if (invoiceError) throw invoiceError;
 
-      // Create invoice details
-      const invoiceDetails = tempDetails.map(detail => ({
-        fld_iid: invoice.fld_id,
-        fld_sid: data.fld_id, // Teacher ID becomes student ID in teacher invoice details
-        fld_ssid: 0, // Default value - should be replaced with actual student subject ID
-        fld_cid: 0, // Default value - should be replaced with actual contract ID
-        fld_detail: detail.fld_detail,
-        fld_len_lesson: detail.fld_len_lesson,
-        fld_l_date: new Date().toISOString().split('T')[0], // Current date
-        fld_lesson: detail.fld_lesson,
-        fld_t_rate: detail.fld_s_rate, // Use student rate as teacher rate for now
-        fld_my: `${data.fld_mn}.${data.fld_yr}`, // Month.Year format
-      }));
+      // PHP: Loop through temp details and insert each one
+      // PHP: Calculate total during loop: $FLD_INVOICE_TOTAL += ($invoice_d['FLD_S_RATE'] * $invoice_d['FLD_LESSON']);
+      let fldInvoiceTotal = 0;
+      const invoiceDetails: any[] = [];
 
+      for (const invoice_d of tempDetails) {
+        // PHP: $FLD_DETAIL = mysqli_real_escape_string($db,$invoice_d['FLD_DETAIL']);
+        // PHP: $FLD_CID = 0;
+        const fldCid = null; // PHP uses '0' but we use null as per user request
+
+        // Ensure proper number conversion
+        const lessonCount = Number(invoice_d.fld_lesson) || 0;
+        const rate = Number(invoice_d.fld_s_rate) || 0;
+
+        // PHP: Insert detail
+        invoiceDetails.push({
+          fld_iid: invoice.fld_id,
+          fld_sid: null, // PHP uses '0' but we use null as per user request
+          fld_ssid: null, // PHP uses '0'
+          fld_cid: fldCid, // PHP uses '0' but we use null as per user request
+          fld_detail: invoice_d.fld_detail,
+          fld_len_lesson: invoice_d.fld_len_lesson,
+          fld_l_date: fldEdate, // PHP: '".$FLD_EDATE."'
+          fld_lesson: lessonCount,
+          fld_t_rate: rate, // PHP: '".$invoice_d['FLD_S_RATE']."'
+          fld_my: fldMy, // PHP: '".$FLD_MY."'
+        });
+
+        // PHP: $FLD_INVOICE_TOTAL=$FLD_INVOICE_TOTAL + ($invoice_d['FLD_S_RATE'] * $invoice_d['FLD_LESSON']);
+        fldInvoiceTotal += lessonCount * rate;
+      }
+
+      // PHP: Insert all details (we batch insert for efficiency, but logic is same)
       const { error: detailsError } = await supabase
         .from('tbl_teachers_invoices_detail')
         .insert(invoiceDetails);
 
       if (detailsError) throw detailsError;
 
+      // PHP: Update invoice total after all details are inserted
+      // PHP: $update=mysqli_query($db,"update tbl_teachers_invoices set FLD_INVOICE_TOTAL='".$FLD_INVOICE_TOTAL."' where FLD_ID='".$invoice['FLD_ID']."'");
+      const { data: updatedInvoice, error: updateError } = await supabase
+        .from('tbl_teachers_invoices')
+        .update({ fld_invoice_total: fldInvoiceTotal })
+        .eq('fld_id', invoice.fld_id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      // PHP: unset($_SESSION['FLD_TTEMPID']);
       // Clean up temporary details
       await supabase
         .from('tbl_temp_students_invoices_detail')
         .delete()
         .eq('fld_tempid', data.tempId);
 
-      return invoice;
+      return updatedInvoice || invoice;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['temp-invoice-details'] });
       queryClient.invalidateQueries({ queryKey: ['teachers-invoices'] });
-      toast.success('Teacher invoice created successfully');
     },
     onError: (error) => {
       toast.error('Failed to create teacher invoice: ' + error.message);
@@ -225,7 +254,7 @@ export function useInvoiceCreation() {
   // Create student invoice
   const createStudentInvoiceMutation = useMutation({
     mutationFn: async (data: InvoiceFormData & { tempId: string }) => {
-      // First, get all temporary details
+      // First, get all temporary details - following PHP logic exactly
       const { data: tempDetails, error: tempError } = await supabase
         .from('tbl_temp_students_invoices_detail')
         .select('*')
@@ -237,67 +266,98 @@ export function useInvoiceCreation() {
         throw new Error('No invoice details found');
       }
 
-      // Calculate total amount and hours from temp details
-      let totalAmount = 0;
-      let totalLessons = 0;
-      tempDetails.forEach(detail => {
-        totalAmount += detail.fld_lesson * detail.fld_s_rate;
-        totalLessons += detail.fld_lesson;
-      });
+      // Calculate end date (last day of the month) - following PHP logic exactly
+      // PHP: $l_date = $_POST['FLD_YR'].'-'.$_POST['FLD_MN'].'-01';
+      // PHP: $FLD_EDATE = date("Y-m-t", strtotime($l_date));
+      const lDate = `${data.fld_yr}-${data.fld_mn}-01`;
+      const endDate = new Date(parseInt(data.fld_yr), parseInt(data.fld_mn), 0);
+      const fldEdate = endDate.toISOString().split('T')[0];
 
-      // Create the main invoice record
+      // PHP: $FLD_MY = $_POST['FLD_MN'].'.'.$_POST['FLD_YR'];
+      const fldMy = `${data.fld_mn}.${data.fld_yr}`;
+
+      // PHP: Insert invoice with FLD_INVOICE_TOTAL = '0' initially
       const { data: invoice, error: invoiceError } = await supabase
         .from('tbl_students_invoices')
         .insert({
-          fld_sid: data.fld_id,
           fld_i_type: (data.fld_i_type as 'Normal' | 'Negative') || 'Normal',
-          fld_edate: new Date().toISOString(),
+          fld_sid: data.fld_id,
+          fld_lhid: null, // PHP uses '0' but we use null as per user request
+          fld_invoice_total: 0, // PHP: '0' initially
+          fld_invoice_hr: 0, // PHP sets to '0'
+          fld_min_lesson: 0, // PHP sets to '0'
+          fld_ch_hr: 'N', // PHP sets to 'N'
+          fld_notes: null, // PHP uses empty string '' but we use null as per user request
+          fld_edate: fldEdate,
           fld_uname: data.fld_uname,
-          fld_status: 'Active', // Default status
-          fld_invoice_total: totalAmount,
-          fld_invoice_hr: totalLessons,
-          fld_min_lesson: totalLessons, // Assuming min_lesson is total lessons for now
-          fld_ch_hr: 'N', // Default
-          fld_cid: null, // Default
-          fld_lhid: null, // Default
-          fld_notes: null, // Default
+          fld_status: 'Paid', // PHP sets status to 'Paid'
         })
         .select()
         .single();
 
       if (invoiceError) throw invoiceError;
 
-      // Create invoice details
-      const invoiceDetails = tempDetails.map(detail => ({
-        fld_iid: invoice.fld_id,
-        fld_ssid: 0, // Default value - should be replaced with actual student subject ID
-        fld_cid: 0, // Default value - should be replaced with actual contract ID
-        fld_detail: detail.fld_detail,
-        fld_len_lesson: detail.fld_len_lesson,
-        fld_l_date: new Date().toISOString().split('T')[0], // Current date
-        fld_lesson: detail.fld_lesson,
-        fld_s_rate: detail.fld_s_rate,
-        fld_my: `${data.fld_mn}.${data.fld_yr}`, // Month.Year format
-      }));
+      // PHP: Loop through temp details and insert each one
+      // PHP: Calculate total during loop: $FLD_INVOICE_TOTAL += ($invoice_d['FLD_S_RATE'] * $invoice_d['FLD_LESSON']);
+      let fldInvoiceTotal = 0;
+      const invoiceDetails: any[] = [];
 
+      for (const invoice_d of tempDetails) {
+        // PHP: $FLD_DETAIL = mysqli_real_escape_string($db,$invoice_d['FLD_DETAIL']);
+        // PHP: $FLD_CID = 0;
+        const fldCid = null; // PHP uses '0' but we use null as per user request
+
+        // Ensure proper number conversion
+        const lessonCount = Number(invoice_d.fld_lesson) || 0;
+        const rate = Number(invoice_d.fld_s_rate) || 0;
+
+        // PHP: Insert detail
+        invoiceDetails.push({
+          fld_iid: invoice.fld_id,
+          fld_ssid: null, // PHP uses '0'
+          fld_cid: fldCid, // PHP uses '0' but we use null as per user request
+          fld_detail: invoice_d.fld_detail,
+          fld_len_lesson: invoice_d.fld_len_lesson,
+          fld_l_date: fldEdate, // PHP: '".$FLD_EDATE."'
+          fld_lesson: lessonCount,
+          fld_s_rate: rate, // PHP: '".$invoice_d['FLD_S_RATE']."'
+          fld_my: fldMy, // PHP: '".$FLD_MY."'
+        });
+
+        // PHP: $FLD_INVOICE_TOTAL=$FLD_INVOICE_TOTAL + ($invoice_d['FLD_S_RATE'] * $invoice_d['FLD_LESSON']);
+        fldInvoiceTotal += lessonCount * rate;
+      }
+
+      // PHP: Insert all details (we batch insert for efficiency, but logic is same)
       const { error: detailsError } = await supabase
         .from('tbl_students_invoices_detail')
         .insert(invoiceDetails);
 
       if (detailsError) throw detailsError;
 
+      // PHP: Update invoice total after all details are inserted
+      // PHP: $update=mysqli_query($db,"update tbl_students_invoices set FLD_INVOICE_TOTAL='".$FLD_INVOICE_TOTAL."' where FLD_ID='".$invoice['FLD_ID']."'");
+      const { data: updatedInvoice, error: updateError } = await supabase
+        .from('tbl_students_invoices')
+        .update({ fld_invoice_total: fldInvoiceTotal })
+        .eq('fld_id', invoice.fld_id)
+        .select()
+        .single();
+
+      if (updateError) throw updateError;
+
+      // PHP: unset($_SESSION['FLD_TEMPID']);
       // Clean up temporary details
       await supabase
         .from('tbl_temp_students_invoices_detail')
         .delete()
         .eq('fld_tempid', data.tempId);
 
-      return invoice;
+      return updatedInvoice || invoice;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['temp-invoice-details'] });
       queryClient.invalidateQueries({ queryKey: ['students-invoices'] });
-      toast.success('Student invoice created successfully');
     },
     onError: (error) => {
       toast.error('Failed to create student invoice: ' + error.message);

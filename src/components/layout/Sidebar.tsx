@@ -94,14 +94,7 @@ export const Sidebar = memo(function Sidebar({ isCollapsed, onToggle }: SidebarP
     if (isTeacher()) {
       return [
         { name: 'Dashboard', href: '/', icon: Home, current: location.pathname === '/' },
-        { name: 'My Profile', href: '/teacher/profile', icon: User, current: location.pathname === '/teacher/profile' },
-        { name: 'My Students', href: '/teacher/students', icon: Users, current: location.pathname === '/teacher/students' },
-        { name: 'Time Logs', href: '/teacher/time-logs', icon: Clock, current: location.pathname === '/teacher/time-logs' },
-        { name: 'Financials', href: '/teacher/financials', icon: DollarSign, current: location.pathname === '/teacher/financials' },
-        { name: 'Documents', href: '/teacher/documents', icon: FileText, current: location.pathname === '/teacher/documents' },
-        { name: 'Activity', href: '/teacher/activity', icon: Activity, current: location.pathname === '/teacher/activity' },
-        { name: 'Progress Notes', href: '/teacher/progress-notes', icon: BookOpen, current: location.pathname === '/teacher/progress-notes' },
-        { name: 'Settings', href: '/teacher/settings', icon: Settings, current: location.pathname === '/teacher/settings' },
+        { name: 'Profile', href: '/teacher/profile', icon: User, current: location.pathname.startsWith('/teacher/profile') },
       ];
     }
     

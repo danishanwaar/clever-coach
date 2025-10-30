@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Loader } from '@/components/ui/loader';
 import { useDashboard } from '@/hooks/useDashboard';
 import { useAuthStore } from '@/stores/authStore';
+import TeacherDashboard from './teacher/TeacherDashboard';
 import { 
   Users, 
   UserCheck, 
@@ -274,8 +275,8 @@ export default function Dashboard() {
                 </div>
                 <div className="h-12 w-12 bg-teal-100 rounded-xl flex items-center justify-center group-hover:bg-teal-200 transition-colors">
                   <UserCheck className="h-6 w-6 text-teal-600" />
-                </div>
               </div>
+            </div>
             </CardContent>
           </Card>
 
@@ -294,8 +295,8 @@ export default function Dashboard() {
                   <TrendingUp className="h-6 w-6 text-rose-600" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
             </div>
 
 
@@ -347,7 +348,7 @@ export default function Dashboard() {
                     <Activity className="h-8 w-8 text-gray-400" />
                   </div>
                   <p className="text-gray-500 text-lg">No recent activities</p>
-                </div>
+            </div>
               )}
             </CardContent>
           </Card>
@@ -410,96 +411,7 @@ export default function Dashboard() {
 
   // Teacher Dashboard
   if (user?.fld_rid === 2) {
-    const teacher = teacherData.data?.teacher;
-    
-    return (
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Teacher Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {user.fld_name}</p>
-          </div>
-          <Badge variant="secondary" className="text-sm">
-            Teacher
-          </Badge>
-        </div>
-
-        {teacher?.fld_status !== 'Hired' ? (
-          <Card className="bg-yellow-50 border-yellow-200">
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-3">
-                <AlertCircle className="h-6 w-6 text-yellow-600" />
-                <div>
-                  <h3 className="font-semibold text-yellow-800">Registration Under Review</h3>
-                  <p className="text-yellow-700">
-                    Welcome to Clever Coach, {user.fld_name}! Your registration form is under approval process.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            {/* Teacher Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-blue-500 text-white">
-                <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100 text-sm">My Students</p>
-                      <p className="text-3xl font-bold">{teacherData.data?.totalStudents || 0}</p>
-                    </div>
-                    <Users className="h-8 w-8 text-blue-200" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-green-500 text-white">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-green-100 text-sm">Active Contracts</p>
-                      <p className="text-3xl font-bold">{teacherData.data?.totalContracts || 0}</p>
-                    </div>
-                    <FileText className="h-8 w-8 text-green-200" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Onboarding Panel */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-center text-primary">Onboarding Panel</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-blue-800 mb-2">🔄 Process Flow</h4>
-                    <ul className="text-blue-700 space-y-1 text-sm">
-                      <li>• We will contact you via phone or WhatsApp when we have a suitable student for you</li>
-                      <li>• You will receive a message with student details and subject information</li>
-                      <li>• You can accept or decline the assignment</li>
-                      <li>• Once accepted, you'll receive contract documents to sign</li>
-                    </ul>
-            </div>
-
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-green-800 mb-2">📚 Teaching Guidelines</h4>
-                    <ul className="text-green-700 space-y-1 text-sm">
-                      <li>• Always be punctual for lessons</li>
-                      <li>• Prepare lesson materials in advance</li>
-                      <li>• Maintain professional communication</li>
-                      <li>• Log lesson details after each session</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        )}
-      </div>
-    );
+    return <TeacherDashboard />;
   }
 
   // Student Dashboard

@@ -112,6 +112,7 @@ export function useDynamicMatcher() {
       if (error) throw error;
       return data as Student[];
     },
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
   });
 
   // Get student details with level information
@@ -171,12 +172,12 @@ export function useDynamicMatcher() {
 
       if (mediationError) throw mediationError;
 
-      // Create a set of mediated subject IDs
-      const mediatedSubjectIds = new Set(mediationStages.map(stage => stage.fld_ssid));
+      // Create a set of mediated student subject IDs (fld_ssid from mediation stages)
+      const mediatedStudentSubjectIds = new Set(mediationStages.map(stage => stage.fld_ssid));
 
       // Filter subjects: only include subjects the student has that are not yet in mediation
       const filteredSubjects = studentSubjects
-        .filter(studentSubject => !mediatedSubjectIds.has(studentSubject.fld_id))
+        .filter(studentSubject => !mediatedStudentSubjectIds.has(studentSubject.fld_id))
         .map(item => ({
           fld_id: item.fld_id,
           fld_sid: item.fld_sid,
@@ -202,6 +203,8 @@ export function useDynamicMatcher() {
       if (error) throw error;
       return data;
     },
+    staleTime: 1000 * 60 * 60, // 1 hour - subjects don't change often
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
   });
 
   // Get mediation types
@@ -218,6 +221,8 @@ export function useDynamicMatcher() {
       if (error) throw error;
       return data as MediationType[];
     },
+    staleTime: 1000 * 60 * 60, // 1 hour - mediation types don't change often
+    refetchOnWindowFocus: false,
   });
 
   // Search teachers based on criteria
@@ -241,7 +246,17 @@ export function useDynamicMatcher() {
           fld_t_mode,
           fld_self,
           fld_evaluation,
-          fld_status
+          fld_status,
+          tbl_teachers_subjects_expertise!fk_teacher_subjects_teacher (
+            fld_level,
+            tbl_subjects!inner (
+              fld_id,
+              fld_subject
+            ),
+            tbl_levels!inner (
+              fld_level
+            )
+          )
         `);
 
       // Apply filters
@@ -249,7 +264,11 @@ export function useDynamicMatcher() {
         query = query.eq('fld_gender', formData.fld_gender as 'Männlich' | 'Weiblich' | 'Divers');
       }
 
-      // Apply status filter
+      // Apply status filter based on FLD_TS
+      // Note: In the legacy system, it searches tbl_teachers regardless of FLD_TS value
+      // 'Teacher' = Hired status
+      // 'Inactive' = Inactive status
+      // 'Applicant' = Applicant statuses
       if (formData.fld_ts === 'Teacher') {
         query = query.eq('fld_status', 'Hired');
       } else if (formData.fld_ts === 'Inactive') {
@@ -261,34 +280,45 @@ export function useDynamicMatcher() {
       const { data: teachers, error } = await query;
       if (error) throw error;
 
+      // Process teachers with preloaded subjects
+      const processedTeachers = (teachers || []).map(teacher => {
+        const subjects = (teacher.tbl_teachers_subjects_expertise || []).map((ts: any) => ({
+          fld_id: ts.tbl_subjects.fld_id,
+          fld_subject: ts.tbl_subjects.fld_subject,
+          fld_level: ts.fld_level,
+          fld_level_name: ts.tbl_levels.fld_level,
+        }));
+
+        return {
+          ...teacher,
+          subjects,
+        };
+      });
+
       // Filter by subject expertise if subjects are selected
       if (formData.fld_suid.length > 0) {
-        const { data: teacherSubjects, error: subjectsError } = await supabase
-          .from('tbl_teachers_subjects_expertise')
-          .select('fld_tid, fld_sid, fld_level')
-          .in('fld_sid', formData.fld_suid);
+        const filteredTeachers = processedTeachers.filter(teacher => {
+          const hasSubject = teacher.subjects.some((s: any) => formData.fld_suid.includes(s.fld_id));
+          if (!hasSubject) return false;
 
-        if (subjectsError) throw subjectsError;
+          // Apply level filter if AND search
+          if (formData.fld_ss === 'AND') {
+            const hasLevelMatch = teacher.subjects.some((s: any) => 
+              formData.fld_suid.includes(s.fld_id) && s.fld_level >= formData.fld_lid
+            );
+            return hasLevelMatch;
+          }
 
-        const teacherIds = teacherSubjects.map(ts => ts.fld_tid);
-        const filteredTeachers = teachers.filter(t => teacherIds.includes(t.fld_id));
-
-        // Apply level filter if AND search
-        if (formData.fld_ss === 'AND') {
-          const levelFilteredTeachers = filteredTeachers.filter(teacher => {
-            const teacherSubject = teacherSubjects.find(ts => ts.fld_tid === teacher.fld_id);
-            return teacherSubject && teacherSubject.fld_level >= formData.fld_lid;
-          });
-          return levelFilteredTeachers;
-        }
+          return true;
+        });
 
         return filteredTeachers;
       }
 
-      return teachers || [];
+      return processedTeachers;
     },
     onSuccess: () => {
-      toast.success('Teachers found successfully');
+      console.log('Teachers found successfully');
     },
     onError: (error) => {
       toast.error('Failed to search teachers');
@@ -397,24 +427,18 @@ export function useDynamicMatcher() {
   // Match teacher with student
   const matchTeacherMutation = useMutation({
     mutationFn: async ({ studentId, teacherId, subjectIds }: { studentId: number; teacherId: number; subjectIds: number[] }) => {
-      // Get the "Match" mediation type from database
-      const { data: matchType, error: matchTypeError } = await supabase
-        .from('tbl_mediation_types')
-        .select('fld_id')
-        .eq('fld_stage_name', 'Match')
-        .eq('fld_rid', 2)
-        .eq('fld_status', 'Active')
-        .single();
+      // Following legacy logic: use fld_m_type = 1 for "Match" (not a stage name)
+      const matchTypeId = 1;
 
-      if (matchTypeError) throw matchTypeError;
-
-      // Insert mediation stages for each subject
-      const mediationStages = subjectIds.map(subjectId => ({
+      // Insert mediation stages for each subject with fld_m_flag='Y' directly
+      // subjectIds are actually student subject IDs (fld_id from tbl_students_subjects)
+      const mediationStages = subjectIds.map(studentSubjectId => ({
         fld_tid: teacherId,
         fld_sid: studentId,
-        fld_ssid: subjectId,
-        fld_m_type: matchType.fld_id,
+        fld_ssid: studentSubjectId, // This is the fld_id from tbl_students_subjects
+        fld_m_type: matchTypeId,
         fld_edate: new Date().toISOString().split('T')[0],
+        fld_m_flag: 'Y', // Set flag directly in insert - no need to update after
         fld_uname: user?.fld_id || 1,
       }));
 
@@ -436,7 +460,7 @@ export function useDynamicMatcher() {
         .from('tbl_students_mediation_stages')
         .select('fld_ssid')
         .eq('fld_sid', studentId)
-        .eq('fld_m_type', 1);
+        .eq('fld_m_type', matchTypeId);
 
       if (mediatedError) throw mediatedError;
 
@@ -448,7 +472,10 @@ export function useDynamicMatcher() {
 
       const { error: updateError } = await supabase
         .from('tbl_students')
-        .update({ fld_status: newStatus as Database["public"]["Enums"]["student_status"] })
+        .update({ 
+          fld_status: newStatus as Database["public"]["Enums"]["student_status"],
+          fld_im_status: teacherId // Set the teacher ID for introductory meeting status
+        })
         .eq('fld_id', studentId);
 
       if (updateError) throw updateError;
@@ -458,6 +485,9 @@ export function useDynamicMatcher() {
     onSuccess: (data) => {
       toast.success(`Teacher matched successfully. Student status: ${data.newStatus}`);
       queryClient.invalidateQueries({ queryKey: ['students-for-matching'] });
+      // Invalidate teacher dashboard queries so meetings appear immediately
+      queryClient.invalidateQueries({ queryKey: ['pendingMeetings'] });
+      queryClient.invalidateQueries({ queryKey: ['introductoryMeetings'] });
     },
     onError: (error) => {
       toast.error('Failed to match teacher');

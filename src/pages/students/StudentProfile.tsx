@@ -35,7 +35,43 @@ import StudentProgressNotes from "./StudentProgressNotes";
 import StudentTimeLogs from "./StudentTimeLogs";
 import StudentActivity from "./StudentActivity";
 import StudentSettings from "./StudentSettings";
-import StudentContractDownload from "./StudentContractDownload";
+import StudentContractView from "../StudentContractView";
+import { useStudentContracts as useStudentContractsHook } from "@/hooks/useStudentContracts";
+
+// Wrapper component to get active contract and pass to StudentContractView
+const StudentContractViewWrapper: React.FC<{ studentId: number }> = ({ studentId }) => {
+  const { getActiveContracts } = useStudentContractsHook();
+  const activeContractsQuery = getActiveContracts(studentId);
+  const activeContracts = activeContractsQuery.data || [];
+  
+  // Get the first active contract (if any)
+  const activeContract = activeContracts.length > 0 ? activeContracts[0] : null;
+  
+  if (activeContractsQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-gray-600">Loading contract...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  if (!activeContract) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Active Contract</h3>
+          <p className="text-sm text-gray-600">There is no active contract to display.</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return <StudentContractView contractId={activeContract.fld_id} />;
+};
 
 const StudentProfile: React.FC = () => {
   const { id, tab } = useParams<{ id: string; tab?: string }>();
@@ -553,7 +589,7 @@ const StudentProfile: React.FC = () => {
 
             <TabsContent value="download" className="space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
-                <StudentContractDownload />
+                <StudentContractViewWrapper studentId={studentId} />
               </div>
             </TabsContent>
 

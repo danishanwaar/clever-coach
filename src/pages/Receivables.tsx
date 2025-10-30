@@ -23,14 +23,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { 
   Search, 
   Eye, 
@@ -46,6 +38,7 @@ import {
   FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { generateStudentInvoiceById, generateStudentInvoiceBlobById } from '@/utils/invoicePdf';
 
 const Receivables = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -90,7 +83,8 @@ const Receivables = () => {
       await sendEmail({ 
         studentId, 
         invoiceId, 
-        email: 'kontakt@clevercoach-nachhilfe.de' // Default email as in legacy
+        email: 'kontakt@clevercoach-nachhilfe.de', // Default email as in legacy
+        type: 'receivables'
       });
     } catch (error) {
       console.error('Failed to send email:', error);
@@ -99,6 +93,56 @@ const Receivables = () => {
 
   const handleGenerateInvoices = (period: 'current' | 'previous') => {
     generateInvoices({ type: 'receivables', period });
+  };
+
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [isZipping, setIsZipping] = useState(false);
+
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllVisible = () => {
+    setSelectedIds(new Set(filteredInvoices.map(i => i.fld_id)));
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleDownloadSelectedZip = async () => {
+    if (selectedIds.size === 0) {
+      toast.info('Select at least one invoice');
+      return;
+    }
+    setIsZipping(true);
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      for (const id of selectedIds) {
+        try {
+          const { filename, blob } = await generateStudentInvoiceBlobById(id);
+          zip.file(filename, blob);
+        } catch (e) {
+          console.error('Failed to generate invoice', id, e);
+        }
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(zipBlob);
+      a.download = `student_invoices_${Date.now()}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(a.href);
+    } catch (e:any) {
+      toast.error('ZIP generation failed. Please ensure jszip is installed.');
+      console.error(e);
+    } finally {
+      setIsZipping(false);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -129,25 +173,31 @@ const Receivables = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Receivables</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="destructive"
             onClick={() => handleGenerateInvoices('previous')}
             disabled={isGenerating}
+            size="sm"
+            className="h-8 px-2 sm:px-3 whitespace-nowrap"
           >
-            <Calendar className="h-4 w-4 mr-2" />
-            Generate Previous Month Invoices
+            <Calendar className="h-4 w-4 mr-1.5 sm:mr-2" />
+            <span className="hidden md:inline">Generate Previous Month Invoices</span>
+            <span className="md:hidden">Prev Month</span>
           </Button>
           <Button
             onClick={() => handleGenerateInvoices('current')}
             disabled={isGenerating}
+            size="sm"
+            className="h-8 px-2 sm:px-3 whitespace-nowrap"
           >
-            <FileText className="h-4 w-4 mr-2" />
-            Generate Current Month Invoices
+            <FileText className="h-4 w-4 mr-1.5 sm:mr-2" />
+            <span className="hidden md:inline">Generate Current Month Invoices</span>
+            <span className="md:hidden">Current Month</span>
           </Button>
         </div>
       </div>
@@ -206,8 +256,21 @@ const Receivables = () => {
 
       {/* Filters and Search */}
       <Card className="mb-6">
-        <CardHeader>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <CardTitle className="text-primary">Student Invoices</CardTitle>
+          <div className="flex items-center gap-2 ml-auto">
+            <Button onClick={handleDownloadSelectedZip} disabled={isZipping || selectedIds.size === 0} size="sm" className="h-8 px-2 sm:px-3 whitespace-nowrap">
+              <Download className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="hidden sm:inline">{isZipping ? 'Preparing ZIP...' : 'Download Selected (ZIP)'}</span>
+              <span className="sm:hidden">ZIP</span>
+            </Button>
+            <Button onClick={selectAllVisible} size="sm" aria-label="Select All" title="Select All" className="h-8 w-8 p-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </Button>
+            <Button onClick={clearSelection} size="sm" aria-label="Clear Selection" title="Clear Selection" className="h-8 w-8 p-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-4 w-4"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4 mb-4">
@@ -238,117 +301,157 @@ const Receivables = () => {
             </div>
           </div>
 
-          {/* Invoices Table */}
-          <div className="border rounded-lg overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Invoice & Student</TableHead>
-                  <TableHead>References</TableHead>
-                  <TableHead>Total Amount</TableHead>
-                  <TableHead>Paid On</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredInvoices.map((invoice) => (
-                  <TableRow key={invoice.fld_id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
-                          {invoice.fld_id}
-                        </Badge>
-                        <Badge variant="default" className="bg-blue-100 text-blue-800">
-                          {invoice.tbl_students?.fld_first_name} {invoice.tbl_students?.fld_last_name}
-                        </Badge>
+          {/* Invoices Cards */}
+          <div className="space-y-2">
+            {filteredInvoices.map((invoice) => {
+              const initials = `${invoice.tbl_students?.fld_first_name?.[0] || ''}${invoice.tbl_students?.fld_last_name?.[0] || ''}`;
+              
+              return (
+                <div 
+                  key={invoice.fld_id}
+                  className="bg-white rounded-lg shadow-sm border-l-4 border-l-primary hover:shadow-md transition-all duration-200 group cursor-pointer"
+                >
+                  <div className="p-4 sm:p-5">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      {/* Left Section - Invoice Info */}
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        {/* Select + Avatar */}
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(invoice.fld_id)}
+                          onChange={() => toggleSelect(invoice.fld_id)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm flex-shrink-0">
+                          {initials}
+                        </div>
+                        
+                        {/* Basic Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900 truncate">
+                              {invoice.tbl_students?.fld_first_name} {invoice.tbl_students?.fld_last_name}
+                            </h3>
+                            <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-sm px-2 py-1">
+                              #{invoice.fld_id}
+                            </Badge>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-gray-500">
+                            <span className="font-medium">Student Invoice</span>
+                            <span>Due: {formatDate(invoice.fld_edate)}</span>
+                            {invoice.fld_lhid && <span>Ref: {invoice.fld_lhid}</span>}
+                          </div>
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>{invoice.fld_lhid}</TableCell>
-                    <TableCell className="text-red-600 font-semibold">
-                      {formatCurrency(invoice.fld_invoice_total)}
-                    </TableCell>
-                    <TableCell>{formatDate(invoice.fld_edate)}</TableCell>
-                    <TableCell>
-                      {getStatusBadge(invoice.fld_status)}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                        >
-                          <Link to={`/invoices/view/${invoice.fld_id}?type=receivables`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                        >
-                          <Link to={`/invoices/edit/${invoice.fld_id}?type=receivables`}>
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          asChild
-                        >
-                          <Link to={`/invoices/download/${invoice.fld_id}?type=receivables`} target="_blank">
-                            <Download className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        {invoice.fld_i_type === 'Normal' && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={isSendingEmail}
-                              >
-                                <Mail className="h-4 w-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Send Email</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to send this invoice via email to the student?
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleSendEmail(invoice.fld_sid, invoice.fld_id)}
-                                >
-                                  Send Email
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        )}
-                        <Select
-                          value={invoice.fld_status}
-                          onValueChange={(value) => handleStatusUpdate(invoice.fld_id, value)}
-                        >
-                          <SelectTrigger className="w-24 h-8">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Pending">Pending</SelectItem>
-                            <SelectItem value="Paid">Paid</SelectItem>
-                            <SelectItem value="Overdue">Overdue</SelectItem>
-                          </SelectContent>
-                        </Select>
+
+                      {/* Amount + Actions Row (responsive) */}
+                      <div className="flex w-full sm:w-auto items-center justify-between gap-3 sm:gap-4 mt-3 sm:mt-0">
+                        {/* Amount */}
+                        <div className="text-left sm:text-right">
+                          <div className="text-xl sm:text-2xl font-bold text-red-600 leading-tight">
+                            {formatCurrency(invoice.fld_invoice_total)}
+                          </div>
+                          <div className="text-xs sm:text-sm text-gray-500 font-medium">Total</div>
+                        </div>
+
+                        {/* Status + Actions */}
+                        <div className="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
+                          {/* Status Badge */}
+                          <div className="flex-shrink-0">
+                            {getStatusBadge(invoice.fld_status)}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0"
+                              asChild
+                              aria-label="View invoice"
+                              title="View"
+                            >
+                              <Link to={`/invoices/view/${invoice.fld_id}?type=receivables`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0"
+                              asChild
+                              aria-label="Edit invoice"
+                              title="Edit"
+                            >
+                              <Link to={`/invoices/edit/${invoice.fld_id}?type=receivables`}>
+                                <Edit className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-9 w-9 p-0"
+                              onClick={async () => {
+                                try { await generateStudentInvoiceById(invoice.fld_id); } catch (e) { console.error(e); }
+                              }}
+                              aria-label="Download PDF"
+                              title="Download PDF"
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                            {invoice.fld_i_type === 'Normal' && (
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-9 w-9 p-0"
+                                    disabled={isSendingEmail}
+                                    aria-label="Send email"
+                                    title="Send Email"
+                                  >
+                                    <Mail className="h-4 w-4" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Send Email</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Are you sure you want to send this invoice via email to the student?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      onClick={() => handleSendEmail(invoice.fld_sid, invoice.fld_id)}
+                                    >
+                                      Send Email
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            )}
+                            <Select
+                              value={invoice.fld_status}
+                              onValueChange={(value) => handleStatusUpdate(invoice.fld_id, value)}
+                            >
+                              <SelectTrigger className="h-9 w-28 sm:w-24 text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Pending">Pending</SelectItem>
+                                <SelectItem value="Paid">Paid</SelectItem>
+                                <SelectItem value="Overdue">Overdue</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           {filteredInvoices.length === 0 && (

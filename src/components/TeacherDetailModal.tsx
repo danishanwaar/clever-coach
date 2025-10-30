@@ -53,7 +53,6 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
   const [currentStatus, setCurrentStatus] = useState('');
 
   const { 
-    teacherSubjects, 
     teacherActivities, 
     updateStatus, 
     recordActivity,
@@ -80,7 +79,7 @@ export default function TeacherDetailModal({ teacher, isOpen, onClose }: Teacher
 
   if (!teacher) return null;
 
-  const subjects = teacherSubjects.filter(subject => subject.fld_tid === teacher.fld_id);
+  const subjects = teacher.tbl_teachers_subjects_expertise || [];
   const activities = teacherActivities.filter(activity => activity.fld_tid === teacher.fld_id);
 
   const formatPhoneNumber = (phone: string) => {

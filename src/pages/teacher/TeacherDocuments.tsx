@@ -1,417 +1,415 @@
 import React, { useState, useRef } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Upload, FileText, X, Download, Image, File, FileImage, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { toast } from 'sonner';
-import { Upload, Download, Eye, Trash2, Plus, Search, FileText, Image, File } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { format } from 'date-fns';
+import { useAuthStore } from '@/stores/authStore';
+import { useTeacher } from '@/hooks/useTeacherProfile';
+import {
+  useTeacherDocuments,
+  useUploadTeacherDocuments,
+  useDeleteTeacherDocument,
+  useGetDocumentUrl
+} from '@/hooks/useTeacherProfile';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
-interface Document {
-  fld_id: number;
-  fld_name: string;
-  fld_type: string;
-  fld_size: number;
-  fld_path: string;
-  fld_description?: string;
-  fld_upload_date: string;
-  fld_status: string;
-}
-
-export default function TeacherDocuments() {
+const TeacherDocuments: React.FC = () => {
   const { user } = useAuthStore();
-  const queryClient = useQueryClient();
+  const { data: teacher } = useTeacher(user?.fld_id);
+  const teacherId = teacher?.fld_id;
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploadData, setUploadData] = useState({
-    fld_name: '',
-    fld_type: '',
-    fld_description: ''
-  });
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: number; fileName: string } | null>(null);
+  const [downloadingDoc, setDownloadingDoc] = useState<number | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
-  // Fetch teacher's documents
-  const { data: documents, isLoading } = useQuery<Document[]>({
-    queryKey: ['teacherDocuments', user?.fld_id],
-    queryFn: async () => {
-      if (!user?.fld_id) throw new Error('User not authenticated');
+  // Fetch teacher documents
+  const { data: documents = [], isLoading } = useTeacherDocuments(teacherId);
 
-      // Get teacher ID
-      const { data: teacher, error: teacherError } = await supabase
-        .from('tbl_teachers')
-        .select('fld_id')
-        .eq('fld_uid', user.fld_id)
-        .single();
-
-      if (teacherError) throw teacherError;
-
-      // For now, return empty array until table is created
-      // TODO: Implement once tbl_teacher_documents table is created
-      return [];
-    },
-    enabled: !!user?.fld_id
-  });
-
-  // Upload document mutation
-  const uploadDocumentMutation = useMutation({
-    mutationFn: async (file: File) => {
-      if (!user?.fld_id) throw new Error('User not authenticated');
-
-      // Get teacher ID
-      const { data: teacher, error: teacherError } = await supabase
-        .from('tbl_teachers')
-        .select('fld_id')
-        .eq('fld_uid', user.fld_id)
-        .single();
-
-      if (teacherError) throw teacherError;
-
-      // Generate unique file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `teachers/${teacher.fld_id}/${fileName}`;
-
-      // Upload file to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documents')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      // TODO: Save document metadata to database once tbl_teacher_documents table is created
-      // For now, just upload to storage
-      console.log('Document uploaded to storage:', filePath);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacherDocuments'] });
-      setIsUploadDialogOpen(false);
-      setSelectedFile(null);
-      setUploadData({ fld_name: '', fld_type: '', fld_description: '' });
-      toast.success('Document uploaded successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to upload document: ' + error.message);
-    }
-  });
+  // Upload documents mutation
+  const uploadDocumentsMutation = useUploadTeacherDocuments(teacherId);
 
   // Delete document mutation
-  const deleteDocumentMutation = useMutation({
-    mutationFn: async ({ documentId, filePath }: { documentId: number; filePath: string }) => {
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('documents')
-        .remove([filePath]);
+  const deleteDocumentMutation = useDeleteTeacherDocument(teacherId);
 
-      if (storageError) throw storageError;
-
-      // TODO: Delete from database once tbl_teacher_documents table is created
-      console.log('Document deleted from storage:', filePath);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['teacherDocuments'] });
-      toast.success('Document deleted successfully');
-    },
-    onError: (error) => {
-      toast.error('Failed to delete document: ' + error.message);
-    }
-  });
+  // Get document URL helper
+  const getDocumentUrl = useGetDocumentUrl();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedFile(file);
-      setUploadData({
-        fld_name: file.name,
-        fld_type: file.type,
-        fld_description: ''
-      });
-    }
+    const files = Array.from(event.target.files || []);
+    setSelectedFiles(files);
   };
 
   const handleUpload = () => {
-    if (!selectedFile) {
-      toast.error('Please select a file to upload');
+    if (selectedFiles.length === 0) {
       return;
     }
-    uploadDocumentMutation.mutate(selectedFile);
+    uploadDocumentsMutation.mutate(selectedFiles, {
+      onSuccess: () => {
+        setSelectedFiles([]);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      }
+    });
   };
 
-  const handleDownload = async (doc: Document) => {
+  const handleDeleteClick = (documentId: number, fileName: string) => {
+    setDocumentToDelete({ id: documentId, fileName });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!documentToDelete) return;
+    deleteDocumentMutation.mutate(
+      { documentId: documentToDelete.id, fileName: documentToDelete.fileName },
+      {
+        onSuccess: () => {
+          setDeleteDialogOpen(false);
+          setDocumentToDelete(null);
+        }
+      }
+    );
+  };
+
+  const handleDownload = async (documentId: number, fileName: string) => {
+    if (!teacherId) return;
+    
+    setDownloadingDoc(documentId);
     try {
-      const { data, error } = await supabase.storage
-        .from('documents')
-        .download(doc.fld_path);
-
-      if (error) throw error;
-
-      // Create download link
-      const url = URL.createObjectURL(data);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = doc.fld_name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const url = await getDocumentUrl(teacherId, fileName);
+      if (url) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
     } catch (error) {
-      toast.error('Failed to download document');
+      console.error('Error downloading file:', error);
+    } finally {
+      setDownloadingDoc(null);
     }
   };
 
-  const getFileIcon = (type: string) => {
-    if (type.startsWith('image/')) return <Image className="h-5 w-5" />;
-    if (type.includes('pdf')) return <FileText className="h-5 w-5" />;
-    return <File className="h-5 w-5" />;
+  const handlePreview = async (fileName: string) => {
+    if (!teacherId) return;
+    const url = await getDocumentUrl(teacherId, fileName);
+    if (url) {
+      window.open(url, '_blank');
+    }
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const getFileIcon = (fileName: string) => {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(ext || '')) {
+      return <Image className="h-12 w-12 text-blue-500" />;
+    }
+    if (['pdf'].includes(ext || '')) {
+      return <FileText className="h-12 w-12 text-red-500" />;
+    }
+    return <File className="h-12 w-12 text-gray-500" />;
   };
 
-  const filteredDocuments = documents?.filter(doc => {
-    const matchesSearch = 
-      doc.fld_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.fld_description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = typeFilter === 'all' || doc.fld_type.includes(typeFilter);
-    
-    return matchesSearch && matchesType;
-  });
+  const getPreviewUrl = (fileName: string): string => {
+    if (!teacher?.fld_uid) return '';
+    const { data } = supabase.storage
+      .from('documents')
+      .getPublicUrl(`${teacher.fld_uid}/${fileName}`);
+    return data.publicUrl;
+  };
+
+  if (!teacherId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-600">Loading teacher information...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">My Documents</h1>
-        <p className="text-muted-foreground">
-          Upload and manage your teaching documents and certificates
-        </p>
-      </div>
-
+    <div className="space-y-6">
       {/* Upload Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Upload Documents
+      <Card className="border border-gray-200 hover:shadow-md transition-shadow">
+        <CardHeader className="border-b border-gray-200 bg-primary/5">
+          <CardTitle className="text-xl font-bold text-primary flex items-center">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center mr-3">
+              <Upload className="h-5 w-5 text-white" />
+            </div>
+            Dokumente Hochladen
           </CardTitle>
+          <CardDescription className="text-gray-600">Upload your documents, certificates, and qualifications</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <input
-              ref={fileInputRef}
-              type="file"
-              onChange={handleFileSelect}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
-            />
-            <Button onClick={() => fileInputRef.current?.click()}>
-              <Plus className="h-4 w-4 mr-2" />
-              Select File
-            </Button>
-            {selectedFile && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">
-                  Selected: {selectedFile.name} ({formatFileSize(selectedFile.size)})
-                </span>
-                <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Upload
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Upload Document</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Document Name</Label>
-                        <Input
-                          id="name"
-                          value={uploadData.fld_name}
-                          onChange={(e) => setUploadData({ ...uploadData, fld_name: e.target.value })}
-                          placeholder="Enter document name"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="type">Document Type</Label>
-                        <Select value={uploadData.fld_type} onValueChange={(value) => setUploadData({ ...uploadData, fld_type: value })}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select document type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="certificate">Certificate</SelectItem>
-                            <SelectItem value="diploma">Diploma</SelectItem>
-                            <SelectItem value="id">ID Document</SelectItem>
-                            <SelectItem value="contract">Contract</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                          id="description"
-                          value={uploadData.fld_description}
-                          onChange={(e) => setUploadData({ ...uploadData, fld_description: e.target.value })}
-                          placeholder="Enter document description (optional)"
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button onClick={handleUpload} disabled={uploadDocumentMutation.isPending}>
-                          {uploadDocumentMutation.isPending ? 'Uploading...' : 'Upload'}
-                        </Button>
-                      </div>
+        <CardContent className="p-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleUpload();
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="documents" className="text-sm font-semibold text-gray-700">
+                Unterlagen <span className="text-red-500">*</span>
+              </Label>
+              <div className="flex items-center gap-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  id="documents"
+                  multiple
+                  required
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.heic,.webp"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-primary/30 text-primary hover:bg-primary/5 hover:border-primary"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Dateien auswählen
+                </Button>
+                {selectedFiles.length > 0 && (
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-gray-700">
+                      {selectedFiles.length} Datei(en) ausgewählt
+                    </span>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {selectedFiles.map((file, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+                        >
+                          {file.name}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newFiles = selectedFiles.filter((_, i) => i !== index);
+                              setSelectedFiles(newFiles);
+                            }}
+                            className="ml-2 hover:text-red-600"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
                     </div>
-                  </DialogContent>
-                </Dialog>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                type="submit"
+                disabled={uploadDocumentsMutation.isPending || selectedFiles.length === 0}
+                className="bg-primary hover:bg-primary/90 text-white"
+              >
+                {uploadDocumentsMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Wird hochgeladen...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="h-4 w-4 mr-2" />
+                    Hochladen
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
         </CardContent>
       </Card>
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search documents..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      {/* Uploaded Documents */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-primary flex items-center">
+            <FileText className="h-5 w-5 mr-2" />
+            Hochgeladene Dokumente
+          </h3>
+          <Badge variant="secondary" className="text-sm">
+            {documents.length} Dokument{documents.length !== 1 ? 'e' : ''}
+          </Badge>
         </div>
-        <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Filter by type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="certificate">Certificate</SelectItem>
-            <SelectItem value="diploma">Diploma</SelectItem>
-            <SelectItem value="id">ID Document</SelectItem>
-            <SelectItem value="contract">Contract</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Documents Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Document Library</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Upload Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDocuments?.map((document) => (
-                <TableRow key={document.fld_id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getFileIcon(document.fld_type)}
-                      <div>
-                        <div className="font-medium">{document.fld_name}</div>
-                        {document.fld_description && (
-                          <div className="text-sm text-gray-500">{document.fld_description}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {documents.length > 0 ? (
+            documents.map((document) => {
+              const fileNameWithoutExt = document.fld_doc_file.split('.')[0];
+              const fileExt = document.fld_doc_file.split('.').pop()?.toLowerCase();
+              const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic'].includes(fileExt || '');
+              
+              return (
+                <Card
+                  key={document.fld_id}
+                  className="group hover:shadow-lg border border-gray-200 transition-all duration-200 hover:border-primary/30"
+                >
+                  <CardContent className="p-4">
+                    {/* File Preview/Icon */}
+                    <div className="relative mb-4">
+                      <div className="w-full h-32 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden">
+                        {isImage && !imageErrors.has(document.fld_id) ? (
+                          <div className="relative w-full h-full">
+                            <img
+                              src={getPreviewUrl(document.fld_doc_file)}
+                              alt={fileNameWithoutExt}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                              onError={() => {
+                                setImageErrors(prev => new Set(prev).add(document.fld_id));
+                              }}
+                            />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center">
+                            {getFileIcon(document.fld_doc_file)}
+                          </div>
                         )}
                       </div>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{document.fld_type}</Badge>
-                  </TableCell>
-                  <TableCell>{formatFileSize(document.fld_size)}</TableCell>
-                  <TableCell>{new Date(document.fld_upload_date).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Badge variant={document.fld_status === 'Active' ? 'default' : 'secondary'}>
-                      {document.fld_status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
+
+                    {/* File Name */}
+                    <h4
+                      className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 cursor-pointer hover:text-primary transition-colors"
+                      onClick={() => handlePreview(document.fld_doc_file)}
+                      title={fileNameWithoutExt}
+                    >
+                      {fileNameWithoutExt}
+                    </h4>
+
+                    {/* File Meta */}
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-4">
+                      <span>{format(new Date(document.fld_edate), 'dd MMM yyyy')}</span>
+                      <span className="uppercase font-medium">{fileExt}</span>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleDownload(document)}
+                        onClick={() => handleDownload(document.fld_id, document.fld_doc_file)}
+                        disabled={downloadingDoc === document.fld_id}
+                        className="flex-1 border-primary/30 text-primary hover:bg-primary/5 hover:border-primary"
                       >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download
+                        {downloadingDoc === document.fld_id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </>
+                        )}
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => handleDownload(document)}
+                        onClick={() => handlePreview(document.fld_doc_file)}
+                        className="flex-1 border-gray-300 text-gray-700 hover:bg-gray-50"
                       >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View
+                        <FileText className="h-4 w-4 mr-1" />
+                        Ansehen
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="ghost"
                         size="sm"
-                        onClick={() => deleteDocumentMutation.mutate({ 
-                          documentId: document.fld_id, 
-                          filePath: document.fld_path 
-                        })}
+                        onClick={() => handleDeleteClick(document.fld_id, document.fld_doc_file)}
                         disabled={deleteDocumentMutation.isPending}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 px-2"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                        <X className="h-4 w-4" />
                       </Button>
                     </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {filteredDocuments?.length === 0 && (
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No documents found</h3>
-              <p className="text-gray-600">
-                {searchTerm || typeFilter !== 'all' 
-                  ? 'Try adjusting your search or filter criteria.'
-                  : 'Upload your first document to get started.'
-                }
-              </p>
+                  </CardContent>
+                </Card>
+              );
+            })
+          ) : (
+            <div className="col-span-full">
+              <Card className="border-dashed border-2 border-gray-300">
+                <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <FileText className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-2">Noch keine Dokumente hochgeladen</h4>
+                  <p className="text-sm text-gray-500 mb-4">
+                    Laden Sie Ihre Dokumente, Zeugnisse und Qualifikationen hoch
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-primary text-primary hover:bg-primary/5"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Dokument hochladen
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Dokument löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Sind Sie sicher, dass Sie dieses Dokument löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteDocumentMutation.isPending}
+            >
+              {deleteDocumentMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Wird gelöscht...
+                </>
+              ) : (
+                'Löschen'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
-}
+};
+
+export default TeacherDocuments;

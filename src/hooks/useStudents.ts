@@ -472,8 +472,10 @@ export const useStudentMutations = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Invalidate both list and individual student queries
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["student", variables.studentId] });
       toast({
         title: "Status Updated",
         description: "Student status has been updated successfully.",
@@ -495,8 +497,10 @@ export const useStudentMutations = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Invalidate both list and individual student queries
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["student", variables.studentId] });
       toast({
         title: "Notes Updated",
         description: "Student notes have been updated successfully.",
@@ -518,8 +522,10 @@ export const useStudentMutations = () => {
 
       if (error) throw error;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      // Invalidate both list and individual student queries
       queryClient.invalidateQueries({ queryKey: ["students"] });
+      queryClient.invalidateQueries({ queryKey: ["student", variables.studentId] });
       toast({
         title: "IM Status Updated",
         description: "IM status has been updated successfully.",

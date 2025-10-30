@@ -30,7 +30,7 @@ import { toast } from 'sonner';
 const CreateStudentInvoice = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const [tempId] = useState(() => `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+  const [tempId] = useState(() => `t${Date.now()}${Math.random().toString(36).substr(2, 6)}`);
 
   const {
     students,
@@ -122,22 +122,40 @@ const CreateStudentInvoice = () => {
     }
 
     try {
-      await createStudentInvoice({
+      const result = await createStudentInvoice({
         ...formData,
         fld_id: parseInt(formData.fld_id),
         fld_uname: user?.fld_id || 1, // Use current user ID or default to 1
         tempId,
       });
 
-      // Navigate to receivables page
-      navigate('/receivables');
+      // Wait for the mutation to complete and return the updated invoice
+      if (result) {
+        // Show success message and redirect
+        toast.success('Student invoice created successfully!');
+        setTimeout(() => {
+          navigate('/financials/receivables');
+        }, 1000);
+      }
     } catch (error) {
       console.error('Failed to create invoice:', error);
+      toast.error('Failed to create student invoice. Please try again.');
     }
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 relative">
+      {/* Loading Overlay */}
+      {isCreatingStudentInvoice && (
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg border flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="text-lg font-medium text-gray-700">Creating Student Invoice...</p>
+            <p className="text-sm text-gray-500">Please wait while we process your request</p>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center gap-4 mb-6">
         <div className="space-y-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Create Student Invoice</h1>
@@ -384,10 +402,10 @@ const CreateStudentInvoice = () => {
               <Button
                 type="submit"
                 disabled={isCreatingStudentInvoice || tempDetails.length === 0}
-                className="min-w-[120px]"
+                className="min-w-[140px]"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {isCreatingStudentInvoice ? 'Creating...' : 'Save Invoice'}
+                {isCreatingStudentInvoice ? 'Creating Invoice...' : 'Create Invoice'}
               </Button>
             </div>
           </form>

@@ -64,25 +64,25 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 // Migration order based on foreign key dependencies
 const MIGRATION_ORDER = [
   // 1. Base reference tables (no dependencies)
-  'tbl_roles',
-  'tbl_countries',
-  'tbl_activities_types',
-  'tbl_educational',
-  'tbl_lesson_durations',
-  'tbl_levels',
-  'tbl_subjects',
-  'tbl_su_types',
-  'tbl_degrees',
-  'tbl_reasons',
-  'tbl_delete_reasons',
-  'tbl_source',
+  // 'tbl_roles',
+  // 'tbl_countries',
+  // 'tbl_activities_types',
+  // 'tbl_educational',
+  // 'tbl_lesson_durations',
+  // 'tbl_levels',
+  // 'tbl_subjects',
+  // 'tbl_su_types',
+  // 'tbl_degrees',
+  // 'tbl_reasons',
+  // 'tbl_delete_reasons',
+  // 'tbl_source',
   // 'tbl_urls',
   
   // // 2. System configuration
   // 'tbl_system_config', // (renamed from tbl_t000)
   
   // // 3. Mediation types (depends on roles)
-  // 'tbl_mediation_types',
+  'tbl_mediation_types',
   
   // // 4. Users (depends on roles)
   // 'tbl_users',

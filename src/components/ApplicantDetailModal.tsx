@@ -51,7 +51,6 @@ export default function ApplicantDetailModal({ applicant, isOpen, onClose }: App
   const [isSendingContract, setIsSendingContract] = useState(false);
 
   const { 
-    applicantSubjects, 
     activityTypes, 
     applicantActivities, 
     updateStatus, 
@@ -79,7 +78,7 @@ export default function ApplicantDetailModal({ applicant, isOpen, onClose }: App
 
   if (!applicant) return null;
 
-  const subjects = applicantSubjects.filter(subject => subject.fld_tid === applicant.fld_id);
+  const subjects = applicant.tbl_teachers_subjects_expertise || [];
   const activities = applicantActivities.filter(activity => activity.fld_aid === applicant.fld_id);
 
   const formatPhoneNumber = (phone: string) => {
