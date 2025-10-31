@@ -93,7 +93,7 @@ export function useStudentContracts() {
     queryFn: async () => {
       const { data, error } = await supabase
           .from('tbl_contracts')
-          .select(`
+        .select(`
           *,
             student:tbl_students(
               fld_id,
@@ -118,7 +118,7 @@ export function useStudentContracts() {
           .neq('fld_status', 'Deleted')
           .order('fld_id', { ascending: false });
 
-        if (error) throw error;
+      if (error) throw error;
         return data as StudentContract[];
       },
       staleTime: 1000 * 60 * 5, // 5 minutes - prevent refetching too often
@@ -130,10 +130,10 @@ export function useStudentContracts() {
   const getActiveContracts = (studentId: number) => {
     return useQuery({
       queryKey: ['student-contracts-active', studentId],
-      queryFn: async () => {
-        const { data, error } = await supabase
+    queryFn: async () => {
+      const { data, error } = await supabase
           .from('tbl_contracts')
-          .select(`
+        .select(`
           *,
             student:tbl_students(
               fld_id,
@@ -173,7 +173,7 @@ export function useStudentContracts() {
     queryFn: async () => {
       const { data, error } = await supabase
           .from('tbl_contracts')
-          .select(`
+        .select(`
           *,
             student:tbl_students(
               fld_id,

@@ -159,14 +159,46 @@ export const useTeacherTimeLogStudentSubjects = (teacherId: number | undefined, 
     queryFn: async () => {
       if (!teacherId || !studentId) throw new Error('Teacher ID and Student ID required');
 
-      // Get student subjects for this teacher
+      /**
+       * IMPORTANT: Only show subjects engaged with BOTH this student AND this teacher.
+       * 
+       * Filtering logic:
+       * 1. Get active contract engagements for this teacher (fld_tid = teacherId, fld_status = 'Active')
+       * 2. Get student subjects that:
+       *    - Belong to the selected student (fld_sid = studentId)
+       *    - Are linked to one of the teacher's active engagements (fld_c_eid IN engagementIds)
+       * 
+       * This ensures only subjects with an active engagement between the teacher and student are shown.
+       * Matching PHP logic in teacher-time-logs.php: get_subjects() function.
+       */
+      
+      // Step 1: Get active contract engagements for this teacher
+      const { data: engagements, error: engagementsError } = await supabase
+        .from('tbl_contracts_engagement')
+        .select('fld_id')
+        .eq('fld_tid', teacherId)
+        .eq('fld_status', 'Active');
+
+      if (engagementsError) throw engagementsError;
+
+      if (!engagements || engagements.length === 0) {
+        return [];
+      }
+
+      const engagementIds = engagements.map(e => e.fld_id);
+
+      // Step 2: Get student subjects that are engaged with both this student AND this teacher
+      // Following PHP: select ss.FLD_ID,s.FLD_SUBJECT 
+      // from tbl_students_subjects ss,tbl_subjects s 
+      // where ss.FLD_SID='...' and ss.FLD_C_EID='...' and ss.FLD_SUID=s.FLD_ID
       const { data: subjects, error } = await supabase
         .from('tbl_students_subjects')
         .select(`
           fld_id,
           tbl_subjects!inner(fld_subject)
         `)
-        .eq('fld_sid', studentId);
+        .eq('fld_sid', studentId)  // Filter by student
+        .in('fld_c_eid', engagementIds);  // Filter by teacher's active engagements
 
       if (error) throw error;
 
@@ -192,7 +224,7 @@ export const useTeacherTimeLogMutations = () => {
       date: string;
       userId: number;
     }) => {
-      // Check if more than 5 lessons per day (following PHP logic)
+      // Following PHP logic: Check if more than 5 lessons per day
       const { data: existingLogs, error: checkError } = await supabase
         .from('tbl_teachers_lessons_history')
         .select('fld_id')
@@ -205,6 +237,49 @@ export const useTeacherTimeLogMutations = () => {
         throw new Error('You are not allowed to enter more than 5 lessons per day.');
       }
 
+      // Following PHP logic: Get contract ID and engagement ID from student subject
+      const { data: studentSubject, error: subjectError } = await supabase
+        .from('tbl_students_subjects')
+        .select('fld_cid, fld_c_eid')
+        .eq('fld_id', data.studentSubjectId)
+        .single();
+
+      if (subjectError || !studentSubject) {
+        throw new Error('Student subject not found');
+      }
+
+      // Following PHP logic: Get student rate from contract
+      let studentRate = 0;
+      if (studentSubject.fld_cid) {
+        const { data: contract, error: contractError } = await supabase
+          .from('tbl_contracts')
+          .select('fld_s_per_lesson_rate')
+          .eq('fld_id', studentSubject.fld_cid)
+          .single();
+
+        if (contractError) {
+          console.error('Error fetching contract rate:', contractError);
+        } else {
+          studentRate = parseFloat(String(contract?.fld_s_per_lesson_rate || '0'));
+        }
+      }
+
+      // Following PHP logic: Get teacher rate from engagement
+      let teacherRate = 0;
+      if (studentSubject.fld_c_eid) {
+        const { data: engagement, error: engagementError } = await supabase
+          .from('tbl_contracts_engagement')
+          .select('fld_t_per_lesson_rate')
+          .eq('fld_id', studentSubject.fld_c_eid)
+          .single();
+
+        if (engagementError) {
+          console.error('Error fetching engagement rate:', engagementError);
+        } else {
+          teacherRate = parseFloat(String(engagement?.fld_t_per_lesson_rate || '0'));
+        }
+      }
+
       const { error } = await supabase
         .from('tbl_teachers_lessons_history')
         .insert({
@@ -212,6 +287,8 @@ export const useTeacherTimeLogMutations = () => {
           fld_sid: data.studentId,
           fld_ssid: data.studentSubjectId,
           fld_lesson: data.lesson,
+          fld_s_rate: studentRate,
+          fld_t_rate: teacherRate,
           fld_notes: data.notes,
           fld_edate: data.date,
           fld_mon: (new Date(data.date).getMonth() + 1).toString(),

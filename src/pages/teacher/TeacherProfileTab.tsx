@@ -281,14 +281,16 @@ const TeacherProfileTab: React.FC<TeacherProfileTabProps> = ({ teacher, teacherI
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors truncate">
-                        {student.fld_first_name} {student.fld_last_name}
-                      </p>
-                      {student.tbl_levels && (
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {student.tbl_levels.fld_level}
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-gray-900 group-hover:text-primary transition-colors truncate">
+                          {student.fld_first_name} {student.fld_last_name}
                         </p>
-                      )}
+                        {student.fld_level && student.fld_level !== 'About' && student.fld_level.trim() !== '' && (
+                          <Badge variant="outline" className="text-xs bg-red-100 text-red-700 border-red-300">
+                            {student.fld_level}
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))

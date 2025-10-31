@@ -378,7 +378,7 @@ export default function Dashboard() {
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-gray-900 mb-1 flex items-center">
                         <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                        Lesson Completed - {lesson.fld_lesson} min
+                        Lesson Completed - {Math.round(lesson.fld_lesson)} lessons
                       </p>
                       <p className="text-sm text-gray-600 mb-1">
                         Teacher: {lesson.tbl_teachers?.fld_first_name} {lesson.tbl_teachers?.fld_last_name}

@@ -119,12 +119,22 @@ export default function TeacherTimeLogs() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="subject">Fach/ Fächer <span className="text-red-500">*</span></Label>
-                <Input
-                  id="subject"
-                  value={newLog.fld_notes}
-                  onChange={(e) => setNewLog({ ...newLog, fld_notes: e.target.value })}
-                  placeholder="Enter subject"
-                />
+                <Select
+                  value={newLog.fld_ssid}
+                  onValueChange={(value) => setNewLog({ ...newLog, fld_ssid: value })}
+                  disabled={!selectedStudentId || studentSubjects.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={!selectedStudentId ? "Select student first" : studentSubjects.length === 0 ? "No subjects available" : "Select subject"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {studentSubjects.map((subject) => (
+                      <SelectItem key={subject.fld_id} value={subject.fld_id.toString()}>
+                        {subject.fld_subject}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date">Datum <span className="text-red-500">*</span></Label>
@@ -193,56 +203,65 @@ export default function TeacherTimeLogs() {
         </div>
       </div>
 
-      {/* Time Logs Cards - Card-based layout following PHP business logic */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* Time Logs Cards - Full width, slim and modern */}
+      <div className="space-y-2">
         {filteredLogs.map((log) => (
-          <Card key={log.fld_id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900">{log.student_name}</h3>
-                  <div className="flex items-center gap-2 mt-1 text-sm text-gray-600">
-                    <BookOpen className="h-4 w-4" />
-                    <span>{log.subject_name}</span>
+          <Card key={log.fld_id} className="border border-gray-200 hover:border-primary/30 hover:shadow-sm transition-all duration-200">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-3">
+                {/* Left: Student & Subject Info */}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <span className="text-primary font-semibold text-sm">
+                        {log.student_name.split(' ').map(n => n[0]).join('')}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-semibold text-gray-900 truncate">
+                        {log.student_name}
+                      </h3>
+                      <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <BookOpen className="h-3.5 w-3.5 text-primary/70" />
+                        <span className="truncate">{log.subject_name}</span>
+                      </div>
+                    </div>
+                    {log.fld_notes && (
+                      <p className="text-xs text-gray-600 mt-1 truncate">{log.fld_notes}</p>
+                    )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm font-semibold">
+
+                {/* Right: Lesson Count & Actions */}
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className="bg-primary/10 text-primary px-3 py-1.5 rounded-md text-sm font-semibold">
                     {Math.round(log.fld_lesson)}
                   </div>
+                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">{format(new Date(log.fld_edate), 'dd MMM yyyy')}</span>
+                      <span className="sm:hidden">{format(new Date(log.fld_edate), 'dd/MM/yy')}</span>
+                    </div>
+                  </div>
+                  
+                  {/* Delete button only if status is Pending */}
+                  {log.fld_status === 'Pending' && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteLog(log.fld_id)}
+                      disabled={deleteTimeLogMutation.isPending}
+                      className="h-8 px-3 text-xs"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                      <span className="hidden sm:inline">Löschen</span>
+                    </Button>
+                  )}
                 </div>
               </div>
-              
-              {log.fld_notes && (
-                <p className="text-sm text-gray-700 mb-3">{log.fld_notes}</p>
-              )}
-              
-              <div className="flex items-center justify-between pt-3 border-t">
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Calendar className="h-3 w-3" />
-                  <span>{format(new Date(log.fld_edate), 'dd-MMM-yy')}</span>
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <User className="h-3 w-3" />
-                  <span>{log.user_name}</span>
-                </div>
-              </div>
-              
-              {/* Delete button only if status is Pending (following PHP logic) */}
-              {log.fld_status === 'Pending' && (
-                <div className="mt-2 pt-2 border-t">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => handleDeleteLog(log.fld_id)}
-                    disabled={deleteTimeLogMutation.isPending}
-                    className="w-full h-8 text-xs"
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    {deleteTimeLogMutation.isPending ? 'Loschen...' : 'Loschen'}
-                  </Button>
-                </div>
-              )}
             </CardContent>
           </Card>
         ))}

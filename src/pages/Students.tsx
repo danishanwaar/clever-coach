@@ -94,7 +94,7 @@ const statusIcons = {
 
 // Student Card Component
 interface StudentCardProps {
-  student: any;
+    student: any;
   onStatusChange: (studentId: number, newStatus: string) => void;
   onActivityClick: () => void;
   isUpdatingStatus?: boolean;
@@ -202,7 +202,7 @@ const StudentCard: React.FC<StudentCardProps> = ({
     return level.replace(/^Level\s+/i, "");
   };
 
-  return (
+    return (
     <div
       className="bg-white rounded-md border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all duration-150 group cursor-pointer"
       onClick={() => (window.location.href = `/students/${student.fld_id}`)}
@@ -652,7 +652,7 @@ const Students: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50/50">
       <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
-        {/* Header */}
+          {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary">Students</h1>
           <div className="flex items-center gap-2 bg-white rounded-lg sm:rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm border border-gray-200 flex-shrink-0">
@@ -728,28 +728,28 @@ const Students: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search students..."
-                value={searchTerm}
+                    <Input
+                      placeholder="Search students..."
+                      value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10 border-gray-300 focus:border-primary focus:ring-primary/20"
-              />
-            </div>
+                    />
+                  </div>
             <Select
               value={selectedStatus}
               onValueChange={(value) => handleStatusChange(value as StudentStatus | "All" | "Eng")}
             >
               <SelectTrigger className="w-full sm:w-48 border-gray-300 focus:border-primary focus:ring-primary/20">
                 <SelectValue placeholder="All Statuses" />
-              </SelectTrigger>
-              <SelectContent>
+                  </SelectTrigger>
+                  <SelectContent>
                 {statusOptions.map((status) => (
                   <SelectItem key={status} value={status}>
                     {status} ({statusStats[status]})
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
+                  </SelectContent>
+                </Select>
             <div className="flex gap-2">
               <Button onClick={() => setIsFormModalOpen(true)} className="bg-primary hover:bg-primary/90">
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -761,7 +761,7 @@ const Students: React.FC = () => {
               </Button>
             </div>
           </div>
-        </div>
+              </div>
 
         {/* Student Cards */}
         <div className="space-y-4">
@@ -784,7 +784,7 @@ const Students: React.FC = () => {
               />
             );
           })}
-        </div>
+          </div>
 
         {/* Empty State */}
         {students.length === 0 && (
@@ -800,9 +800,9 @@ const Students: React.FC = () => {
                 Add Student
               </Button>
               <Button variant="outline" onClick={() => setIsLeadFormModalOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4 mr-2" />
                 Add Lead
-              </Button>
+                </Button>
             </div>
           </div>
         )}

@@ -602,10 +602,10 @@ export default function StudentSettings() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
+          </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
+            <div>
                 <Label htmlFor="fld_wh">Wochenstunden (Weekly Hours)</Label>
                 <Select
                   value={contractForm.fld_wh}
@@ -618,8 +618,8 @@ export default function StudentSettings() {
                     {Array.from({ length: 10 }, (_, i) => i + 1).map((hour) => (
                       <SelectItem key={hour} value={hour.toString()}>
                         {hour} hours
-                      </SelectItem>
-                    ))}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -681,8 +681,8 @@ export default function StudentSettings() {
               <Button type="submit" disabled={isUpdating}>
               <Save className="h-4 w-4 mr-2" />
                 Save Changes
-            </Button>
-          </div>
+                </Button>
+              </div>
           </form>
         </CardContent>
       </Card>
@@ -737,7 +737,7 @@ export default function StudentSettings() {
                               <span className={`text-xs font-medium leading-tight ${isSelected ? 'text-primary' : 'text-gray-700'}`}>
                                 {subject.fld_subject}
                               </span>
-                            </div>
+                      </div>
                           </button>
                         );
                       })}
@@ -755,15 +755,15 @@ export default function StudentSettings() {
             {/* Submit Button */}
             {selectedSubjectId && (
               <div className="flex justify-end pt-2 border-t border-gray-200">
-                <Button
+                      <Button 
                   type="submit"
                   className="bg-primary hover:bg-primary/90 text-white"
                   disabled={addSubjectMutation.isPending}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {addSubjectMutation.isPending ? 'Speichern...' : 'Speichern'}
-                </Button>
-              </div>
+                      </Button>
+                    </div>
             )}
             
             {/* Existing Subjects */}
@@ -791,8 +791,8 @@ export default function StudentSettings() {
                               <div className="flex-1 min-w-0">
                                 <div className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
                                   {ss.tbl_subjects?.fld_subject || 'Unbekannt'}
-                                </div>
-                              </div>
+              </div>
+            </div>
                             </div>
                             <Button
                               type="button"
@@ -804,12 +804,12 @@ export default function StudentSettings() {
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
+          </div>
+        </CardContent>
+      </Card>
                     );
                   })}
-                </div>
+            </div>
               </div>
             )}
           </form>

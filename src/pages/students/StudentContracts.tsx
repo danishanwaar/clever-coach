@@ -209,7 +209,7 @@ export default function StudentContracts() {
         try {
           const engagementsData = await fetchContractEngagements(contract.fld_id);
           engagements[contract.fld_id] = engagementsData;
-        } catch (error) {
+    } catch (error) {
           console.error('Error fetching engagements for contract', contract.fld_id, error);
           engagements[contract.fld_id] = [];
         }
