@@ -87,7 +87,7 @@ export default function Applicants() {
     refetch,
     totalCount,
     statusCounts
-  } = useApplicants(searchTerm);
+  } = useApplicants(selectedStatus, searchTerm);
 
   // Handle search and filter changes
   const handleSearchChange = (value: string) => {
@@ -153,7 +153,10 @@ export default function Applicants() {
       });
 
       // Refetch data to update the UI
-      refetch();
+      await refetch();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error("Failed to update status. Please try again.");
     } finally {
       setProcessingApplicantId(null);
     }
@@ -169,7 +172,10 @@ export default function Applicants() {
       });
 
       // Refetch data to update the UI
-      refetch();
+      await refetch();
+    } catch (error) {
+      console.error("Error rejecting applicant:", error);
+      toast.error("Failed to reject applicant. Please try again.");
     } finally {
       setProcessingApplicantId(null);
     }
@@ -186,7 +192,10 @@ export default function Applicants() {
       });
 
       // Refetch data to update the UI
-      refetch();
+      await refetch();
+    } catch (error) {
+      console.error("Error resending contract:", error);
+      toast.error("Failed to resend contract. Please try again.");
     } finally {
       setProcessingApplicantId(null);
     }
@@ -474,7 +483,7 @@ export default function Applicants() {
                               handleApplicantStatusChange(applicant, buttonInfo.next);
                             }}
                             disabled={isProcessing}
-                            className="h-6 px-2 text-xs flex-shrink-0"
+                            className="h-6 px-2 text-xs flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {isProcessing ? (
                               <>
@@ -503,7 +512,7 @@ export default function Applicants() {
                           handleResendContract(applicant);
                         }}
                         disabled={processingApplicantId === applicant.fld_id}
-                        className="h-6 px-2 text-xs flex-shrink-0"
+                        className="h-6 px-2 text-xs flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {processingApplicantId === applicant.fld_id ? (
                           <>
@@ -531,7 +540,7 @@ export default function Applicants() {
                           handleReject(applicant);
                         }}
                         disabled={processingApplicantId === applicant.fld_id}
-                        className="h-6 px-2 text-xs flex-shrink-0"
+                        className="h-6 px-2 text-xs flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {processingApplicantId === applicant.fld_id ? (
                           <>
@@ -544,8 +553,8 @@ export default function Applicants() {
                             <X className="h-3 w-3 mr-1" />
                             <span className="hidden sm:inline">Reject</span>
                             <span className="sm:hidden">Reject</span>
-            </>
-          )}
+                          </>
+                        )}
                       </Button>
                     )}
                         </div>

@@ -69,13 +69,13 @@ export interface ApplicantActivity {
   };
 }
 
-export const useApplicants = (searchTerm: string = "") => {
+export const useApplicants = (selectedStatus: string = "All", searchTerm: string = "") => {
   const queryClient = useQueryClient();
   const user = useAuthStore(state => state.user);
 
   // Fetch all applicants with preloaded data
   const applicantsQuery = useQuery({
-    queryKey: ['applicants', searchTerm],
+    queryKey: ['applicants', selectedStatus, searchTerm],
     queryFn: async () => {
       // Build base query with all related data preloaded
       let query = supabase
@@ -125,6 +125,11 @@ export const useApplicants = (searchTerm: string = "") => {
           )
         `)
         .neq('fld_status', 'Hired');
+
+      // Apply status filter
+      if (selectedStatus && selectedStatus !== "All") {
+        query = query.eq('fld_status', selectedStatus as any);
+      }
 
       // Apply search filter
       if (searchTerm) {
@@ -353,8 +358,8 @@ export const useApplicants = (searchTerm: string = "") => {
     applicantActivities: applicantActivitiesQuery.data || [],
     isLoading: applicantsQuery.isLoading,
     isLoadingActivities: applicantActivitiesQuery.isLoading,
-    updateStatus: updateStatusMutation.mutate,
-    recordActivity: recordActivityMutation.mutate,
+    updateStatus: updateStatusMutation.mutateAsync,
+    recordActivity: recordActivityMutation.mutateAsync,
     isUpdatingStatus: updateStatusMutation.isPending,
     isRecordingActivity: recordActivityMutation.isPending,
     refetch: () => applicantsQuery.refetch(),
