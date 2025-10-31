@@ -57,9 +57,9 @@ const StudentContractViewWrapper: React.FC<{ studentId: number }> = ({ studentId
       </div>
     );
   }
-  
+
   if (!activeContract) {
-    return (
+      return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -154,22 +154,23 @@ const StudentProfile: React.FC = () => {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-gray-50/50">
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8 h-full overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
-          <Button variant="ghost" onClick={() => navigate("/students")} className="hover:bg-gray-50 p-0 h-auto">
-            <ArrowLeft className="h-4 w-4 mr-1" />
-            Students
+    <div className="h-screen overflow-hidden bg-gray-50/50 flex flex-col">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8 flex flex-col flex-1 min-h-0">
+        {/* Header - Fixed */}
+        <div className="flex-shrink-0">
+          <div className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
+            <Button variant="ghost" onClick={() => navigate("/students")} className="hover:bg-gray-50 p-0 h-auto">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Students
             </Button>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">
-            {student.fld_first_name} {student.fld_last_name}
-          </span>
+            <span>/</span>
+            <span className="text-gray-900 font-medium">
+              {student.fld_first_name} {student.fld_last_name}
+            </span>
         </div>
 
-        {/* Student Header */}
-        <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6 mb-6">
+          {/* Student Header */}
+          <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6 mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div className="flex items-center space-x-4 sm:space-x-6">
               {/* Avatar */}
@@ -261,12 +262,14 @@ const StudentProfile: React.FC = () => {
               </Select>
             </div>
           </div>
+          </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="w-full">
-          <Tabs value={activeTab} onValueChange={handleTabChange}>
-            <div className="overflow-x-auto">
+        {/* Main Content Area - Scrollable */}
+        <div className="w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 min-h-0 flex flex-col">
+            {/* TabsList - Fixed */}
+            <div className="overflow-x-auto flex-shrink-0">
               <TabsList className="flex w-max min-w-full bg-gray-100 p-1 rounded-lg lg:w-full lg:justify-between">
                 <TabsTrigger
                   value="profile"
@@ -343,7 +346,7 @@ const StudentProfile: React.FC = () => {
               </TabsList>
             </div>
 
-            <TabsContent value="profile" className="space-y-4 sm:space-y-6">
+            <TabsContent value="profile" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {/* Basic Information Card */}
                 <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow">
@@ -551,52 +554,50 @@ const StudentProfile: React.FC = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="match" className="space-y-4 sm:space-y-6">
+            <TabsContent value="match" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentMatchMaking />
               </div>
             </TabsContent>
 
-            <TabsContent value="contracts" className="space-y-4 sm:space-y-6">
+            <TabsContent value="contracts" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentContracts />
               </div>
             </TabsContent>
 
-            <TabsContent value="financials" className="space-y-4 sm:space-y-6">
+            <TabsContent value="financials" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentFinancials />
               </div>
             </TabsContent>
 
-            <TabsContent value="progress" className="space-y-4 sm:space-y-6">
+            <TabsContent value="progress" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentProgressNotes />
-              </div>
+                </div>
             </TabsContent>
 
-            <TabsContent value="time" className="space-y-4 sm:space-y-6">
+            <TabsContent value="time" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentTimeLogs />
               </div>
             </TabsContent>
 
-            <TabsContent value="activity" className="space-y-4 sm:space-y-6">
+            <TabsContent value="activity" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentActivity />
                 </div>
             </TabsContent>
 
-            <TabsContent value="download" className="space-y-4 sm:space-y-6">
+            <TabsContent value="download" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentContractViewWrapper studentId={studentId} />
               </div>
             </TabsContent>
 
-            <TabsContent value="settings">
-              <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
-                <StudentSettings />
-              </div>
+            <TabsContent value="settings" className="flex-1 min-h-0 overflow-y-auto overscroll-none">
+              <StudentSettings />
             </TabsContent>
           </Tabs>
             </div>

@@ -172,7 +172,7 @@ export function useTeacherContract() {
     },
     onSuccess: async (data, variables) => {
       // Send welcome email to teacher
-      await sendWelcomeEmail(variables.teacherId, data.passcode);
+      await sendWelcomeEmail(variables.teacherId);
       
       toast.success('Contract signed successfully! Welcome email sent.');
       queryClient.invalidateQueries({ queryKey: ['teachers'] });
@@ -184,7 +184,7 @@ export function useTeacherContract() {
   });
 
   // Send welcome email to teacher after contract signing
-  const sendWelcomeEmail = async (teacherId: number, passcode: string) => {
+  const sendWelcomeEmail = async (teacherId: number) => {
     try {
       // Get teacher details for email
       const { data: teacher, error: teacherError } = await supabase
@@ -221,12 +221,12 @@ export function useTeacherContract() {
         body: {
           to: teacher.fld_email,
           subject: 'Willkommen in unserem Team',
-          template: 'teacher-welcome',
+          template_type: 'teacher_welcome',
           data: {
             teacherName,
             email: teacher.fld_email,
-            passcode,
-            portalUrl: 'https://clevercoach-nachhilfe.de'
+            teacher_id: teacherId, // Required to fetch password from metadata
+            portal_url: window.location.origin
           }
         }
       });
@@ -238,12 +238,13 @@ export function useTeacherContract() {
         body: {
           to: 'admin@clevercoach.com', // TODO: Get from environment or settings
           subject: `Honorarvereinbarung unterzeichnet von ${teacherName}`,
-          template: 'admin-contract-notification',
+          template_type: 'admin_contract_notification',
           data: {
             teacherName,
             subjects,
             city: teacher.fld_city,
             phone: teacher.fld_phone,
+            portal_url: window.location.origin
           }
         }
       });

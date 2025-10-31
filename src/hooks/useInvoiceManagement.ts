@@ -125,10 +125,10 @@ export function useStudentInvoices() {
     mutationFn: async ({ studentId, invoiceId, email, type }: { studentId: number; invoiceId: number; email: string; type: 'receivables' | 'payables' }) => {
       const { error } = await supabase.functions.invoke('send-invoice', {
         body: {
-          studentId,
           invoiceId,
           email,
           type,
+          studentId,
           baseUrl: window.location.origin
         }
       });
@@ -255,10 +255,10 @@ export function useTeacherInvoices() {
     mutationFn: async ({ teacherId, invoiceId, email, type }: { teacherId: number; invoiceId: number; email: string; type: 'receivables' | 'payables' }) => {
       const { error } = await supabase.functions.invoke('send-invoice', {
         body: {
-          studentId: teacherId, // Using teacherId as studentId for the function
           invoiceId,
           email,
           type,
+          teacherId,
           baseUrl: window.location.origin
         }
       });

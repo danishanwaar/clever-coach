@@ -60,11 +60,11 @@ export default function SignUp() {
     gender: '',
     birthDate: '',
     phone: '',
-    street: '',
-    postalCode: '',
-    city: '',
-    transport: 'public',
-    photo: null as File | null,
+      street: '',
+      postalCode: '',
+      city: '',
+      transport: 'Öffentliche Verkehrsmittel',
+      photo: null as File | null,
     description: '',
     howFound: '',
     
@@ -256,7 +256,7 @@ export default function SignUp() {
       street: '',
       postalCode: '',
       city: '',
-      transport: 'public',
+      transport: 'Öffentliche Verkehrsmittel',
       photo: null,
       description: '',
       howFound: '',
@@ -886,12 +886,12 @@ export default function SignUp() {
                         <SelectTrigger className={`h-12 border-2 rounded-xl transition-all duration-300 ${
                           getFieldError('gender') ? 'border-red-300 focus:border-red-500' : 'border-gray-200 '
                         }`}>
-                          <SelectValue placeholder="Select gender" />
+                          <SelectValue placeholder="Geschlecht auswählen" />
                         </SelectTrigger>
                         <SelectContent className="rounded-xl border-2">
-                          <SelectItem value="male" className="text-base py-3">Male</SelectItem>
-                          <SelectItem value="female" className="text-base py-3">Female</SelectItem>
-                          <SelectItem value="other" className="text-base py-3">Other</SelectItem>
+                          <SelectItem value="Männlich" className="text-base py-3">Männlich</SelectItem>
+                          <SelectItem value="Weiblich" className="text-base py-3">Weiblich</SelectItem>
+                          <SelectItem value="Andere" className="text-base py-3">Andere</SelectItem>
                         </SelectContent>
                       </Select>
                       {getFieldError('gender') && (
@@ -977,31 +977,31 @@ export default function SignUp() {
 
                   {/* Transport Method */}
                   <div className="space-y-4">
-                    <Label className="text-lg font-semibold text-gray-700">Transportation Method</Label>
+                    <Label className="text-lg font-semibold text-gray-700">Fortbewegungsmittel</Label>
                     <RadioGroup 
                       value={formData.transport} 
                       onValueChange={(value) => updateFormData('transport', value)}
                       className="space-y-4"
                     >
                       <div className="flex items-center space-x-4 p-4 border-2 border-gray-200  rounded-xl transition-all duration-300 cursor-pointer group">
-                        <RadioGroupItem value="public" id="public" className="text-primary" />
+                        <RadioGroupItem value="Öffentliche Verkehrsmittel" id="public" className="text-primary" />
                         <Label htmlFor="public" className="flex items-center space-x-3 cursor-pointer flex-1">
                           <span className="text-2xl group-hover:scale-110 transition-transform duration-300">🚌</span>
-                          <span className="font-medium group-hover:text-primary transition-colors">Public Transportation</span>
+                          <span className="font-medium group-hover:text-primary transition-colors">Öffentliche Verkehrsmittel</span>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-4 p-4 border-2 border-gray-200  rounded-xl transition-all duration-300 cursor-pointer group">
-                        <RadioGroupItem value="bicycle" id="bicycle" className="text-primary" />
+                        <RadioGroupItem value="Fahrrad" id="bicycle" className="text-primary" />
                         <Label htmlFor="bicycle" className="flex items-center space-x-3 cursor-pointer flex-1">
                           <span className="text-2xl group-hover:scale-110 transition-transform duration-300">🚲</span>
-                          <span className="font-medium group-hover:text-primary transition-colors">Bicycle</span>
+                          <span className="font-medium group-hover:text-primary transition-colors">Fahrrad</span>
                         </Label>
                       </div>
                       <div className="flex items-center space-x-4 p-4 border-2 border-gray-200  rounded-xl transition-all duration-300 cursor-pointer group">
-                        <RadioGroupItem value="car" id="car" className="text-primary" />
+                        <RadioGroupItem value="Auto" id="car" className="text-primary" />
                         <Label htmlFor="car" className="flex items-center space-x-3 cursor-pointer flex-1">
                           <span className="text-2xl group-hover:scale-110 transition-transform duration-300">🚗</span>
-                          <span className="font-medium group-hover:text-primary transition-colors">Car</span>
+                          <span className="font-medium group-hover:text-primary transition-colors">Auto</span>
                         </Label>
                       </div>
                     </RadioGroup>

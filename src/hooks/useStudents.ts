@@ -58,6 +58,7 @@ export interface Student {
     fld_status: string;
   }[];
   tbl_students_subjects?: StudentSubject[];
+  mediation_stages?: StudentMediationStage[];
 }
 
 // Student Subject Interface
@@ -124,7 +125,40 @@ export const useStudents = (status: StudentStatus | "All" | "Eng", searchTerm: s
   const studentsQuery = useQuery({
     queryKey: ["students", status, searchTerm],
     queryFn: async () => {
-      // Build base query with all related data preloaded
+      // First, fetch ALL students for stats calculation (without status/search filters)
+      const { data: allStudentsData, error: allStudentsError } = await supabase
+        .from("tbl_students")
+        .select(`
+          fld_id,
+          fld_status,
+          fld_nec
+        `);
+
+      if (allStudentsError) throw allStudentsError;
+
+      // Calculate status counts from all students data
+      const statusCounts: Record<string, number> = {};
+      const statuses = ["Leads", "Mediation Open", "Partially Mediated", "Mediated", "Specialist Consulting", "Contracted Customers", "Suspended", "Deleted", "Unplaceable", "Waiting List", "Appointment Call", "Follow-up", "Appl"];
+      
+      // Count by status from the fetched data
+      (allStudentsData || []).forEach((student: any) => {
+        const studentStatus = student.fld_status;
+        if (statuses.includes(studentStatus)) {
+          statusCounts[studentStatus] = (statusCounts[studentStatus] || 0) + 1;
+        }
+      });
+
+      // Initialize missing statuses to 0
+      statuses.forEach((s) => {
+        if (!(s in statusCounts)) {
+          statusCounts[s] = 0;
+        }
+      });
+
+      // Total count
+      statusCounts["All"] = allStudentsData?.length || 0;
+
+      // Now fetch filtered students with all related data for the actual list
       let query = supabase.from("tbl_students").select(`
           *,
           tbl_users!fk_students_user (
@@ -166,35 +200,55 @@ export const useStudents = (status: StudentStatus | "All" | "Eng", searchTerm: s
         query = query.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_s_first_name.ilike.%${searchTerm}%,fld_s_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%,fld_zip.ilike.%${searchTerm}%`);
       }
 
-      // Order by ID descending
-      query = query.order("fld_id", { ascending: false });
-
-      const { data, error } = await query;
+      // Order by ID descending and execute
+      const { data, error } = await query.order("fld_id", { ascending: false });
       if (error) throw error;
 
-      // Get status-wise counts
-      const statusCounts: Record<string, number> = {};
-      const statuses = ["Leads", "Mediation Open", "Partially Mediated", "Mediated", "Specialist Consulting", "Contracted Customers", "Suspended", "Deleted", "Unplaceable", "Waiting List", "Appointment Call", "Follow-up", "Appl", "Eng"];
+      // Fetch all mediation stages for all students in one query
+      const studentIds = (data || []).map((s: any) => s.fld_id);
+      let mediationStages: any[] = [];
       
-      for (const status of statuses) {
-        let statusQuery = supabase.from("tbl_students").select("fld_id", { count: "exact", head: true });
-        
-        if (status === "Eng") {
-          statusQuery = statusQuery.eq("fld_nec", "N");
+      if (studentIds.length > 0) {
+        const { data: stagesData, error: stagesError } = await supabase
+          .from("tbl_students_mediation_stages")
+          .select(`
+            *,
+            tbl_teachers:fld_tid (
+              fld_id,
+              fld_first_name,
+              fld_last_name,
+              fld_phone,
+              fld_email,
+              fld_uid
+            ),
+            tbl_mediation_types:fld_m_type (
+              fld_id,
+              fld_stage_name
+            )
+          `)
+          .in("fld_sid", studentIds)
+          .order("fld_id", { ascending: false });
+
+        if (stagesError) {
+          console.error("Error fetching mediation stages:", stagesError);
         } else {
-          statusQuery = statusQuery.eq("fld_status", status as any);
+          mediationStages = stagesData || [];
         }
-        
-        const { count } = await statusQuery;
-        statusCounts[status] = count || 0;
       }
-      
-      // Get total count
-      const { count: total } = await supabase.from("tbl_students").select("fld_id", { count: "exact", head: true });
-      statusCounts["All"] = total || 0;
+
+      // Attach mediation stages to each student
+      const studentsWithMediation = (data || []).map((student: any) => {
+        const studentMediationStages = mediationStages.filter(
+          (stage) => stage.fld_sid === student.fld_id
+        );
+        return {
+          ...student,
+          mediation_stages: studentMediationStages,
+        };
+      });
 
       return {
-        data: data as unknown as Student[],
+        data: studentsWithMediation as unknown as Student[],
         statusCounts: statusCounts,
         totalCount: data?.length || 0
       };
@@ -393,6 +447,7 @@ export const useStudentMediationStages = (studentId: number, subjectId?: number)
             fld_first_name,
             fld_last_name,
             fld_phone,
+            fld_email,
             fld_uid
           ),
           tbl_mediation_types:fld_m_type (
@@ -625,6 +680,7 @@ export const useStudentMutations = () => {
   // Delete mediation
   const deleteMediationMutation = useMutation({
     mutationFn: async ({ studentId, subjectId }: { studentId: number; subjectId: number }) => {
+      // Delete the mediation stage
       const { error } = await supabase
         .from("tbl_students_mediation_stages")
         .delete()
@@ -632,9 +688,34 @@ export const useStudentMutations = () => {
         .eq("fld_ssid", subjectId);
 
       if (error) throw error;
+
+      // Get total count of student subjects (following legacy logic)
+      const { count: subjectCount, error: countError } = await supabase
+        .from("tbl_students_subjects")
+        .select("fld_id", { count: "exact", head: true })
+        .eq("fld_sid", studentId);
+
+      if (countError) throw countError;
+
+      // Update student status based on subject count (legacy logic)
+      // If student has 1 subject: set status to 'Mediation Open'
+      // If student has multiple subjects: set status to 'Partially Mediated'
+      let newStatus: StudentStatus = "Mediation Open";
+      if (subjectCount && subjectCount > 1) {
+        newStatus = "Partially Mediated";
+      }
+
+      // Update student status
+      const { error: updateError } = await supabase
+        .from("tbl_students")
+        .update({ fld_status: newStatus as any })
+        .eq("fld_id", studentId);
+
+      if (updateError) throw updateError;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["student-mediation-stages"] });
+      queryClient.invalidateQueries({ queryKey: ["students"] });
       toast({
         title: "Mediation Deleted",
         description: "Mediation has been deleted successfully.",

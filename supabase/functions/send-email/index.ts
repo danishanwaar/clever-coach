@@ -599,21 +599,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate HTML content if template_type is provided
     let htmlContent = emailData.html;
     
-    if (emailData.template === 'teacher-welcome' && emailData.data) {
-      htmlContent = generateTeacherWelcomeEmail(
-        emailData.data.teacherName,
-        emailData.data.email,
-        emailData.data.passcode,
-        emailData.data.portalUrl || 'https://clevercoach-nachhilfe.de'
-      );
-    } else if (emailData.template === 'admin-contract-notification' && emailData.data) {
-      htmlContent = generateAdminContractNotificationEmail(
-        emailData.data.teacherName,
-        emailData.data.subjects,
-        emailData.data.city,
-        emailData.data.phone
-      );
-    } else if (emailData.template_type === 'teacher_welcome' && emailData.data) {
+    if (emailData.template_type === 'teacher_welcome' && emailData.data) {
       // Always fetch temp password from user metadata using teacher_id
       if (!emailData.data.teacher_id) {
         throw new Error('teacher_id is required for teacher_welcome emails');
@@ -673,6 +659,13 @@ const handler = async (req: Request): Promise<Response> => {
         teacher.fld_email,
         tempPassword,
         emailData.data.portal_url || 'https://clevercoach-nachhilfe.de'
+      );
+    } else if (emailData.template_type === 'admin_contract_notification' && emailData.data) {
+      htmlContent = generateAdminContractNotificationEmail(
+        emailData.data.teacherName,
+        emailData.data.subjects,
+        emailData.data.city,
+        emailData.data.phone
       );
     } else if (emailData.template_type === 'teacher_application_thankyou' && emailData.data) {
       htmlContent = generateTeacherApplicationThankYouEmail(

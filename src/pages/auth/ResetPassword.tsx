@@ -122,7 +122,7 @@ export default function ResetPassword() {
             <div className="relative mx-auto w-80 h-64 flex items-center justify-center group">
               <div className="absolute inset-0 bg-white/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
               <img 
-                src="/lovable-uploads/4fba58e9-4cb5-4456-aadf-1b559eff0ee7.png"
+                src="/uploads/4fba58e9-4cb5-4456-aadf-1b559eff0ee7.png"
                 alt="CleverCoach Platform"
                 className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500 relative z-10"
               />
@@ -207,7 +207,7 @@ export default function ResetPassword() {
           <div className="relative mx-auto w-80 h-64 flex items-center justify-center group">
             <div className="absolute inset-0 bg-white/10 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-500"></div>
             <img 
-              src="/lovable-uploads/4fba58e9-4cb5-4456-aadf-1b559eff0ee7.png"
+              src="/uploads/4fba58e9-4cb5-4456-aadf-1b559eff0ee7.png"
               alt="CleverCoach Platform Illustration"
               className="w-full h-full object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500 relative z-10"
             />

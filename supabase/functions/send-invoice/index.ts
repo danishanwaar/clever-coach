@@ -11,10 +11,11 @@ const corsHeaders = {
 };
 
 interface SendInvoiceRequest {
-  studentId: number;
   invoiceId: number;
   email: string;
-  type: 'receivables' | 'payables';
+  type: 'receivables' | 'payables'; // 'receivables' = student invoice, 'payables' = teacher invoice
+  studentId?: number;
+  teacherId?: number;
   baseUrl?: string;
 }
 
@@ -34,12 +35,13 @@ const getFromEmail = async (): Promise<string> => {
 };
 
 const generateInvoiceEmail = (
-  studentName: string,
-  studentSalutation: string,
+  recipientName: string,
+  recipientSalutation: string,
   invoiceId: number,
   invoiceUrl: string,
   fromName: string,
-  fromEmail: string
+  fromEmail: string,
+  isTeacher: boolean = false
 ): string => {
   return `
     <!DOCTYPE html>
@@ -71,7 +73,7 @@ const generateInvoiceEmail = (
                     <!-- Greeting -->
                     <tr>
                       <td style="color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; padding-bottom: 20px;">
-                        <strong>Sehr geehrte/r ${studentSalutation} ${studentName},</strong>
+                        <strong>Sehr geehrte/r ${recipientSalutation} ${recipientName},</strong>
                       </td>
                     </tr>
                     
@@ -159,25 +161,58 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { studentId, invoiceId, email, type, baseUrl }: SendInvoiceRequest = await req.json();
+    const { invoiceId, email, type, studentId, teacherId, baseUrl }: SendInvoiceRequest = await req.json();
     
     const sendGridApiKey = Deno.env.get("SENDGRID_API_KEY");
     if (!sendGridApiKey) {
       throw new Error("SendGrid API key not configured");
     }
 
+    // Validate that either studentId or teacherId is provided
+    if (!studentId && !teacherId) {
+      throw new Error('Either studentId or teacherId must be provided');
+    }
+
+    // Determine if this is a teacher invoice based on type and provided ID
+    const isTeacher = type === 'payables' || !!teacherId;
+
     // Get from email from company settings
     const fromEmail = await getFromEmail();
 
-    // Fetch student data
-    const { data: student, error: studentError } = await supabase
-      .from('tbl_students')
-      .select('fld_first_name, fld_last_name, fld_sal')
-      .eq('fld_id', studentId)
-      .single();
+    // Fetch recipient data (student or teacher)
+    let recipientName = '';
+    let recipientSalutation = '';
+    
+    if (isTeacher && teacherId) {
+      // Fetch teacher data
+      const { data: teacher, error: teacherError } = await supabase
+        .from('tbl_teachers')
+        .select('fld_first_name, fld_last_name, fld_sal')
+        .eq('fld_id', teacherId)
+        .single();
 
-    if (studentError || !student) {
-      throw new Error('Student not found');
+      if (teacherError || !teacher) {
+        throw new Error('Teacher not found');
+      }
+
+      recipientName = `${teacher.fld_first_name} ${teacher.fld_last_name}`;
+      recipientSalutation = teacher.fld_sal || '';
+    } else if (studentId) {
+      // Fetch student data
+      const { data: student, error: studentError } = await supabase
+        .from('tbl_students')
+        .select('fld_first_name, fld_last_name, fld_sal')
+        .eq('fld_id', studentId)
+        .single();
+
+      if (studentError || !student) {
+        throw new Error('Student not found');
+      }
+
+      recipientName = `${student.fld_first_name} ${student.fld_last_name}`;
+      recipientSalutation = student.fld_sal || '';
+    } else {
+      throw new Error('Invalid request: missing studentId or teacherId');
     }
 
     // Get system configuration for sender name
@@ -188,21 +223,20 @@ const handler = async (req: Request): Promise<Response> => {
       .single();
 
     const fromName = config?.fld_fname || 'CleverCoach Team';
-    const studentName = `${student.fld_first_name} ${student.fld_last_name}`;
-    const studentSalutation = student.fld_sal || '';
 
-    // Generate invoice URL
+    // Generate invoice URL - use correct route based on type
     const siteUrl = baseUrl || Deno.env.get('SITE_URL') || 'https://clevercoach-nachhilfe.de';
-    const invoiceUrl = `${siteUrl}/invoices/download/${invoiceId}?type=${type}`;
+    const invoiceUrl = `${siteUrl}/invoices/view/${invoiceId}?type=${type}`;
 
     // Generate email content
     const htmlContent = generateInvoiceEmail(
-      studentName,
-      studentSalutation,
+      recipientName,
+      recipientSalutation,
       invoiceId,
       invoiceUrl,
       fromName,
-      fromEmail
+      fromEmail,
+      isTeacher
     );
 
     // Prepare the email payload

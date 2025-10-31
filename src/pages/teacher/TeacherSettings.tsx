@@ -486,11 +486,11 @@ export default function TeacherSettings() {
                 className="space-y-2"
               >
                 <div className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                  <RadioGroupItem value="Öffentliche" id="public" />
+                  <RadioGroupItem value="Öffentliche Verkehrsmittel" id="public" />
                   <div className="flex items-center space-x-3 flex-1">
                     <Bus className="h-6 w-6 text-gray-600" />
                     <Label htmlFor="public" className="text-base font-semibold cursor-pointer">
-                      Öffentliche
+                    Öffentliche Verkehrsmittel
                     </Label>
                   </div>
                 </div>
@@ -547,7 +547,14 @@ export default function TeacherSettings() {
               {/* Filter out already assigned subjects */}
               {(() => {
                 const assignedSubjectIds = new Set(teacherSubjects.map(ts => ts.fld_sid));
-                const availableSubjects = subjects.filter(subject => !assignedSubjectIds.has(subject.fld_id));
+                const availableSubjects = subjects
+                  .filter(subject => !assignedSubjectIds.has(subject.fld_id))
+                  .sort((a, b) => {
+                    // Move "Andere" to the end
+                    if (a.fld_subject === 'Andere') return 1;
+                    if (b.fld_subject === 'Andere') return -1;
+                    return 0; // Keep other subjects in their original order
+                  });
                 
                 return (
                   <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-2">
@@ -649,7 +656,14 @@ export default function TeacherSettings() {
                   Ihre aktuellen Fächer
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                  {teacherSubjects.map((ts) => {
+                  {[...teacherSubjects].sort((a, b) => {
+                    // Move "Andere" to the end
+                    const aSubject = a.tbl_subjects?.fld_subject || '';
+                    const bSubject = b.tbl_subjects?.fld_subject || '';
+                    if (aSubject === 'Andere') return 1;
+                    if (bSubject === 'Andere') return -1;
+                    return 0; // Keep other subjects in their original order
+                  }).map((ts) => {
                     const subjectEmoji = subjects.find(s => s.fld_id === ts.fld_sid)?.emoji || '📚';
                     return (
                       <Card key={ts.fld_id} className="border border-gray-200 hover:shadow-sm transition-shadow">

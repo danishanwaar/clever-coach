@@ -427,12 +427,9 @@ const DynamicMatcher = () => {
                                       {displaySubjects.length > 0 ? (
                                         <>
                                           {displaySubjects.map((subject: any, index: number) => {
-                                            const studentSubject = studentSubjects.find(ss => ss.fld_suid === subject.fld_id);
-                                            const isMatching = !!studentSubject;
-                                            const isMediated = false;
+                                            const isMatching = formData.fld_suid.includes(subject.fld_id);
                                             const levelMatch = subject.fld_level >= (formData.fld_lid || 0);
-                                            
-                                            const subjectClass = isMatching && !isMediated ? 'border-green-500 text-green-700 bg-green-50' : '';
+                                            const subjectClass = isMatching ? 'border-green-500 text-green-700 bg-green-50' : '';
                                             const levelColor = levelMatch && isMatching ? '#18C754' : '#666';
 
                                             return (

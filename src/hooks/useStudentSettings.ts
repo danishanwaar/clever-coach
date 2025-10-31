@@ -453,6 +453,52 @@ export function useStudentSettings(studentId: number) {
     },
   });
 
+  // Add subject mutation (similar to TeacherSettings)
+  const addSubjectMutation = useMutation({
+    mutationFn: async ({ subjectIds, userId }: { subjectIds: number[]; userId: number }) => {
+      // Check if subjects already exist
+      const { data: existingSubjects, error: checkError } = await supabase
+        .from('tbl_students_subjects')
+        .select('fld_suid')
+        .eq('fld_sid', studentId);
+
+      if (checkError) throw checkError;
+
+      const existingSubjectIds = new Set(existingSubjects?.map(ss => ss.fld_suid) || []);
+      
+      // Filter out subjects that already exist
+      const newSubjectIds = subjectIds.filter(suid => !existingSubjectIds.has(suid));
+
+      if (newSubjectIds.length === 0) {
+        throw new Error('All selected subjects are already assigned');
+      }
+
+      // Insert new subjects
+      const { error } = await supabase
+        .from('tbl_students_subjects')
+        .insert(
+          newSubjectIds.map(suid => ({
+            fld_sid: studentId,
+            fld_suid: suid,
+            fld_cid: null,
+            fld_c_eid: null,
+            fld_edate: new Date().toISOString().split('T')[0],
+            fld_uname: userId,
+          }))
+        );
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-subjects', studentId] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      toast.success('Subjects added successfully');
+    },
+    onError: (error: any) => {
+      toast.error('Failed to add subjects: ' + error.message);
+    },
+  });
+
   // Delete subject mutation
   const deleteSubjectMutation = useMutation({
     mutationFn: async (subjectId: number) => {
@@ -465,6 +511,7 @@ export function useStudentSettings(studentId: number) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['student-subjects', studentId] });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
       toast.success('Subject deleted successfully');
     },
     onError: (error) => {
@@ -572,7 +619,10 @@ export function useStudentSettings(studentId: number) {
     updateBank: updateBankMutation.mutate,
     updateSubjects: updateSubjectsMutation.mutate,
     updateSubjectsMutation,
+    addSubjectMutation,
+    addSubject: addSubjectMutation.mutate,
     deleteSubject: deleteSubjectMutation.mutate,
+    deleteSubjectMutation,
     updateStatistics: updateStatisticsMutation.mutate,
     updateNotes: updateNotesMutation.mutate,
     updateStatus: updateStatusMutation.mutate,
@@ -581,6 +631,7 @@ export function useStudentSettings(studentId: number) {
       updateContractMutation.isPending ||
       updateBankMutation.isPending ||
       updateSubjectsMutation.isPending ||
+      addSubjectMutation.isPending ||
       deleteSubjectMutation.isPending ||
       updateStatisticsMutation.isPending ||
       updateNotesMutation.isPending ||

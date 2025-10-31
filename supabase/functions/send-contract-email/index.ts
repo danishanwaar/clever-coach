@@ -43,7 +43,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <tr>
     <td align="center" bgcolor="#0086A4" style="padding: 40px 30px;">
     <h1 style="margin: 0; color: white; font-size: 28px; font-weight: bold; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
-    Welcome to CleverCoach! 🎓
+    Willkommen bei CleverCoach! 🎓
     </h1>
     </td>
     </tr>
@@ -56,14 +56,14 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <!-- Greeting -->
     <tr>
     <td style="color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; padding-bottom: 20px;">
-    <strong>Hello ${recipientName},</strong>
+    <strong>Hallo ${recipientName},</strong>
     </td>
     </tr>
     
     <!-- Intro -->
     <tr>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-bottom: 24px;">
-    Thank you for our pleasant conversation! Please find your teaching agreement below. Review and sign it to get started with your first students.
+    vielen Dank für das angenehme Telefonat! Unter folgendem Link finden Sie Ihre Honorarvereinbarung. Bitte überprüfen Sie sie und unterschreiben Sie sie, um mit Ihren ersten Schülern zu beginnen.
     </td>
     </tr>
     
@@ -71,7 +71,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <tr>
     <td style="padding: 10px 0 30px 0;">
     <a href="${contractLink}" style="display: inline-block; background-color: #0086A4; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 6px rgba(0, 134, 164, 0.2);">
-    View & Sign Contract
+    Vertrag ansehen & unterschreiben
     </a>
     </td>
     </tr>
@@ -80,7 +80,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <tr>
     <td style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px; margin-bottom: 24px;">
     <p style="margin: 0; color: #92400e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
-    <strong>⚡ Quick Response Required:</strong> Timely communication is crucial. Students may find other tutors quickly, so please respond promptly to all requests.
+    <strong>⚡ Schnelle Reaktion erforderlich:</strong> Eine zeitnahe Kommunikation ist entscheidend. Schülerinnen und Schüler finden schnell andere Nachhilfelehrer, daher bitten wir Sie, auf alle Anfragen zeitnah zu reagieren.
     </p>
     </td>
     </tr>
@@ -89,7 +89,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <tr>
     <td style="padding-top: 24px;">
     <h2 style="color: #0086A4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; font-weight: 600; margin: 0 0 16px 0;">
-    Quick Start Guide
+    Schnellstart-Anleitung
     </h2>
     </td>
     </tr>
@@ -103,7 +103,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <div style="background-color: #0086A4; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">1</div>
     </td>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
-    Receive student requests via call, email, or WhatsApp
+    Erhalten Sie Schüleranfragen per Anruf, E-Mail oder WhatsApp
     </td>
     </tr>
     </table>
@@ -119,7 +119,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <div style="background-color: #0086A4; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">2</div>
     </td>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
-    Accept request → Get family contact details in your portal
+    Anfrage annehmen → Familienkontaktdaten erhalten Sie in Ihrem Portal
     </td>
     </tr>
     </table>
@@ -135,7 +135,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <div style="background-color: #0086A4; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">3</div>
     </td>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
-    Contact the family and schedule an introductory meeting (15-30 min, unpaid)
+    Kontaktieren Sie die Familie und vereinbaren Sie ein Kennenlerngespräch (15-30 Min., unbezahlt)
     </td>
     </tr>
     </table>
@@ -151,7 +151,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <div style="background-color: #0086A4; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">4</div>
     </td>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
-    Confirm meeting in portal → We finalize contract with family → Start teaching!
+    Bestätigen Sie das Treffen im Portal → Wir schließen den Vertrag mit der Familie ab → Beginnen Sie zu unterrichten!
     </td>
     </tr>
     </table>
@@ -162,40 +162,40 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     <tr>
     <td style="padding-top: 30px;">
     <h3 style="color: #0086A4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; margin: 0 0 12px 0;">
-    Important Points
+    Wichtige Punkte
     </h3>
     </td>
     </tr>
     
     <tr>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 22px; padding-bottom: 8px;">
-    • Submit hours by the 1st of each month for payment on the 15th-18th
+    • Reichen Sie die Stunden bis zum 1. jedes Monats ein, um am 15.-18. bezahlt zu werden
     </td>
     </tr>
     
     <tr>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 22px; padding-bottom: 8px;">
-    • Minimum 4 lessons/month (unless agreed otherwise)
+    • Mindestens 4 Stunden pro Monat (außer anders vereinbart)
     </td>
     </tr>
     
     <tr>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 22px; padding-bottom: 8px;">
-    • Set yourself inactive in portal when unavailable
+    • Setzen Sie sich im Portal als inaktiv, wenn Sie nicht verfügbar sind
     </td>
     </tr>
     
     <!-- Questions -->
     <tr>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 22px; padding-top: 24px;">
-    Questions? We're here to help! Contact us anytime.
+    Fragen? Wir sind für Sie da! Kontaktieren Sie uns jederzeit.
     </td>
     </tr>
     
     <!-- Closing -->
     <tr>
     <td style="padding-top: 30px; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px;">
-    Best regards,<br/>
+    Mit freundlichen Grüßen,<br/>
     <strong>CleverCoach Team</strong>
     </td>
     </tr>
@@ -218,7 +218,7 @@ const generateTeacherContractEmailTemplate = (recipientName: string, contractLin
     </tr>
     <tr>
     <td style="padding-top: 16px; color: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px;">
-    This is an automated message. Please do not reply to this email.
+    Dies ist eine automatische Nachricht. Bitte antworten Sie nicht auf diese E-Mail.
     </td>
     </tr>
     </table>
@@ -278,13 +278,7 @@ const generateStudentContractEmailTemplate = (recipientName: string, contractLin
     
     <tr>
     <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-bottom: 24px;">
-    Unter folgendem Link finden Sie Ihren Vertrag.
-    </td>
-    </tr>
-    
-    <tr>
-    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-bottom: 24px;">
-    Bitte überprüfen Sie ihn und unterschreiben Sie ihn so bald wie möglich, damit der Unterricht weiter fortgesetzt werden kann.
+    Unter folgendem Link finden Sie Ihren Vertrag. Bitte überprüfen Sie ihn und unterschreiben Sie ihn so bald wie möglich, damit der Unterricht weiter fortgesetzt werden kann.
     </td>
     </tr>
     
@@ -292,25 +286,108 @@ const generateStudentContractEmailTemplate = (recipientName: string, contractLin
     <tr>
     <td style="padding: 10px 0 30px 0;">
     <a href="${contractLink}" style="display: inline-block; background-color: #0086A4; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600; box-shadow: 0 4px 6px rgba(0, 134, 164, 0.2);">
-    Vertrag
+    Vertrag ansehen & unterschreiben
     </a>
     </td>
     </tr>
     
+    <!-- Contract Details Card -->
     <tr>
-    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-bottom: 24px;">
+    <td style="background-color: #f0f9ff; border: 1px solid #0086A4; padding: 24px; border-radius: 8px; margin-bottom: 24px;">
+    <h3 style="margin: 0 0 16px 0; color: #0086A4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 16px; font-weight: 600;">
+    📋 Vertragsdetails
+    </h3>
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
+    Ihr Nachhilfevertrag wurde für Sie vorbereitet und wartet auf Ihre Unterschrift. Bitte überprüfen Sie alle Details sorgfältig und bestätigen Sie den Vertrag, damit wir mit dem Unterricht beginnen können.
+    </td>
+    </tr>
+    </table>
+    </td>
+    </tr>
+    
+    <!-- Important Note -->
+    <tr>
+    <td style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px; margin-bottom: 24px;">
+    <p style="margin: 0; color: #92400e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
+    <strong>⚡ Wichtig:</strong> Bitte unterschreiben Sie den Vertrag zeitnah, damit wir den Unterricht für Sie planen können.
+    </p>
+    </td>
+    </tr>
+    
+    <!-- Next Steps -->
+    <tr>
+    <td style="padding-top: 24px;">
+    <h2 style="color: #0086A4; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 18px; font-weight: 600; margin: 0 0 16px 0;">
+    Nächste Schritte
+    </h2>
+    </td>
+    </tr>
+    
+    <!-- Step 1 -->
+    <tr>
+    <td style="padding: 12px 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+    <td width="30" valign="top">
+    <div style="background-color: #0086A4; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">1</div>
+    </td>
+    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
+    Überprüfen Sie Ihren Vertrag über den oben genannten Link
+    </td>
+    </tr>
+    </table>
+    </td>
+    </tr>
+    
+    <!-- Step 2 -->
+    <tr>
+    <td style="padding: 12px 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+    <td width="30" valign="top">
+    <div style="background-color: #0086A4; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">2</div>
+    </td>
+    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
+    Unterschreiben Sie den Vertrag digital
+    </td>
+    </tr>
+    </table>
+    </td>
+    </tr>
+    
+    <!-- Step 3 -->
+    <tr>
+    <td style="padding: 12px 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+    <td width="30" valign="top">
+    <div style="background-color: #0086A4; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">3</div>
+    </td>
+    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px;">
+    Wir koordinieren den Start des Unterrichts mit Ihnen
+    </td>
+    </tr>
+    </table>
+    </td>
+    </tr>
+    
+    <!-- Additional Info -->
+    <tr>
+    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-top: 24px;">
     Sollten Sie Fragen haben oder weitere Erläuterungen benötigen, zögern Sie nicht, uns zu kontaktieren.
     </td>
     </tr>
     
     <tr>
-    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-bottom: 24px;">
+    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-top: 8px;">
     Wir freuen uns auf eine erfolgreiche Zusammenarbeit.
     </td>
     </tr>
     
     <tr>
-    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-bottom: 24px;">
+    <td style="color: #475569; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px; line-height: 24px; padding-top: 8px;">
     Vielen Dank, dass Sie sich für CleverCoach-Nachhilfe entschieden haben.
     </td>
     </tr>
@@ -319,13 +396,7 @@ const generateStudentContractEmailTemplate = (recipientName: string, contractLin
     <tr>
     <td style="padding-top: 30px; color: #1e293b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 15px;">
     Mit freundlichen Grüßen,<br/>
-    <strong>CleverCoach Nachhilfe Team</strong><br/>
-    <strong>Tav & Uzun GbR</strong><br/>
-    <strong>CleverCoach Nachhilfe</strong><br/>
-    Höschenhofweg 31<br/>
-    47249 Duisburg<br/>
-    Tel: 0203 39652097<br/>
-    E-Mail: Kontakt@clevercoach-nachhilfe.de
+    <strong>CleverCoach Team</strong>
     </td>
     </tr>
     
@@ -347,7 +418,7 @@ const generateStudentContractEmailTemplate = (recipientName: string, contractLin
     </tr>
     <tr>
     <td style="padding-top: 16px; color: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px;">
-    This is an automated message. Please do not reply to this email.
+    Dies ist eine automatische Nachricht. Bitte antworten Sie nicht auf diese E-Mail.
     </td>
     </tr>
     </table>
@@ -464,7 +535,7 @@ const generateStudentContractConfirmationTemplate = (recipientName: string, cont
     </tr>
     <tr>
     <td style="padding-top: 16px; color: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px;">
-    This is an automated message. Please do not reply to this email.
+    Dies ist eine automatische Nachricht. Bitte antworten Sie nicht auf diese E-Mail.
     </td>
     </tr>
     </table>
@@ -495,11 +566,11 @@ const handler = async (req: Request): Promise<Response> => {
       admin_user_id 
     } = await req.json();
     
-    let recipientName: string;
-    let recipientEmail: string;
-    let contractLink: string;
-    let emailSubject: string;
-    let emailHtml: string;
+    let recipientName: string = '';
+    let recipientEmail: string = '';
+    let contractLink: string = '';
+    let emailSubject: string = '';
+    let emailHtml: string = '';
     
     const baseUrl = base_url || Deno.env.get('SITE_URL') || 'https://clevercoach.com';
 
@@ -574,7 +645,7 @@ const handler = async (req: Request): Promise<Response> => {
       // Generate secure contract link matching React implementation
       const encodedId = btoa(contract_id.toString());
       contractLink = `${baseUrl}/teacher-contract-signing/${encodedId}`;
-      emailSubject = "Teaching Contract - CleverCoach";
+      emailSubject = "Willkommen bei CleverCoach - Honorarvereinbarung";
       emailHtml = generateTeacherContractEmailTemplate(recipientName, contractLink);
       
       console.log("Sending teacher contract email to:", recipientEmail);

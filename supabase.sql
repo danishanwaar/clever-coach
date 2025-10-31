@@ -29,7 +29,9 @@ CREATE TABLE public.tbl_activity_matcher (
   fld_erdat timestamp with time zone NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT tbl_activity_matcher_pkey PRIMARY KEY (fld_id)
+  fld_uid integer,
+  CONSTRAINT tbl_activity_matcher_pkey PRIMARY KEY (fld_id),
+  CONSTRAINT tbl_activity_matcher_fld_uid_fkey FOREIGN KEY (fld_uid) REFERENCES public.tbl_users(fld_id)
 );
 CREATE TABLE public.tbl_activity_students (
   fld_id integer NOT NULL DEFAULT nextval('tbl_activity_students_fld_id_seq'::regclass),
@@ -39,7 +41,9 @@ CREATE TABLE public.tbl_activity_students (
   fld_erdat timestamp with time zone NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  fld_uid integer,
   CONSTRAINT tbl_activity_students_pkey PRIMARY KEY (fld_id),
+  CONSTRAINT tbl_activity_students_fld_uid_fkey FOREIGN KEY (fld_uid) REFERENCES public.tbl_users(fld_id),
   CONSTRAINT fk_activity_students_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id)
 );
 CREATE TABLE public.tbl_activity_teacher (
@@ -79,8 +83,8 @@ CREATE TABLE public.tbl_contracts (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_contracts_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_contracts_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
-  CONSTRAINT fk_contracts_entered_by FOREIGN KEY (fld_ename) REFERENCES public.tbl_users(fld_id)
+  CONSTRAINT fk_contracts_entered_by FOREIGN KEY (fld_ename) REFERENCES public.tbl_users(fld_id),
+  CONSTRAINT fk_contracts_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id)
 );
 CREATE TABLE public.tbl_contracts_engagement (
   fld_id integer NOT NULL DEFAULT nextval('tbl_contracts_engagement_fld_id_seq'::regclass),
@@ -94,7 +98,6 @@ CREATE TABLE public.tbl_contracts_engagement (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_contracts_engagement_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_engagement_student_subject FOREIGN KEY (fld_ssid) REFERENCES public.tbl_students_subjects(fld_id),
   CONSTRAINT fk_engagement_contract FOREIGN KEY (fld_cid) REFERENCES public.tbl_contracts(fld_id),
   CONSTRAINT fk_engagement_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
   CONSTRAINT fk_engagement_entered_by FOREIGN KEY (fld_ename) REFERENCES public.tbl_users(fld_id)
@@ -233,7 +236,7 @@ CREATE TABLE public.tbl_students (
   fld_ld character varying,
   fld_price numeric,
   fld_reg_fee numeric DEFAULT 0.00,
-  fld_uid integer NOT NULL,
+  fld_uid integer,
   fld_status USER-DEFINED NOT NULL,
   fld_im_status integer DEFAULT 0,
   fld_edate timestamp with time zone NOT NULL,
@@ -243,8 +246,8 @@ CREATE TABLE public.tbl_students (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_students_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_students_user FOREIGN KEY (fld_uid) REFERENCES public.tbl_users(fld_id),
-  CONSTRAINT fk_students_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
+  CONSTRAINT fk_students_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id),
+  CONSTRAINT fk_students_user FOREIGN KEY (fld_uid) REFERENCES public.tbl_users(fld_id)
 );
 CREATE TABLE public.tbl_students_documents (
   fld_id integer NOT NULL DEFAULT nextval('tbl_students_documents_fld_id_seq'::regclass),
@@ -277,13 +280,13 @@ CREATE TABLE public.tbl_students_invoices (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_students_invoices_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_student_invoices_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
-  CONSTRAINT fk_student_invoices_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
+  CONSTRAINT fk_student_invoices_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id),
+  CONSTRAINT fk_student_invoices_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id)
 );
 CREATE TABLE public.tbl_students_invoices_detail (
   fld_id integer NOT NULL DEFAULT nextval('tbl_students_invoices_detail_fld_id_seq'::regclass),
   fld_iid integer NOT NULL,
-  fld_ssid integer NOT NULL,
+  fld_ssid integer,
   fld_cid integer,
   fld_detail text NOT NULL,
   fld_len_lesson character varying NOT NULL,
@@ -295,14 +298,13 @@ CREATE TABLE public.tbl_students_invoices_detail (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_students_invoices_detail_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_student_invoice_detail_invoice FOREIGN KEY (fld_iid) REFERENCES public.tbl_students_invoices(fld_id),
-  CONSTRAINT fk_student_invoice_detail_subject FOREIGN KEY (fld_ssid) REFERENCES public.tbl_students_subjects(fld_id),
   CONSTRAINT fk_student_invoice_detail_contract FOREIGN KEY (fld_cid) REFERENCES public.tbl_contracts(fld_id)
 );
 CREATE TABLE public.tbl_students_mediation_stages (
   fld_id integer NOT NULL DEFAULT nextval('tbl_students_mediation_stages_fld_id_seq'::regclass),
-  fld_tid integer NOT NULL,
+  fld_tid integer,
   fld_sid integer NOT NULL,
-  fld_ssid integer NOT NULL,
+  fld_ssid integer,
   fld_m_type integer NOT NULL,
   fld_edate date NOT NULL,
   fld_uname integer NOT NULL,
@@ -312,11 +314,11 @@ CREATE TABLE public.tbl_students_mediation_stages (
   fld_note text,
   fld_etime character varying DEFAULT NULL::character varying,
   CONSTRAINT tbl_students_mediation_stages_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_mediation_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
   CONSTRAINT fk_mediation_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
-  CONSTRAINT fk_mediation_student_subject FOREIGN KEY (fld_ssid) REFERENCES public.tbl_students_subjects(fld_id),
   CONSTRAINT fk_mediation_type FOREIGN KEY (fld_m_type) REFERENCES public.tbl_mediation_types(fld_id),
-  CONSTRAINT fk_mediation_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
+  CONSTRAINT fk_mediation_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id),
+  CONSTRAINT fk_mediation_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
+  CONSTRAINT fk_mediation_student_subject FOREIGN KEY (fld_ssid) REFERENCES public.tbl_students_subjects(fld_id)
 );
 CREATE TABLE public.tbl_students_subjects (
   fld_id integer NOT NULL DEFAULT nextval('tbl_students_subjects_fld_id_seq'::regclass),
@@ -326,15 +328,15 @@ CREATE TABLE public.tbl_students_subjects (
   fld_c_eid integer DEFAULT 0,
   fld_detail text,
   fld_edate date NOT NULL,
-  fld_uname integer NOT NULL,
+  fld_uname integer,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_students_subjects_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_student_subjects_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
   CONSTRAINT fk_student_subjects_subject FOREIGN KEY (fld_suid) REFERENCES public.tbl_subjects(fld_id),
-  CONSTRAINT fk_student_subjects_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id),
   CONSTRAINT fk_student_subjects_contract FOREIGN KEY (fld_cid) REFERENCES public.tbl_contracts(fld_id),
-  CONSTRAINT fk_student_subjects_engagement FOREIGN KEY (fld_c_eid) REFERENCES public.tbl_contracts_engagement(fld_id)
+  CONSTRAINT fk_student_subjects_engagement FOREIGN KEY (fld_c_eid) REFERENCES public.tbl_contracts_engagement(fld_id),
+  CONSTRAINT fk_student_subjects_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
 );
 CREATE TABLE public.tbl_su_types (
   fld_id integer NOT NULL DEFAULT nextval('tbl_su_types_fld_id_seq'::regclass),
@@ -365,21 +367,6 @@ CREATE TABLE public.tbl_system_config (
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_system_config_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_system_config_country FOREIGN KEY (fld_cntry) REFERENCES public.tbl_countries(fld_id)
-);
-CREATE TABLE public.tbl_teacher_documents (
-  fld_id integer NOT NULL DEFAULT nextval('tbl_teacher_documents_fld_id_seq'::regclass),
-  fld_tid integer NOT NULL,
-  fld_name character varying NOT NULL,
-  fld_type character varying NOT NULL,
-  fld_size bigint NOT NULL,
-  fld_path character varying NOT NULL,
-  fld_description text,
-  fld_upload_date timestamp with time zone DEFAULT now(),
-  fld_status character varying DEFAULT 'Active'::character varying,
-  created_at timestamp with time zone DEFAULT now(),
-  updated_at timestamp with time zone DEFAULT now(),
-  CONSTRAINT tbl_teacher_documents_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_teacher_documents_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id)
 );
 CREATE TABLE public.tbl_teachers (
   fld_id integer NOT NULL DEFAULT nextval('tbl_teachers_fld_id_seq'::regclass),
@@ -438,9 +425,9 @@ CREATE TABLE public.tbl_teachers_documents (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_teachers_documents_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_teacher_docs_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
   CONSTRAINT fk_teacher_docs_user FOREIGN KEY (fld_uid) REFERENCES public.tbl_users(fld_id),
-  CONSTRAINT fk_teacher_docs_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
+  CONSTRAINT fk_teacher_docs_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id),
+  CONSTRAINT fk_teacher_docs_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id)
 );
 CREATE TABLE public.tbl_teachers_invoices (
   fld_id integer NOT NULL DEFAULT nextval('tbl_teachers_invoices_fld_id_seq'::regclass),
@@ -448,25 +435,21 @@ CREATE TABLE public.tbl_teachers_invoices (
   fld_lhid character varying,
   fld_cid character varying,
   fld_invoice_total numeric NOT NULL,
-  fld_invoice_hr numeric NOT NULL,
-  fld_min_lesson numeric,
-  fld_ch_hr USER-DEFINED DEFAULT 'N'::yes_no,
-  fld_notes text,
   fld_edate date NOT NULL,
   fld_uname integer NOT NULL,
   fld_status USER-DEFINED NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_teachers_invoices_pkey PRIMARY KEY (fld_id),
-  CONSTRAINT fk_teacher_invoices_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
-  CONSTRAINT fk_teacher_invoices_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
+  CONSTRAINT fk_teacher_invoices_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id),
+  CONSTRAINT fk_teacher_invoices_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id)
 );
 CREATE TABLE public.tbl_teachers_invoices_detail (
   fld_id integer NOT NULL DEFAULT nextval('tbl_teachers_invoices_detail_fld_id_seq'::regclass),
   fld_iid integer NOT NULL,
-  fld_sid integer NOT NULL,
-  fld_ssid integer NOT NULL,
-  fld_cid integer NOT NULL,
+  fld_sid integer,
+  fld_ssid integer,
+  fld_cid integer,
   fld_detail text NOT NULL,
   fld_len_lesson character varying NOT NULL,
   fld_l_date date NOT NULL,
@@ -478,7 +461,6 @@ CREATE TABLE public.tbl_teachers_invoices_detail (
   CONSTRAINT tbl_teachers_invoices_detail_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_teacher_invoice_detail_invoice FOREIGN KEY (fld_iid) REFERENCES public.tbl_teachers_invoices(fld_id),
   CONSTRAINT fk_teacher_invoice_detail_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
-  CONSTRAINT fk_teacher_invoice_detail_subject FOREIGN KEY (fld_ssid) REFERENCES public.tbl_students_subjects(fld_id),
   CONSTRAINT fk_teacher_invoice_detail_contract FOREIGN KEY (fld_cid) REFERENCES public.tbl_contracts(fld_id)
 );
 CREATE TABLE public.tbl_teachers_lessons_history (
@@ -500,19 +482,21 @@ CREATE TABLE public.tbl_teachers_lessons_history (
   CONSTRAINT tbl_teachers_lessons_history_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_lessons_history_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
   CONSTRAINT fk_lessons_history_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
-  CONSTRAINT fk_lessons_history_student_subject FOREIGN KEY (fld_ssid) REFERENCES public.tbl_students_subjects(fld_id),
   CONSTRAINT fk_lessons_history_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
 );
 CREATE TABLE public.tbl_teachers_students_activity (
   fld_id integer NOT NULL DEFAULT nextval('tbl_teachers_students_activity_fld_id_seq'::regclass),
-  fld_tid integer NOT NULL,
+  fld_tid integer,
   fld_sid integer NOT NULL,
-  fld_activity_type_id integer NOT NULL,
+  fld_activity_type_id integer,
   fld_description text,
   fld_notes text,
   fld_edate timestamp with time zone NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  fld_a_body text,
+  fld_aid integer,
+  fld_uname integer,
   CONSTRAINT tbl_teachers_students_activity_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_teacher_student_activity_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
   CONSTRAINT fk_teacher_student_activity_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
@@ -520,14 +504,16 @@ CREATE TABLE public.tbl_teachers_students_activity (
 );
 CREATE TABLE public.tbl_teachers_students_notes (
   fld_id integer NOT NULL DEFAULT nextval('tbl_teachers_students_notes_fld_id_seq'::regclass),
-  fld_tid integer NOT NULL,
+  fld_tid integer,
   fld_sid integer NOT NULL,
-  fld_subject character varying NOT NULL,
-  fld_body text NOT NULL,
+  fld_subject character varying,
+  fld_body text,
   fld_edate timestamp with time zone NOT NULL,
   fld_uname integer NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  fld_note_body text,
+  fld_note_subject character varying,
   CONSTRAINT tbl_teachers_students_notes_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_teacher_student_notes_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
   CONSTRAINT fk_teacher_student_notes_student FOREIGN KEY (fld_sid) REFERENCES public.tbl_students(fld_id),
@@ -552,14 +538,16 @@ CREATE TABLE public.tbl_teachers_subjects_expertise (
 CREATE TABLE public.tbl_teachers_unavailability_history (
   fld_id integer NOT NULL DEFAULT nextval('tbl_teachers_unavailability_history_fld_id_seq'::regclass),
   fld_tid integer NOT NULL,
-  fld_unavailable_from date NOT NULL,
-  fld_unavailable_to date NOT NULL,
+  fld_unavailable_from date,
+  fld_unavailable_to date,
   fld_reason text,
   fld_is_active USER-DEFINED DEFAULT 'Y'::availability_status,
   fld_edate timestamp with time zone NOT NULL,
   fld_uname integer NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  fld_end_date timestamp with time zone,
+  fld_start_date timestamp with time zone,
   CONSTRAINT tbl_teachers_unavailability_history_pkey PRIMARY KEY (fld_id),
   CONSTRAINT fk_teacher_unavailability_teacher FOREIGN KEY (fld_tid) REFERENCES public.tbl_teachers(fld_id),
   CONSTRAINT fk_teacher_unavailability_created_by FOREIGN KEY (fld_uname) REFERENCES public.tbl_users(fld_id)
@@ -577,7 +565,11 @@ CREATE TABLE public.tbl_temp_students_invoices_detail (
 );
 CREATE TABLE public.tbl_urls (
   fld_id integer NOT NULL DEFAULT nextval('tbl_urls_fld_id_seq'::regclass),
+  fld_itype character varying NOT NULL,
   fld_url text NOT NULL,
+  fld_edate date NOT NULL,
+  fld_cname text NOT NULL,
+  fld_invno integer NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT tbl_urls_pkey PRIMARY KEY (fld_id)
@@ -597,6 +589,7 @@ CREATE TABLE public.tbl_users (
   fld_status USER-DEFINED NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  is_legacy boolean NOT NULL DEFAULT false,
   CONSTRAINT tbl_users_pkey PRIMARY KEY (fld_id),
   CONSTRAINT tbl_users_auth_user_id_fkey FOREIGN KEY (auth_user_id) REFERENCES auth.users(id),
   CONSTRAINT fk_users_role FOREIGN KEY (fld_rid) REFERENCES public.tbl_roles(fld_id)

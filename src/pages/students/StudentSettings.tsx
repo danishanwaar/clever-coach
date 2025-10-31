@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useStudentSettings } from '@/hooks/useStudentSettings';
 import { useStudent } from '@/hooks/useStudents';
+import { useAuthStore } from '@/stores/authStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,24 +21,13 @@ import {
   FileText, 
   AlertTriangle,
   Trash2,
-  AlertCircle,
-  X
+  AlertCircle
 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 export default function StudentSettings() {
   const { id } = useParams<{ id: string }>();
   const studentId = parseInt(id || '0');
+  const { user } = useAuthStore();
   
   const { data: student, isLoading: studentLoading } = useStudent(studentId);
   
@@ -60,7 +50,9 @@ export default function StudentSettings() {
     updateBank,
     updateSubjects,
     updateSubjectsMutation,
+    addSubjectMutation,
     deleteSubject,
+    deleteSubjectMutation,
     updateStatistics,
     updateNotes,
     updateStatus,
@@ -92,11 +84,6 @@ export default function StudentSettings() {
     };
     return emojiMap[subjectName] || '📚';
   };
-
-  // Get available subjects (not enrolled)
-  const availableSubjects = subjects.filter(subject => 
-    !studentSubjects.some(s => s.fld_suid === subject.fld_id)
-  );
 
   // Form states - Update when studentData changes
   const [basicForm, setBasicForm] = useState({
@@ -135,7 +122,7 @@ export default function StudentSettings() {
     fld_reg_fee: '',
   });
 
-  const [selectedSubjects, setSelectedSubjects] = useState<number[]>([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
 
   const [statisticsForm, setStatisticsForm] = useState({
     fld_f_lead: '',
@@ -237,14 +224,27 @@ export default function StudentSettings() {
     updateContract(formData);
   };
 
-  const handleSubjectsSubmit = async (e: React.FormEvent) => {
+  const handleSubjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      await updateSubjectsMutation.mutateAsync(selectedSubjects);
-      // Clear selected subjects after successful save
-      setSelectedSubjects([]);
-    } catch (error) {
-      console.error('Failed to update subjects:', error);
+    if (!studentId || !user?.fld_id) return;
+    if (!selectedSubjectId) {
+      alert('Bitte wählen Sie ein Fach aus');
+      return;
+    }
+    
+    await addSubjectMutation.mutateAsync({
+      subjectIds: [selectedSubjectId],
+      userId: user.fld_id
+    });
+    
+    // Reset form
+    setSelectedSubjectId(null);
+  };
+
+  const handleDeleteSubject = (subjectId: number) => {
+    if (!studentId) return;
+    if (confirm('Are you sure you want to delete this subject?')) {
+      deleteSubject(subjectId);
     }
   };
 
@@ -261,10 +261,6 @@ export default function StudentSettings() {
   const handleStatusSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateStatus(statusForm);
-  };
-
-  const handleDeleteSubject = (subjectId: number) => {
-    deleteSubject(subjectId);
   };
 
   if (studentLoading || isLoading) {
@@ -287,7 +283,7 @@ export default function StudentSettings() {
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Contact Person Section */}
       <Card>
         <CardHeader>
@@ -691,123 +687,132 @@ export default function StudentSettings() {
         </CardContent>
       </Card>
 
-      {/* Subjects Section */}
-      <Card className="hover:shadow-lg transition-shadow">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-primary text-base sm:text-lg">
-            <BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />
-            Fach/Fächer (Subjects)
+      {/* Subjects Card - Following TeacherSettings Pattern */}
+      <Card className="border border-gray-200 transition-shadow">
+        <CardHeader className="border-b border-gray-200 bg-primary/5">
+          <CardTitle className="text-xl font-bold text-primary flex items-center">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center mr-3">
+              <BookOpen className="h-5 w-5 text-white" />
+            </div>
+            Unterrichtsfächer
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubjectsSubmit} className="space-y-6">
-            <div>
-              <Label htmlFor="subjects" className="text-sm font-semibold mb-2 block">
-                In welchem Fach benötigt Ihr Kind Nachhilfe?
+        <CardContent className="p-4 sm:p-6">
+          <form onSubmit={handleSubjectSubmit} className="space-y-4">
+            {/* Step 1: Select Subject */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold text-gray-700 required">
+                1. Wählen Sie ein Fach aus
               </Label>
-              <Select
-                value=""
-                onValueChange={(value) => {
-                  const subjectId = parseInt(value);
-                  if (!selectedSubjects.includes(subjectId)) {
-                    setSelectedSubjects(prev => [...prev, subjectId]);
-                  }
-                }}
-              >
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder="Select subjects" />
-                  </SelectTrigger>
-                  <SelectContent>
-                  {availableSubjects.map((subject) => (
-                    <SelectItem key={subject.fld_id} value={subject.fld_id.toString()}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">{getSubjectEmoji(subject.fld_subject)}</span>
-                        <span>{subject.fld_subject}</span>
+              {/* Filter out already assigned subjects */}
+              {(() => {
+                const assignedSubjectIds = new Set(studentSubjects.map(ss => ss.fld_suid));
+                const availableSubjects = subjects
+                  .filter(subject => !assignedSubjectIds.has(subject.fld_id))
+                  .sort((a, b) => {
+                    // Move "Andere" to the end
+                    if (a.fld_subject === 'Andere') return 1;
+                    if (b.fld_subject === 'Andere') return -1;
+                    return 0; // Keep other subjects in their original order
+                  });
+                
+                return (
+                  <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-2">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                      {availableSubjects.map((subject) => {
+                        const isSelected = selectedSubjectId === subject.fld_id;
+                        return (
+                          <button
+                            key={subject.fld_id}
+                            type="button"
+                            onClick={() => setSelectedSubjectId(subject.fld_id)}
+                            className={`p-2 rounded-lg border-2 transition-all duration-200 hover:shadow-sm ${
+                              isSelected
+                                ? 'border-primary bg-primary/5'
+                                : 'border-gray-200 bg-white hover:border-primary/50'
+                            }`}
+                          >
+                            <div className="flex flex-col items-center text-center space-y-1">
+                              <span className="text-xl">{getSubjectEmoji(subject.fld_subject)}</span>
+                              <span className={`text-xs font-medium leading-tight ${isSelected ? 'text-primary' : 'text-gray-700'}`}>
+                                {subject.fld_subject}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {availableSubjects.length === 0 && (
+                      <div className="text-center py-6 text-sm text-gray-500">
+                        Alle Fächer sind bereits zugewiesen
                       </div>
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            
-            {/* Selected Subjects Display */}
-            {selectedSubjects.length > 0 && (
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold">Selected Subjects</Label>
-                <div className="flex flex-wrap gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                  {selectedSubjects.map((subjectId) => {
-                    const subject = subjects.find(s => s.fld_id === subjectId);
-                    return (
-                      <Badge key={subjectId} variant="secondary" className="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-gray-50 transition-colors">
-                        <span className="text-base">{getSubjectEmoji(subject?.fld_subject || '')}</span>
-                        <span className="font-medium">{subject?.fld_subject}</span>
-                        <button
-                          type="button"
-                          onClick={() => setSelectedSubjects(prev => prev.filter(id => id !== subjectId))}
-                          className="ml-1 hover:bg-red-100 rounded-full p-0.5 transition-colors"
-                        >
-                          <X className="h-3 w-3 text-red-600" />
-                        </button>
-                      </Badge>
-                    );
-                  })}
+                    )}
+                  </div>
+                );
+              })()}
             </div>
+
+            {/* Submit Button */}
+            {selectedSubjectId && (
+              <div className="flex justify-end pt-2 border-t border-gray-200">
+                <Button
+                  type="submit"
+                  className="bg-primary hover:bg-primary/90 text-white"
+                  disabled={addSubjectMutation.isPending}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {addSubjectMutation.isPending ? 'Speichern...' : 'Speichern'}
+                </Button>
               </div>
             )}
-
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isUpdating} className="bg-primary hover:bg-primary/90">
-                <Save className="h-4 w-4 mr-2" />
-                Save Changes
-              </Button>
-            </div>
-          </form>
-
-          {/* Enrolled Subjects */}
-          {studentSubjects.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <h4 className="font-semibold text-primary mb-4 flex items-center gap-2">
-                <GraduationCap className="h-5 w-5" />
-                Enrolled Subjects
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {studentSubjects.map((studentSubject) => (
-                  <div key={studentSubject.fld_id} className="group flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200 hover:shadow-md transition-all">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{getSubjectEmoji(studentSubject.tbl_subjects?.fld_subject || '')}</span>
-                      <span className="font-medium text-gray-900">{studentSubject.tbl_subjects?.fld_subject}</span>
-                      </div>
-                    {!hasActiveContracts && (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50 hover:text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                      </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              You want to delete this subject. This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteSubject(studentSubject.fld_id)}
-                              className="bg-red-600 hover:bg-red-700"
+            
+            {/* Existing Subjects */}
+            {studentSubjects.length > 0 && (
+              <div className="space-y-2 pt-4 border-t border-gray-200">
+                <Label className="text-sm font-semibold text-gray-700">
+                  Ihre aktuellen Fächer
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {[...studentSubjects].sort((a, b) => {
+                    // Move "Andere" to the end
+                    const aSubject = a.tbl_subjects?.fld_subject || '';
+                    const bSubject = b.tbl_subjects?.fld_subject || '';
+                    if (aSubject === 'Andere') return 1;
+                    if (bSubject === 'Andere') return -1;
+                    return 0; // Keep other subjects in their original order
+                  }).map((ss) => {
+                    const subjectEmoji = getSubjectEmoji(ss.tbl_subjects?.fld_subject || '');
+                    return (
+                      <Card key={ss.fld_id} className="border border-gray-200 hover:shadow-sm transition-shadow">
+                        <CardContent className="p-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 flex-1 min-w-0">
+                              <span className="text-xl flex-shrink-0">{subjectEmoji}</span>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-gray-900 text-xs sm:text-sm truncate">
+                                  {ss.tbl_subjects?.fld_subject || 'Unbekannt'}
+                                </div>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteSubject(ss.fld_id)}
+                              disabled={deleteSubjectMutation.isPending}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2 flex-shrink-0 h-8 w-8 p-0"
                             >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                )}
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
-                ))}
-            </div>
-          </div>
-          )}
+            )}
+          </form>
         </CardContent>
       </Card>
 

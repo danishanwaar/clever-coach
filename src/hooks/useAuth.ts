@@ -236,7 +236,7 @@ export function useAuth() {
         .insert({
           fld_first_name: formData.firstName,
           fld_last_name: formData.lastName,
-          fld_gender: formData.gender === "male" ? "Männlich" : "Weiblich",
+          fld_gender: formData.gender,
           fld_dob: formData.birthDate,
           fld_email: formData.email,
           fld_phone: formData.phone,
@@ -245,14 +245,7 @@ export function useAuth() {
           fld_zip: formData.postalCode,
           fld_country: "Germany",
           fld_education: formData.education,
-          fld_t_mode:
-            formData.transport === "public"
-              ? "Öffentliche Verkehrsmittel"
-              : formData.transport === "bicycle"
-              ? "Fahrrad"
-              : formData.transport === "car"
-              ? "Auto"
-              : "Öffentliche Verkehrsmittel",
+          fld_t_mode: formData.transport,
           fld_l_mode: "In-Person",
           fld_self: formData.description,
           fld_source: formData.howFound,
