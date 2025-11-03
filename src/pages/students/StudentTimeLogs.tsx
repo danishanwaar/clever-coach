@@ -125,7 +125,7 @@ export default function StudentTimeLogs() {
                         </h3>
                         <div className="flex items-center gap-2">
                           <Badge className="bg-green-100 text-green-800 text-xs font-medium">
-                            {Math.round(log.fld_lesson)} lessons
+                            {Math.round(log.fld_lesson)} hour(s)
                           </Badge>
                           <Badge className={`${getStatusColor(log.fld_status)} text-xs font-medium`}>
                             {log.fld_status || 'Pending'}

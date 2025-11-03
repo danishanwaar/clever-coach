@@ -283,7 +283,7 @@ export default function StudentSettings() {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* Contact Person Section */}
       <Card>
         <CardHeader>
@@ -897,7 +897,7 @@ export default function StudentSettings() {
       </Card>
 
       {/* Danger Zone Section */}
-      <Card className="border-red-500 bg-red-50/30 mt-6">
+      <Card className="border-red-500 bg-red-50/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-red-600 text-base sm:text-lg">
             <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" />

@@ -76,9 +76,14 @@ export const useTeachers = (status?: string, searchTerm: string = "") => {
   // Fetch teachers based on status with preloaded data
   const teachersQuery = useQuery({
     queryKey: ['teachers', status, searchTerm],
+    placeholderData: (previousData) => previousData,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false, // Don't refetch on window focus
     queryFn: async () => {
-      // Build base query with all related data preloaded
-      let query = supabase
+      const statuses = ["Hired", "Inactive", "Deleted"];
+
+      // Build single base query for all teachers
+      let baseQuery = supabase
         .from('tbl_teachers')
         .select(`
           *,
@@ -102,47 +107,50 @@ export const useTeachers = (status?: string, searchTerm: string = "") => {
           )
         `);
 
-      // Apply status filter
+      // Apply status filter using .in() operator in the query
       if (status && status !== 'All') {
-        query = query.eq('fld_status', status as any);
+        // Use .in() operator with array containing the selected status
+        baseQuery = baseQuery.in('fld_status', [status] as any[]);
       } else {
-        // Default to showing hired teachers
-        query = query.eq('fld_status', 'Hired');
+        // Default to showing hired teachers - use .in() operator
+        baseQuery = baseQuery.in('fld_status', statuses as any[]);
       }
 
       // Apply search filter
       if (searchTerm) {
-        query = query.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%`);
+        baseQuery = baseQuery.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%`);
       }
 
       // Order by ID descending
-      query = query.order('fld_id', { ascending: false });
+      baseQuery = baseQuery.order('fld_id', { ascending: false });
 
-      const { data, error } = await query;
+      // Execute single query
+      const { data: filteredTeachers, error } = await baseQuery;
       if (error) throw error;
 
-      // Get status-wise counts
+      // Calculate status counts from filtered data (counts reflect the filter applied)
       const statusCounts: Record<string, number> = {};
-      const statuses = ["Hired", "Inactive", "Deleted"];
-      
-      for (const status of statuses) {
-        const { count } = await supabase
-          .from('tbl_teachers')
-          .select('fld_id', { count: 'exact', head: true })
-          .eq('fld_status', status as any);
-        statusCounts[status] = count || 0;
-      }
-      
-      // Get total count
-      const { count: total } = await supabase
-        .from('tbl_teachers')
-        .select('fld_id', { count: 'exact', head: true });
-      statusCounts["All"] = total || 0;
+      filteredTeachers?.forEach((row) => {
+        const teacherStatus = row.fld_status;
+        if (statuses.includes(teacherStatus)) {
+          statusCounts[teacherStatus] = (statusCounts[teacherStatus] || 0) + 1;
+        }
+      });
+
+      // Ensure all statuses are represented (even if count is 0)
+      statuses.forEach((s) => {
+        if (!(s in statusCounts)) {
+          statusCounts[s] = 0;
+        }
+      });
+
+      // Get total count from filtered results
+      statusCounts["All"] = filteredTeachers?.length || 0;
 
       return {
-        data: data as unknown as Teacher[],
+        data: filteredTeachers as unknown as Teacher[],
         statusCounts: statusCounts,
-        totalCount: data?.length || 0
+        totalCount: filteredTeachers?.length || 0
       };
     },
   });
@@ -282,7 +290,8 @@ export const useTeachers = (status?: string, searchTerm: string = "") => {
     teachers: teachersQuery.data?.data || [],
     teacherActivities: teacherActivitiesQuery.data || [],
     activityTypes: activityTypesQuery.data || [],
-    isLoading: teachersQuery.isLoading,
+    isLoading: teachersQuery.isInitialLoading, // Only true on initial load (no data)
+    isFetching: teachersQuery.isFetching, // True during background refetches
     isLoadingActivities: teacherActivitiesQuery.isLoading,
     updateStatus: updateStatusMutation.mutate,
     updateRate: updateRateMutation.mutate,

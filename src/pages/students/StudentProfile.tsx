@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { 
-  Mail, 
-  Phone, 
+import {
+  Mail,
+  Phone,
   MessageCircle,
   ArrowLeft,
   User,
@@ -43,10 +43,10 @@ const StudentContractViewWrapper: React.FC<{ studentId: number }> = ({ studentId
   const { getActiveContracts } = useStudentContractsHook();
   const activeContractsQuery = getActiveContracts(studentId);
   const activeContracts = activeContractsQuery.data || [];
-  
+
   // Get the first active contract (if any)
   const activeContract = activeContracts.length > 0 ? activeContracts[0] : null;
-  
+
   if (activeContractsQuery.isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -59,7 +59,7 @@ const StudentContractViewWrapper: React.FC<{ studentId: number }> = ({ studentId
   }
 
   if (!activeContract) {
-      return (
+    return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -69,7 +69,7 @@ const StudentContractViewWrapper: React.FC<{ studentId: number }> = ({ studentId
       </div>
     );
   }
-  
+
   return <StudentContractView contractId={activeContract.fld_id} />;
 };
 
@@ -102,16 +102,16 @@ const StudentProfile: React.FC = () => {
   const { updateStatus } = useStudentMutations();
 
   if (studentLoading) {
-      return (
+    return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-2 text-gray-600">Loading student profile...</p>
         </div>
-        </div>
-      );
-    }
-    
+      </div>
+    );
+  }
+
   if (!student) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -167,101 +167,103 @@ const StudentProfile: React.FC = () => {
             <span className="text-gray-900 font-medium">
               {student.fld_first_name} {student.fld_last_name}
             </span>
-        </div>
+          </div>
 
           {/* Student Header */}
           <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6 mb-6">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div className="flex items-center space-x-4 sm:space-x-6">
-              {/* Avatar */}
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="text-lg sm:text-xl font-bold text-primary">
-                    {student.fld_first_name?.[0]}
-                    {student.fld_last_name?.[0]}
-                  </span>
-      </div>
-              </div>
-
-              {/* Student Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 mb-2">
-                  <h1 className="text-xl sm:text-2xl font-bold text-primary truncate">
-                    {student.fld_first_name} {student.fld_last_name}
-                  </h1>
-                  <Badge
-                    className={`${getStatusColor(
-                      student.fld_status
-                    )} text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-md w-fit`}
-                  >
-                    {student.fld_status}
-                  </Badge>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+              <div className="flex items-center space-x-4 sm:space-x-6">
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                    <span className="text-lg sm:text-xl font-bold text-primary">
+                      {student.fld_first_name?.[0]}
+                      {student.fld_last_name?.[0]}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs sm:text-sm text-gray-500">ID: STU-{student.fld_id.toString().padStart(6, "0")}</p>
+
+                {/* Student Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0 mb-2">
+                    <h1 className="text-xl sm:text-2xl font-bold text-primary truncate">
+                      {student.fld_first_name} {student.fld_last_name}
+                    </h1>
+                    <Badge
+                      className={`${getStatusColor(
+                        student.fld_status
+                      )} text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-md w-fit`}
+                    >
+                      {student.fld_status}
+                    </Badge>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    ID: STU-{student.fld_id.toString().padStart(6, "0")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2 flex-shrink-0">
+                {student.fld_email && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="hover:bg-primary/10 hover:text-primary hover:border-primary/20 p-2 sm:p-2"
+                  >
+                    <a href={`mailto:${student.fld_email}`} target="_blank" rel="noopener noreferrer">
+                      <Mail className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+                {student.fld_mobile && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="hover:bg-primary/10 hover:text-primary hover:border-primary/20 p-2 sm:p-2"
+                  >
+                    <a
+                      href={`https://web.whatsapp.com/send?phone=${formatPhoneForWhatsApp(student.fld_mobile)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </a>
+                  </Button>
+                )}
+                <Select
+                  value={student.fld_status}
+                  onValueChange={(newStatus: string) => {
+                    updateStatus({
+                      studentId: studentId!,
+                      status: newStatus as StudentStatus,
+                    });
+                  }}
+                >
+                  <SelectTrigger className="w-32 sm:w-40 h-8 border-gray-300 hover:border-primary/50 focus:border-primary text-xs sm:text-sm">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Leads">Leads</SelectItem>
+                    <SelectItem value="Mediation Open">Mediation Open</SelectItem>
+                    <SelectItem value="Partially Mediated">Partially Mediated</SelectItem>
+                    <SelectItem value="Mediated">Mediated</SelectItem>
+                    <SelectItem value="Specialist Consulting">Specialist Consulting</SelectItem>
+                    <SelectItem value="Contracted Customers">Contracted Customers</SelectItem>
+                    <SelectItem value="Suspended">Suspended</SelectItem>
+                    <SelectItem value="Deleted">Deleted</SelectItem>
+                    <SelectItem value="Unplaceable">Unplaceable</SelectItem>
+                    <SelectItem value="Waiting List">Waiting List</SelectItem>
+                    <SelectItem value="Appointment Call">Appointment Call</SelectItem>
+                    <SelectItem value="Follow-up">Follow-up</SelectItem>
+                    <SelectItem value="Appl">Appl</SelectItem>
+                    <SelectItem value="Eng">Eng</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-2 flex-shrink-0">
-              {student.fld_email && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="hover:bg-primary/10 hover:text-primary hover:border-primary/20 p-2 sm:p-2"
-                >
-                  <a href={`mailto:${student.fld_email}`} target="_blank" rel="noopener noreferrer">
-                    <Mail className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-              {student.fld_mobile && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  asChild
-                  className="hover:bg-primary/10 hover:text-primary hover:border-primary/20 p-2 sm:p-2"
-                >
-                  <a
-                    href={`https://web.whatsapp.com/send?phone=${formatPhoneForWhatsApp(student.fld_mobile)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                  </a>
-                </Button>
-              )}
-              <Select
-                value={student.fld_status}
-                onValueChange={(newStatus: string) => {
-                  updateStatus({
-                    studentId: studentId!,
-                    status: newStatus as StudentStatus,
-                  });
-                }}
-              >
-                <SelectTrigger className="w-32 sm:w-40 h-8 border-gray-300 hover:border-primary/50 focus:border-primary text-xs sm:text-sm">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Leads">Leads</SelectItem>
-                  <SelectItem value="Mediation Open">Mediation Open</SelectItem>
-                  <SelectItem value="Partially Mediated">Partially Mediated</SelectItem>
-                  <SelectItem value="Mediated">Mediated</SelectItem>
-                  <SelectItem value="Specialist Consulting">Specialist Consulting</SelectItem>
-                  <SelectItem value="Contracted Customers">Contracted Customers</SelectItem>
-                  <SelectItem value="Suspended">Suspended</SelectItem>
-                  <SelectItem value="Deleted">Deleted</SelectItem>
-                  <SelectItem value="Unplaceable">Unplaceable</SelectItem>
-                  <SelectItem value="Waiting List">Waiting List</SelectItem>
-                  <SelectItem value="Appointment Call">Appointment Call</SelectItem>
-                  <SelectItem value="Follow-up">Follow-up</SelectItem>
-                  <SelectItem value="Appl">Appl</SelectItem>
-                  <SelectItem value="Eng">Eng</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
           </div>
         </div>
 
@@ -369,20 +371,20 @@ const StudentProfile: React.FC = () => {
                       <div>
                         <p className="text-sm text-gray-600">Email</p>
                         <p className="text-sm font-medium text-gray-900">{student.fld_email || "Not provided"}</p>
-                </div>
+                      </div>
                       <div>
                         <p className="text-sm text-gray-600">Mobile</p>
                         <p className="text-sm font-medium text-gray-900">
                           {formatPhoneNumber(student.fld_mobile || "") || "Not provided"}
                         </p>
-              </div>
+                      </div>
                       <div>
                         <p className="text-sm text-gray-600">Status</p>
                         <Badge className={`${getStatusColor(student.fld_status)} text-xs`}>{student.fld_status}</Badge>
-                </div>
-              </div>
-          </CardContent>
-        </Card>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Academic Information Card */}
                 <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow">
@@ -390,33 +392,33 @@ const StudentProfile: React.FC = () => {
                     <CardTitle className="text-lg font-semibold text-primary flex items-center">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
                         <BookOpen className="h-4 w-4 text-primary" />
-              </div>
+                      </div>
                       Academic Info
-            </CardTitle>
-          </CardHeader>
+                    </CardTitle>
+                  </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm text-gray-600">Level</p>
                         <p className="text-sm font-medium text-gray-900">{student.fld_level || "Not specified"}</p>
-            </div>
+                      </div>
                       <div>
                         <p className="text-sm text-gray-600">School</p>
                         <p className="text-sm font-medium text-gray-900">{student.fld_school || "Not specified"}</p>
-            </div>
+                      </div>
                       <div>
                         <p className="text-sm text-gray-600">Learning Mode</p>
                         <Badge className="bg-green-100 text-green-800 text-xs">
                           {student.fld_l_mode || "In-Person"}
-                </Badge>
-              </div>
+                        </Badge>
+                      </div>
                       <div>
                         <p className="text-sm text-gray-600">Reason</p>
                         <p className="text-sm font-medium text-gray-900">{student.fld_reason || "Not specified"}</p>
                       </div>
                     </div>
-          </CardContent>
-        </Card>
+                  </CardContent>
+                </Card>
 
                 {/* Financial Information Card */}
                 <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow">
@@ -424,10 +426,10 @@ const StudentProfile: React.FC = () => {
                     <CardTitle className="text-lg font-semibold text-primary flex items-center">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
                         <DollarSign className="h-4 w-4 text-primary" />
-              </div>
+                      </div>
                       Financial Info
-            </CardTitle>
-          </CardHeader>
+                    </CardTitle>
+                  </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-3">
                       <div>
@@ -449,10 +451,10 @@ const StudentProfile: React.FC = () => {
                       <div>
                         <p className="text-sm text-gray-600">Self Paid</p>
                         <p className="text-sm font-medium text-gray-900">{student.fld_self_paid || "Not specified"}</p>
-            </div>
-            </div>
-          </CardContent>
-        </Card>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Subjects Card */}
                 <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow">
@@ -460,10 +462,10 @@ const StudentProfile: React.FC = () => {
                     <CardTitle className="text-lg font-semibold text-primary flex items-center">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
                         <BookOpen className="h-4 w-4 text-primary" />
-              </div>
+                      </div>
                       Subjects
-            </CardTitle>
-          </CardHeader>
+                    </CardTitle>
+                  </CardHeader>
                   <CardContent>
                     {studentSubjects.length > 0 ? (
                       <div className="space-y-2">
@@ -475,7 +477,7 @@ const StudentProfile: React.FC = () => {
                             </span>
                           </div>
                         ))}
-            </div>
+                      </div>
                     ) : (
                       <p className="text-gray-500 text-sm">No subjects assigned</p>
                     )}
@@ -488,7 +490,7 @@ const StudentProfile: React.FC = () => {
                     <CardTitle className="text-lg font-semibold text-primary flex items-center">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
                         <FileText className="h-4 w-4 text-primary" />
-            </div>
+                      </div>
                       Contracts
                     </CardTitle>
                   </CardHeader>
@@ -503,16 +505,16 @@ const StudentProfile: React.FC = () => {
                             <div>
                               <p className="text-sm font-medium text-gray-900">Contract #{contract.fld_id}</p>
                               <p className="text-xs text-gray-600">€{contract.fld_s_per_lesson_rate || 0}/lesson</p>
-                </div>
+                            </div>
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              </div>
+                          </div>
                         ))}
-              </div>
+                      </div>
                     ) : (
                       <p className="text-gray-500 text-sm">No active contracts</p>
-            )}
-          </CardContent>
-        </Card>
+                    )}
+                  </CardContent>
+                </Card>
 
                 {/* Additional Info Card */}
                 <Card className="shadow-sm border-0 bg-white hover:shadow-md transition-shadow">
@@ -520,28 +522,28 @@ const StudentProfile: React.FC = () => {
                     <CardTitle className="text-lg font-semibold text-primary flex items-center">
                       <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center mr-3">
                         <FileText className="h-4 w-4 text-primary" />
-              </div>
+                      </div>
                       Additional Info
-            </CardTitle>
-          </CardHeader>
+                    </CardTitle>
+                  </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-3">
                       <div>
                         <p className="text-sm text-gray-600">Lead Source</p>
                         <p className="text-sm font-medium text-gray-900">{student.fld_f_lead || "Not specified"}</p>
                       </div>
-                <div>
+                      <div>
                         <p className="text-sm text-gray-600">Created</p>
                         <p className="text-sm font-medium text-gray-900">
                           {new Date(student.created_at).toLocaleDateString()}
                         </p>
-                </div>
-                <div>
+                      </div>
+                      <div>
                         <p className="text-sm text-gray-600">Last Updated</p>
                         <p className="text-sm font-medium text-gray-900">
                           {new Date(student.updated_at || student.fld_created_at).toLocaleDateString()}
-                  </p>
-                </div>
+                        </p>
+                      </div>
                       {student.fld_notes && (
                         <div>
                           <p className="text-sm text-gray-600">Notes</p>
@@ -575,7 +577,7 @@ const StudentProfile: React.FC = () => {
             <TabsContent value="progress" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentProgressNotes />
-                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="time" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
@@ -587,7 +589,7 @@ const StudentProfile: React.FC = () => {
             <TabsContent value="activity" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
               <div className="bg-white rounded-lg shadow-sm border-0 p-4 sm:p-6">
                 <StudentActivity />
-                </div>
+              </div>
             </TabsContent>
 
             <TabsContent value="download" className="flex-1 min-h-0 overflow-y-auto space-y-4 sm:space-y-6">
@@ -596,11 +598,13 @@ const StudentProfile: React.FC = () => {
               </div>
             </TabsContent>
 
-            <TabsContent value="settings" className="flex-1 min-h-0 overflow-y-auto overscroll-none">
-              <StudentSettings />
+            <TabsContent value="settings" className="flex-1 min-h-0 overflow-y-auto">
+              <div className="bg-white rounded-lg shadow-sm border-0 pt-4 px-4 pb-2 sm:pt-6 sm:px-6 sm:pb-4">
+                <StudentSettings />
+              </div>
             </TabsContent>
           </Tabs>
-            </div>
+        </div>
       </div>
     </div>
   );

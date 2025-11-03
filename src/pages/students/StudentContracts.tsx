@@ -4,7 +4,7 @@ import { useStudentContracts, ContractEngagement } from '@/hooks/useStudentContr
 import { useStudents, useStudent } from '@/hooks/useStudents';
 import { useLevels } from '@/hooks/useLevels';
 import { useSubjects } from '@/hooks/useSubjects';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,8 @@ import { toast } from 'sonner';
 
 export default function StudentContracts() {
   const { id } = useParams<{ id: string }>();
-  const studentId = parseInt(id || '0');  
+  const studentId = parseInt(id || '0');
+  const queryClient = useQueryClient();
   const { data: student, isLoading: studentLoading } = useStudent(studentId);
   
   const {
@@ -61,13 +62,43 @@ export default function StudentContracts() {
   
   const contractsLoading = activeContractsLoading || pendingContractsLoading;
 
-  // Memoize contract IDs for stable dependencies
+  // Preload engagements for all active contracts in parallel
   const activeContractIds = useMemo(() => {
-    if (!activeContracts || !Array.isArray(activeContracts)) return '';
-    return activeContracts.map(c => c.fld_id).sort((a, b) => a - b).join(',');
+    if (!activeContracts || !Array.isArray(activeContracts)) return [];
+    return activeContracts.map(c => c.fld_id);
   }, [activeContracts]);
 
-  const [contractEngagements, setContractEngagements] = useState<Record<number, ContractEngagement[]>>({});
+  // Fetch all engagements in parallel using useQuery
+  const { data: allEngagements = [], isLoading: engagementsLoading } = useQuery({
+    queryKey: ['contract-engagements', studentId, activeContractIds.join(',')],
+    queryFn: async () => {
+      if (activeContractIds.length === 0) return [];
+      
+      // Fetch all engagements for active contracts in parallel
+      const engagementPromises = activeContractIds.map(contractId =>
+        fetchContractEngagements(contractId).catch(error => {
+          console.error(`Error fetching engagements for contract ${contractId}:`, error);
+          return [];
+        })
+      );
+      
+      const engagementArrays = await Promise.all(engagementPromises);
+      
+      // Combine into a single map
+      const engagementMap: Record<number, ContractEngagement[]> = {};
+      activeContractIds.forEach((contractId, index) => {
+        engagementMap[contractId] = engagementArrays[index] || [];
+      });
+      
+      return engagementMap;
+    },
+    enabled: activeContractIds.length > 0 && !activeContractsLoading,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  const contractEngagements = allEngagements || {};
+  
   const [minimumLessons, setMinimumLessons] = useState<Record<number, number>>({});
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showCreateEngagementDialog, setShowCreateEngagementDialog] = useState(false);
@@ -180,47 +211,14 @@ export default function StudentContracts() {
           fld_t_per_lesson_rate: 0
         });
         setSelectedContractId(null);
-        // Refresh engagements for this contract
-        fetchContractEngagements(selectedContractId).then(engagements => {
-          setContractEngagements(prev => ({
-            ...prev,
-            [selectedContractId]: engagements
-          }));
+        // Refresh engagements
+        queryClient.invalidateQueries({ 
+          queryKey: ['contract-engagements', studentId] 
         });
       }
     });
   };
 
-  // Fetch engagements for each contract
-  useEffect(() => {
-    // Don't clear engagements if we're still loading
-    if (activeContractsLoading || !activeContracts || !Array.isArray(activeContracts)) return;
-    
-    if (activeContracts.length === 0) {
-      setContractEngagements({});
-      return;
-    }
-
-    const fetchEngagements = async () => {
-      const engagements: Record<number, ContractEngagement[]> = {};
-      
-      // Fetch for active contracts
-      for (const contract of activeContracts) {
-        try {
-          const engagementsData = await fetchContractEngagements(contract.fld_id);
-          engagements[contract.fld_id] = engagementsData;
-    } catch (error) {
-          console.error('Error fetching engagements for contract', contract.fld_id, error);
-          engagements[contract.fld_id] = [];
-        }
-      }
-      
-      setContractEngagements(engagements);
-    };
-
-    fetchEngagements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeContractIds, activeContractsLoading]); // Use stable contract IDs
 
   // Initialize minimum lessons
   useEffect(() => {
@@ -335,7 +333,9 @@ export default function StudentContracts() {
     }
   };
 
-  if (studentLoading || contractsLoading) {
+  const isLoading = studentLoading || contractsLoading || engagementsLoading;
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -355,20 +355,20 @@ export default function StudentContracts() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
       {/* Header with Stats and Create Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         {/* Stats Cards */}
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-lg border border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <span className="text-sm font-medium text-green-800">
+            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium text-green-800 whitespace-nowrap">
               {activeContracts.length} Active
             </span>
           </div>
           <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 rounded-lg border border-orange-200">
-            <Clock className="h-4 w-4 text-orange-600" />
-            <span className="text-sm font-medium text-orange-800">
+            <Clock className="h-4 w-4 text-orange-600 flex-shrink-0" />
+            <span className="text-xs sm:text-sm font-medium text-orange-800 whitespace-nowrap">
               {pendingContracts.length} Pending
             </span>
           </div>
@@ -383,16 +383,16 @@ export default function StudentContracts() {
                 Create Contract
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
               <DialogHeader>
-                <DialogTitle>Create New Contract</DialogTitle>
+                <DialogTitle className="text-lg sm:text-xl">Create New Contract</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4">
-                <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="text-xs sm:text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
                   <p className="font-medium mb-1">Required Fields:</p>
                   <p>Fields marked with * are required to create a contract.</p>
-      </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="contract-duration">Contract Duration *</Label>
                     <Select
@@ -569,74 +569,74 @@ export default function StudentContracts() {
       </div>
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Active Contracts */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Active Contracts</h3>
-            <Badge variant="secondary" className="ml-auto">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Active Contracts</h3>
+            <Badge variant="secondary" className="ml-auto text-xs">
               {activeContracts.length}
             </Badge>
-                    </div>
+          </div>
           
           {activeContracts.length > 0 ? (
             activeContracts.map((contract) => (
               <Card key={contract.fld_id} className="border border-green-200 bg-green-50/30 hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-1">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
                         Contract #{contract.fld_id}
                       </h4>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Euro className="h-4 w-4" />
-                        <span>€{Math.round(contract.fld_s_per_lesson_rate)}/lesson</span>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Euro className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="truncate">€{contract.fld_s_per_lesson_rate.toFixed(2)}/lesson</span>
                       </div>
                     </div>
-                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                    <Badge className="bg-green-100 text-green-800 border-green-200 text-xs sm:text-sm whitespace-nowrap shrink-0">
                       {contract.fld_status}
                     </Badge>
                   </div>
                   
                   {/* Contract Details Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span>Created</span>
                       </div>
-                      <p className="text-sm font-medium">{formatDate(contract.fld_edate)}</p>
-                </div>
-                    
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="h-4 w-4" />
-                        <span>Duration</span>
-                      </div>
-                      <p className="text-sm font-medium">{contract.fld_lesson_dur}</p>
+                      <p className="text-xs sm:text-sm font-medium">{formatDate(contract.fld_edate)}</p>
                     </div>
                     
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <BookOpen className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span>Duration</span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-medium truncate">{contract.fld_lesson_dur}</p>
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span>Learning</span>
                       </div>
-                      <p className="text-sm font-medium">{contract.fld_lp}</p>
-                  </div>
+                      <p className="text-xs sm:text-sm font-medium">{contract.fld_lp}</p>
+                    </div>
                   
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Euro className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Euro className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span>Rate</span>
                       </div>
-                      <p className="text-sm font-medium">€{Math.round(contract.fld_s_per_lesson_rate)}/lesson</p>
+                      <p className="text-xs sm:text-sm font-medium">€{contract.fld_s_per_lesson_rate.toFixed(2)}/lesson</p>
                     </div>
                   </div>
                   
                   {/* Minimum Lessons */}
-                  <div className="space-y-2 mb-6">
-                    <Label htmlFor={`min-lessons-${contract.fld_id}`} className="text-sm font-medium">
+                  <div className="space-y-2 mb-4 sm:mb-6">
+                    <Label htmlFor={`min-lessons-${contract.fld_id}`} className="text-xs sm:text-sm font-medium">
                       Minimum Lessons per Month
                     </Label>
                     <Input 
@@ -645,60 +645,64 @@ export default function StudentContracts() {
                       value={minimumLessons[contract.fld_id] || contract.fld_min_lesson}
                       onChange={(e) => handleMinimumLessonsChange(contract.fld_id, e.target.value)}
                       onBlur={() => handleMinimumLessonsBlur(contract.fld_id)}
-                      className="w-full"
+                      className="w-full text-sm"
                       disabled={isUpdatingMinimumLessons}
                     />
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 mb-4 sm:mb-6">
                     <Button 
-                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white"
+                      size="sm"
+                      className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-white text-sm"
                       onClick={() => handleOpenCreateEngagement(contract.fld_id)}
                     >
-                      <User className="h-4 w-4 mr-2" />
+                      <User className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                       Create Engagement
                     </Button>
                   </div>
                   
                   {/* Engagements */}
                   {contractEngagements[contract.fld_id] && contractEngagements[contract.fld_id].length > 0 && (
-                    <div className="mt-6 space-y-4">
+                    <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
                       <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-gray-600" />
-                        <h5 className="text-sm font-medium text-gray-600">Engagements</h5>
+                        <User className="h-3 w-3 sm:h-4 sm:w-4 text-gray-600 flex-shrink-0" />
+                        <h5 className="text-xs sm:text-sm font-medium text-gray-600">Engagements</h5>
+                        <Badge variant="secondary" className="ml-auto text-xs">
+                          {contractEngagements[contract.fld_id].length}
+                        </Badge>
                       </div>
                       {contractEngagements[contract.fld_id].map((engagement, index) => (
-                        <div key={engagement.fld_id} className="p-4 bg-gray-50 rounded-lg border">
-                          <div className="flex items-center justify-between mb-3">
-                            <h6 className="text-sm font-medium">Engagement {index + 1}</h6>
-                            <Badge variant="secondary" className="text-xs">
+                        <div key={engagement.fld_id} className="p-3 sm:p-4 bg-gray-50 rounded-lg border">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                            <h6 className="text-xs sm:text-sm font-medium">Engagement {index + 1}</h6>
+                            <Badge variant="secondary" className="text-xs w-fit">
                               {engagement.fld_status}
                             </Badge>
-                </div>
+                          </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                            <div>
-                              <span className="text-gray-600">Teacher</span>
-                              <p className="font-medium">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
+                            <div className="min-w-0">
+                              <span className="text-gray-600 block mb-1">Teacher</span>
+                              <p className="font-medium truncate">
                                 {engagement.tbl_teachers?.fld_first_name} {engagement.tbl_teachers?.fld_last_name}
-                  </p>
-                </div>
+                              </p>
+                            </div>
 
                             <div>
-                              <span className="text-gray-600">Rate</span>
-                              <p className="font-medium">€{Math.round(engagement.fld_t_per_lesson_rate)}</p>
+                              <span className="text-gray-600 block mb-1">Rate</span>
+                              <p className="font-medium">€{engagement.fld_t_per_lesson_rate.toFixed(2)}</p>
                             </div>
                             
-                            <div>
-                              <span className="text-gray-600">Subject</span>
-                              <p className="font-medium">
+                            <div className="min-w-0">
+                              <span className="text-gray-600 block mb-1">Subject</span>
+                              <p className="font-medium truncate">
                                 {engagement.tbl_students_subjects?.tbl_subjects?.fld_subject || 'N/A'}
                               </p>
                             </div>
                             
                             <div>
-                              <span className="text-gray-600">Lessons</span>
+                              <span className="text-gray-600 block mb-1">Lessons</span>
                               <Badge variant="outline" className="text-xs">
                                 {engagement.lesson_count || 0}
                               </Badge>
@@ -711,9 +715,9 @@ export default function StudentContracts() {
                               size="sm"
                               onClick={() => handleCancelEngagement(engagement.fld_id)}
                               disabled={isCancellingEngagement}
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 w-full sm:w-auto text-xs sm:text-sm"
                             >
-                              <XCircle className="h-4 w-4 mr-2" />
+                              <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                               Cancel Engagement
                             </Button>
                           </div>
@@ -729,9 +733,9 @@ export default function StudentContracts() {
                     size="sm"
                     onClick={() => handleCancelContract(contract.fld_id)}
                     disabled={isCancellingContract}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto text-xs sm:text-sm"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                     Cancel Contract
                   </Button>
                 </CardContent>
@@ -751,11 +755,11 @@ export default function StudentContracts() {
         </div>
 
         {/* Pending Contracts */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-orange-600" />
-            <h3 className="text-lg font-semibold text-gray-900">Pending Contracts</h3>
-            <Badge variant="secondary" className="ml-auto">
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex items-center gap-2 mb-3 sm:mb-4">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-orange-600 flex-shrink-0" />
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900">Pending Contracts</h3>
+            <Badge variant="secondary" className="ml-auto text-xs">
               {pendingContracts.length}
             </Badge>
           </div>
@@ -763,54 +767,54 @@ export default function StudentContracts() {
           {pendingContracts.length > 0 ? (
             pendingContracts.map((contract) => (
               <Card key={contract.fld_id} className="border border-orange-200 bg-orange-50/30 hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 mb-1">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-base sm:text-lg font-semibold text-gray-900 mb-1">
                         Contract #{contract.fld_id}
                       </h4>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Euro className="h-4 w-4" />
-                        <span>€{Math.round(contract.fld_s_per_lesson_rate)}/lesson</span>
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Euro className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                        <span className="truncate">€{contract.fld_s_per_lesson_rate.toFixed(2)}/lesson</span>
                       </div>
                     </div>
-                    <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                    <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs sm:text-sm whitespace-nowrap shrink-0">
                       {contract.fld_status}
                     </Badge>
                   </div>
                   
                   {/* Contract Details Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span>Created</span>
                       </div>
-                      <p className="text-sm font-medium">{formatDate(contract.fld_edate)}</p>
+                      <p className="text-xs sm:text-sm font-medium">{formatDate(contract.fld_edate)}</p>
                     </div>
                     
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span>Duration</span>
                       </div>
-                      <p className="text-sm font-medium">{contract.fld_ct}</p>
+                      <p className="text-xs sm:text-sm font-medium truncate">{contract.fld_ct}</p>
                     </div>
                     
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <BookOpen className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span>Lesson Duration</span>
                       </div>
-                      <p className="text-sm font-medium">{contract.fld_lesson_dur}</p>
-                </div>
+                      <p className="text-xs sm:text-sm font-medium truncate">{contract.fld_lesson_dur}</p>
+                    </div>
 
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <User className="h-4 w-4" />
+                      <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <User className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
                         <span>Learning</span>
                       </div>
-                      <p className="text-sm font-medium">{contract.fld_lp}</p>
+                      <p className="text-xs sm:text-sm font-medium">{contract.fld_lp}</p>
                     </div>
                   </div>
 
@@ -821,9 +825,9 @@ export default function StudentContracts() {
                       size="sm"
                       onClick={() => handleSendContractEmail(contract.fld_id)}
                       disabled={sendContractEmailMutation.isPending}
-                      className="flex-1 sm:flex-none"
+                      className="flex-1 sm:flex-none text-xs sm:text-sm"
                     >
-                      <Send className="h-4 w-4 mr-2" />
+                      <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                       {sendContractEmailMutation.isPending ? 'Sending...' : 'Send Email'}
                     </Button>
                     <Button 
@@ -831,9 +835,9 @@ export default function StudentContracts() {
                       size="sm"
                       onClick={() => handleCancelContract(contract.fld_id)}
                       disabled={isCancellingContract}
-                      className="flex-1 sm:flex-none"
+                      className="flex-1 sm:flex-none text-xs sm:text-sm"
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                       Cancel Contract
                     </Button>
                   </div>
@@ -842,15 +846,15 @@ export default function StudentContracts() {
             ))
           ) : (
             <Card className="border-dashed border-2 border-gray-300">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <Clock className="h-12 w-12 text-gray-400 mb-4" />
-                <h4 className="text-lg font-medium text-gray-600 mb-2">No Pending Contracts</h4>
-                <p className="text-sm text-gray-500">
+              <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 text-center px-4">
+                <Clock className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-3 sm:mb-4" />
+                <h4 className="text-base sm:text-lg font-medium text-gray-600 mb-2">No Pending Contracts</h4>
+                <p className="text-xs sm:text-sm text-gray-500">
                   All contracts are either active or completed.
                 </p>
               </CardContent>
             </Card>
-        )}
+          )}
         </div>
       </div>
 

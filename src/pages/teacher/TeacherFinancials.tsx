@@ -72,7 +72,7 @@ export default function TeacherFinancials() {
                   <p className="text-xs text-gray-600 mt-1">Referenz: {invoice.fld_lhid || 'N/A'}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-base font-bold text-red-600">€{Math.round(invoice.fld_invoice_total)}</p>
+                  <p className="text-base font-bold text-red-600">€{invoice.fld_invoice_total.toFixed(2)}</p>
                   <p className="text-xs text-gray-500">{format(new Date(invoice.fld_edate), 'dd-MMM-yy')}</p>
                 </div>
               </div>

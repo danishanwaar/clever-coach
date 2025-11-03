@@ -156,6 +156,12 @@ export function useStudentTimeLogs(studentId: number) {
 
       if (userError || !userData) throw new Error('User not found');
 
+      // Get date and format month/year (matching legacy PHP: explode('-', date))
+      const edate = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+      const dateParts = edate.split('-');
+      const fld_year = dateParts[0]; // Year: "2024"
+      const fld_mon = dateParts[1];  // Month with leading zero: "01", "02", etc. (matching legacy PHP)
+
       const { error } = await supabase
         .from('tbl_teachers_lessons_history')
         .insert({
@@ -163,12 +169,14 @@ export function useStudentTimeLogs(studentId: number) {
           fld_ssid: timeLogData.fld_ssid,
           fld_lesson: timeLogData.fld_lesson,
           fld_notes: timeLogData.fld_notes || null,
-          fld_edate: new Date().toISOString(),
+          fld_edate: edate,
           fld_uname: userData.fld_id,
           fld_tid: timeLogData.fld_tid || 0, // Default to 0 if not provided
           fld_s_rate: 0, // Default values
           fld_t_rate: 0, // Default values
-          fld_status: 'Pending', // Default status
+          fld_mon: fld_mon, // Month with leading zero (matching legacy)
+          fld_year: fld_year, // Year (matching legacy)
+          fld_status: 'Pending', // Default status (matching legacy)
         });
 
       if (error) throw error;

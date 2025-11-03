@@ -124,42 +124,14 @@ export const useStudents = (status: StudentStatus | "All" | "Eng", searchTerm: s
 
   const studentsQuery = useQuery({
     queryKey: ["students", status, searchTerm],
+    placeholderData: (previousData) => previousData,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false, // Don't refetch on window focus
     queryFn: async () => {
-      // First, fetch ALL students for stats calculation (without status/search filters)
-      const { data: allStudentsData, error: allStudentsError } = await supabase
-        .from("tbl_students")
-        .select(`
-          fld_id,
-          fld_status,
-          fld_nec
-        `);
+      const statuses = ["Leads", "Mediation Open", "Partially Mediated", "Mediated", "Specialist Consulting", "Contracted Customers", "Suspended", "Deleted", "Unplaceable", "Waiting List", "Appointment Call", "Follow-up", "Appl", "Eng"];
 
-      if (allStudentsError) throw allStudentsError;
-
-      // Calculate status counts from all students data
-      const statusCounts: Record<string, number> = {};
-      const statuses = ["Leads", "Mediation Open", "Partially Mediated", "Mediated", "Specialist Consulting", "Contracted Customers", "Suspended", "Deleted", "Unplaceable", "Waiting List", "Appointment Call", "Follow-up", "Appl"];
-      
-      // Count by status from the fetched data
-      (allStudentsData || []).forEach((student: any) => {
-        const studentStatus = student.fld_status;
-        if (statuses.includes(studentStatus)) {
-          statusCounts[studentStatus] = (statusCounts[studentStatus] || 0) + 1;
-        }
-      });
-
-      // Initialize missing statuses to 0
-      statuses.forEach((s) => {
-        if (!(s in statusCounts)) {
-          statusCounts[s] = 0;
-        }
-      });
-
-      // Total count
-      statusCounts["All"] = allStudentsData?.length || 0;
-
-      // Now fetch filtered students with all related data for the actual list
-      let query = supabase.from("tbl_students").select(`
+      // Build single base query for all students (no status filter, so we can calculate all counts)
+      let baseQuery = supabase.from("tbl_students").select(`
           *,
           tbl_users!fk_students_user (
             fld_id,
@@ -188,24 +160,54 @@ export const useStudents = (status: StudentStatus | "All" | "Eng", searchTerm: s
           )
         `);
 
-      // Apply status filter
-      if (status !== "All" && status !== "Eng") {
-        query = query.eq("fld_status", status as any);
-      } else if (status === "Eng") {
-        query = query.eq("fld_nec", "N");
-      }
-
-      // Apply search filter
+      // Apply search filter (applies to both counts and data)
       if (searchTerm) {
-        query = query.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_s_first_name.ilike.%${searchTerm}%,fld_s_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%,fld_zip.ilike.%${searchTerm}%`);
+        baseQuery = baseQuery.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_s_first_name.ilike.%${searchTerm}%,fld_s_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%,fld_zip.ilike.%${searchTerm}%`);
       }
 
-      // Order by ID descending and execute
-      const { data, error } = await query.order("fld_id", { ascending: false });
+      // Order by ID descending
+      baseQuery = baseQuery.order("fld_id", { ascending: false });
+
+      // Execute single query
+      const { data: allStudents, error } = await baseQuery;
+
       if (error) throw error;
 
-      // Fetch all mediation stages for all students in one query
-      const studentIds = (data || []).map((s: any) => s.fld_id);
+      // Calculate status counts from all fetched data
+      const statusCounts: Record<string, number> = {};
+      allStudents?.forEach((row: any) => {
+        // Count regular statuses
+        const studentStatus = row.fld_status;
+        if (statuses.includes(studentStatus) && studentStatus !== "Eng") {
+          statusCounts[studentStatus] = (statusCounts[studentStatus] || 0) + 1;
+        }
+        
+        // Count Eng (students with fld_nec='N')
+        if (row.fld_nec === "N") {
+          statusCounts["Eng"] = (statusCounts["Eng"] || 0) + 1;
+        }
+      });
+
+      // Ensure all statuses are represented (even if count is 0)
+      statuses.forEach((s) => {
+        if (!(s in statusCounts)) {
+          statusCounts[s] = 0;
+        }
+      });
+
+      // Get total count
+      statusCounts["All"] = allStudents?.length || 0;
+
+      // Filter data by status for display
+      let filteredStudents = allStudents;
+      if (status !== "All" && status !== "Eng") {
+        filteredStudents = allStudents?.filter((s: any) => s.fld_status === status) || [];
+      } else if (status === "Eng") {
+        filteredStudents = allStudents?.filter((s: any) => s.fld_nec === "N") || [];
+      }
+
+      // Fetch all mediation stages for filtered students in one query (only if we have students)
+      const studentIds = (filteredStudents || []).map((s: any) => s.fld_id);
       let mediationStages: any[] = [];
       
       if (studentIds.length > 0) {
@@ -237,7 +239,7 @@ export const useStudents = (status: StudentStatus | "All" | "Eng", searchTerm: s
       }
 
       // Attach mediation stages to each student
-      const studentsWithMediation = (data || []).map((student: any) => {
+      const studentsWithMediation = (filteredStudents || []).map((student: any) => {
         const studentMediationStages = mediationStages.filter(
           (stage) => stage.fld_sid === student.fld_id
         );
@@ -250,7 +252,7 @@ export const useStudents = (status: StudentStatus | "All" | "Eng", searchTerm: s
       return {
         data: studentsWithMediation as unknown as Student[],
         statusCounts: statusCounts,
-        totalCount: data?.length || 0
+        totalCount: filteredStudents?.length || 0
       };
     },
     enabled: !!user,

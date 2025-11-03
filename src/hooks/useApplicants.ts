@@ -76,9 +76,14 @@ export const useApplicants = (selectedStatus: string = "All", searchTerm: string
   // Fetch all applicants with preloaded data
   const applicantsQuery = useQuery({
     queryKey: ['applicants', selectedStatus, searchTerm],
+    placeholderData: (previousData) => previousData,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    refetchOnWindowFocus: false, // Don't refetch on window focus
     queryFn: async () => {
-      // Build base query with all related data preloaded
-      let query = supabase
+      const statuses = ["New", "Screening", "Interview", "Offer", "Pending For Signature", "Rejected", "Waiting List", "Unclear"];
+      
+      // Build single base query for all applicants (no status filter, so we can calculate all counts)
+      let baseQuery = supabase
         .from('tbl_teachers')
         .select(`
           fld_id,
@@ -126,45 +131,48 @@ export const useApplicants = (selectedStatus: string = "All", searchTerm: string
         `)
         .neq('fld_status', 'Hired');
 
-      // Apply status filter
-      if (selectedStatus && selectedStatus !== "All") {
-        query = query.eq('fld_status', selectedStatus as any);
-      }
-
-      // Apply search filter
+      // Apply search filter (applies to both counts and data)
       if (searchTerm) {
-        query = query.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%`);
+        baseQuery = baseQuery.or(`fld_first_name.ilike.%${searchTerm}%,fld_last_name.ilike.%${searchTerm}%,fld_email.ilike.%${searchTerm}%,fld_city.ilike.%${searchTerm}%`);
       }
 
       // Order by ID descending
-      query = query.order('fld_id', { ascending: false });
+      baseQuery = baseQuery.order('fld_id', { ascending: false });
 
-      const { data, error } = await query;
+      // Execute single query
+      const { data: allApplicants, error } = await baseQuery;
+
       if (error) throw error;
 
-      // Get status-wise counts
+      // Calculate status counts from all fetched data
       const statusCounts: Record<string, number> = {};
-      const statuses = ["New", "Screening", "Interview", "Offer", "Pending For Signature", "Rejected", "Waiting List", "Unclear"];
-      
-      for (const status of statuses) {
-        const { count } = await supabase
-          .from('tbl_teachers')
-          .select('fld_id', { count: 'exact', head: true })
-          .eq('fld_status', status as any);
-        statusCounts[status] = count || 0;
-      }
-      
+      allApplicants?.forEach((row) => {
+        const status = row.fld_status;
+        if (statuses.includes(status)) {
+          statusCounts[status] = (statusCounts[status] || 0) + 1;
+        }
+      });
+
+      // Ensure all statuses are represented (even if count is 0)
+      statuses.forEach(status => {
+        if (!(status in statusCounts)) {
+          statusCounts[status] = 0;
+        }
+      });
+
       // Get total count
-      const { count: total } = await supabase
-        .from('tbl_teachers')
-        .select('fld_id', { count: 'exact', head: true })
-        .neq('fld_status', 'Hired');
-      statusCounts["All"] = total || 0;
+      statusCounts["All"] = allApplicants?.length || 0;
+
+      // Filter data by selectedStatus for display
+      let filteredData = allApplicants;
+      if (selectedStatus && selectedStatus !== "All") {
+        filteredData = allApplicants?.filter(app => app.fld_status === selectedStatus) || [];
+      }
 
       return {
-        data: data as unknown as Applicant[],
+        data: filteredData as unknown as Applicant[],
         statusCounts: statusCounts,
-        totalCount: data?.length || 0
+        totalCount: filteredData?.length || 0
       };
     },
   });
@@ -356,7 +364,8 @@ export const useApplicants = (selectedStatus: string = "All", searchTerm: string
     applicants: applicantsQuery.data?.data || [],
     activityTypes: activityTypesQuery.data || [],
     applicantActivities: applicantActivitiesQuery.data || [],
-    isLoading: applicantsQuery.isLoading,
+    isLoading: applicantsQuery.isInitialLoading, // Only true on initial load (no data)
+    isFetching: applicantsQuery.isFetching, // True during background refetches
     isLoadingActivities: applicantActivitiesQuery.isLoading,
     updateStatus: updateStatusMutation.mutateAsync,
     recordActivity: recordActivityMutation.mutateAsync,

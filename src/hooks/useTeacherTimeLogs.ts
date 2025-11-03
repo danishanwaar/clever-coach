@@ -280,6 +280,15 @@ export const useTeacherTimeLogMutations = () => {
         }
       }
 
+      // Format month and year (matching legacy PHP: explode('-', date))
+      // Legacy PHP: $FLD_MON2 = explode('-',$_POST['FLD_EDATE']);
+      //            $FLD_MON = $FLD_MON2[1];  // Month with leading zero: "01", "02"
+      //            $FLD_YEAR = $FLD_MON2[0]; // Year: "2024"
+      const dateStr = data.date.split('T')[0]; // Format: YYYY-MM-DD
+      const dateParts = dateStr.split('-');
+      const fld_year = dateParts[0]; // Year: "2024"
+      const fld_mon = dateParts[1];  // Month with leading zero: "01", "02", etc. (matching legacy PHP)
+
       const { error } = await supabase
         .from('tbl_teachers_lessons_history')
         .insert({
@@ -290,11 +299,11 @@ export const useTeacherTimeLogMutations = () => {
           fld_s_rate: studentRate,
           fld_t_rate: teacherRate,
           fld_notes: data.notes,
-          fld_edate: data.date,
-          fld_mon: (new Date(data.date).getMonth() + 1).toString(),
-          fld_year: new Date(data.date).getFullYear().toString(),
+          fld_edate: dateStr,
+          fld_mon: fld_mon, // Month with leading zero (matching legacy PHP)
+          fld_year: fld_year, // Year (matching legacy PHP)
           fld_uname: data.userId,
-          fld_status: 'Pending'
+          fld_status: 'Pending' // Status on creation (matching legacy PHP)
         });
 
       if (error) throw error;

@@ -385,7 +385,7 @@ export default function Applicants() {
                                     className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 rounded-full px-2 py-1 text-xs font-medium border border-gray-200"
                                   >
                                     <span className="font-semibold">{subject.tbl_subjects?.fld_subject}</span>
-                                    <span className="text-gray-500 hidden sm:inline">up to grade {subject.tbl_levels?.fld_level}</span>
+                                    <span className="text-gray-500 hidden sm:inline">{subject.tbl_levels?.fld_level}</span>
                                     <span className="text-gray-500 sm:hidden">({subject.tbl_levels?.fld_level})</span>
                                   </div>
                                 ))}
